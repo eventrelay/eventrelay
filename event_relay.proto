@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.eventrelay";
+option java_outer_classname = "EventRelayProto";
+
+package eventrelay;
+
+service EventRelay {
+  rpc CreateEvents(CreateEventRequest) returns (CreateEventResponse) {}
+  rpc PullEvents(PullEventsRequest) returns (PullEventsResponse) {}
+  rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse) {}
+  rpc GetTopic(GetTopicRequest) returns (GetTopicResponse) {}
+  rpc CreateTopic(CreateTopicRequest) returns (CreateTopicResponse) {}
+  rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {}
+  rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse) {}
+  rpc GetSubscription(GetSubscriptionRequest) returns (GetSubscriptionResponse) {}
+  rpc CreateSubscription(CreateSubscriptionRequest) returns (CreateSubscriptionResponse) {}
+  rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse) {}
+}
+
+message Topic {
+  string id = 1;
+  string name = 2;
+}
+
+message ListTopicsRequest {
+  int32 page = 1;
+}
+
+message ListTopicsResponse {
+  repeated Topic topics = 1;
+}
+
+message GetTopicRequest {
+  string id = 1;
+}
+
+message GetTopicResponse {
+  Topic topic = 1;
+}
+
+message CreateTopicRequest {
+  string name = 1;
+}
+
+message CreateTopicResponse {
+  Topic topic = 1;
+}
+ 
+message DeleteTopicRequest {
+  string id = 1;
+}
+
+message DeleteTopicResponse {
+  Topic topic = 1;
+}
+
+
+message Subscription {
+  string id = 1;
+  string name = 2;
+  string topicId = 3;
+}
+
+message ListSubscriptionsRequest {
+  int32 page = 1;
+}
+
+message ListSubscriptionsResponse {
+  repeated Subscription subscriptions = 1;
+}
+
+message GetSubscriptionRequest {
+  string id = 1;
+}
+
+message GetSubscriptionResponse {
+  Subscription subscription = 1;
+}
+
+message CreateSubscriptionRequest {
+  string name = 1;
+}
+
+message CreateSubscriptionResponse {
+  Subscription subscription = 1;
+}
+ 
+message DeleteSubscriptionRequest {
+  string id = 1;
+}
+
+message DeleteSubscriptionResponse {
+  Subscription subscription = 1;
+}
+
+
+message Event {
+  string id = 1;
+  string name = 2;
+  string topic = 3;
+  map<string, string> data = 4;
+  string source = 5;
+  string userId = 6;
+  string eventOccurredAt = 7;
+  map<string, string> context = 8;
+}
+
+message CreateEventRequest {
+  repeated Event events = 1;
+}
+
+message CreateEventResponse {
+  repeated string eventIds = 1;
+}
+
+message PullEventsRequest {
+  string topic = 1;
+  int32 batchSize = 2;
+  int32 offset = 3;
+}
+
+message PullEventsResponse {
+  repeated Event events = 1;
+}
