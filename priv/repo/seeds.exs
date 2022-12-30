@@ -24,16 +24,21 @@ Faker.start()
 
 Repo.insert!(%Topic{name: "default"})
 
-events =
-  Enum.map(1..1000, fn _ ->
-    %{
-      name: Faker.Name.name(),
-      topic_identifier: "default",
-      occurred_at: DateTime.utc_now() |> DateTime.truncate(:second),
-      source: "grpc",
-      data: %{name: "testing"},
-      context: %{ip_address: "127.0.0.1"}
-    }
-  end)
+topic = %Topic{name: "users"} |> Repo.insert!()
+ER.Events.Schema.create_topic_event_table!(topic)
+uuid = Faker.UUID.v4()
 
-Repo.insert_all(Event, events)
+# events =
+#   Enum.map(1..1000, fn _ ->
+#     %{
+#       name: "user.created",
+#       topic_name: topic.name,
+#       topic_identifier: uuid,
+#       occurred_at: DateTime.utc_now() |> DateTime.truncate(:second),
+#       source: "grpc",
+#       data: %{first_name: Faker.Name.first_name(), last_name: Faker.Name.last_name()},
+#       context: %{ip_address: "127.0.0.1"}
+#     }
+#   end)
+
+# Repo.insert_all(Event, events)

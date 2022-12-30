@@ -33,12 +33,23 @@ defmodule ER.Events.Topic do
     {topic_name, topic_identifier}
   end
 
+  @spec build_topic(String.t(), String.t()) :: String.t()
+  def build_topic(topic_name, topic_identifier \\ "") do
+    if topic_identifier != "" do
+      "#{topic_name}:#{topic_identifier}"
+    else
+      topic_name
+    end
+  end
+
   @doc false
   def changeset(topic, attrs) do
     topic
     |> cast(attrs, [:name])
     |> validate_required([:name])
-    |> validate_length(:name, max: 50)
+    # this is the max length of a topic name because of postgres table name and foreign key length limits
+    |> validate_length(:name, max: 45)
     |> unique_constraint(:name)
+    |> ER.Schema.normalize_name()
   end
 end

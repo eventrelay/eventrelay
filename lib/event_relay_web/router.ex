@@ -64,24 +64,31 @@ defmodule ERWeb.Router do
   scope "/", ERWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live "/events", EventLive.Index, :index
-    live "/events/new", EventLive.Index, :new
-    live "/events/:id/edit", EventLive.Index, :edit
-
-    live "/events/:id", EventLive.Show, :show
-    live "/events/:id/show/edit", EventLive.Show, :edit
-
-    live "/topics", TopicLive.Index, :index
-    live "/topics/new", TopicLive.Index, :new
-    live "/topics/:id/edit", TopicLive.Index, :edit
-
-    live "/topics/:id", TopicLive.Show, :show
-    live "/topics/:id/show/edit", TopicLive.Show, :edit
-
     live_session :require_authenticated_user,
       on_mount: [{ERWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+
+      live "/events", EventLive.Index, :index
+      live "/events/new", EventLive.Index, :new
+      live "/events/:id/edit", EventLive.Index, :edit
+
+      live "/events/:id", EventLive.Show, :show
+      live "/events/:id/show/edit", EventLive.Show, :edit
+
+      live "/topics", TopicLive.Index, :index
+      live "/topics/new", TopicLive.Index, :new
+      live "/topics/:id/edit", TopicLive.Index, :edit
+
+      live "/topics/:id", TopicLive.Show, :show
+      live "/topics/:id/show/edit", TopicLive.Show, :edit
+
+      live "/subscriptions", SubscriptionLive.Index, :index
+      live "/subscriptions/new", SubscriptionLive.Index, :new
+      live "/subscriptions/:id/edit", SubscriptionLive.Index, :edit
+
+      live "/subscriptions/:id", SubscriptionLive.Show, :show
+      live "/subscriptions/:id/show/edit", SubscriptionLive.Show, :edit
     end
   end
 

@@ -20,20 +20,6 @@ defmodule ERWeb.Grpc.Eventrelay.ListTopicsResponse do
   field :topics, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Topic
 end
 
-defmodule ERWeb.Grpc.Eventrelay.GetTopicRequest do
-  @moduledoc false
-  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
-
-  field :id, 1, type: :string
-end
-
-defmodule ERWeb.Grpc.Eventrelay.GetTopicResponse do
-  @moduledoc false
-  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
-
-  field :topic, 1, type: ERWeb.Grpc.Eventrelay.Topic
-end
-
 defmodule ERWeb.Grpc.Eventrelay.CreateTopicRequest do
   @moduledoc false
   use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
@@ -48,18 +34,37 @@ defmodule ERWeb.Grpc.Eventrelay.CreateTopicResponse do
   field :topic, 1, type: ERWeb.Grpc.Eventrelay.Topic
 end
 
-defmodule ERWeb.Grpc.Eventrelay.DeleteTopicRequest do
+defmodule ERWeb.Grpc.Eventrelay.NewSubscription.ConfigEntry do
   @moduledoc false
-  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+  use Protobuf, map: true, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
 
-  field :id, 1, type: :string
+  field :key, 1, type: :string
+  field :value, 2, type: :string
 end
 
-defmodule ERWeb.Grpc.Eventrelay.DeleteTopicResponse do
+defmodule ERWeb.Grpc.Eventrelay.NewSubscription do
   @moduledoc false
   use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
 
-  field :topic, 1, type: ERWeb.Grpc.Eventrelay.Topic
+  field :name, 1, type: :string
+  field :topicName, 2, type: :string
+  field :topicIdentifier, 3, type: :string
+  field :push, 4, type: :bool
+
+  field :config, 6,
+    repeated: true,
+    type: ERWeb.Grpc.Eventrelay.NewSubscription.ConfigEntry,
+    map: true
+
+  field :paused, 7, type: :bool
+end
+
+defmodule ERWeb.Grpc.Eventrelay.Subscription.ConfigEntry do
+  @moduledoc false
+  use Protobuf, map: true, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :key, 1, type: :string
+  field :value, 2, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Subscription do
@@ -68,7 +73,16 @@ defmodule ERWeb.Grpc.Eventrelay.Subscription do
 
   field :id, 1, type: :string
   field :name, 2, type: :string
-  field :topicId, 3, type: :string
+  field :topicName, 3, type: :string
+  field :topicIdentifier, 4, type: :string
+  field :push, 5, type: :bool
+
+  field :config, 7,
+    repeated: true,
+    type: ERWeb.Grpc.Eventrelay.Subscription.ConfigEntry,
+    map: true
+
+  field :paused, 8, type: :bool
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest do
@@ -103,7 +117,7 @@ defmodule ERWeb.Grpc.Eventrelay.CreateSubscriptionRequest do
   @moduledoc false
   use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
 
-  field :name, 1, type: :string
+  field :subscription, 1, type: ERWeb.Grpc.Eventrelay.NewSubscription
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateSubscriptionResponse do
@@ -127,12 +141,25 @@ defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionResponse do
   field :subscription, 1, type: ERWeb.Grpc.Eventrelay.Subscription
 end
 
-defmodule ERWeb.Grpc.Eventrelay.Event.DataEntry do
+defmodule ERWeb.Grpc.Eventrelay.NewEvent.ContextEntry do
   @moduledoc false
   use Protobuf, map: true, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
 
   field :key, 1, type: :string
   field :value, 2, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.NewEvent do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :name, 1, type: :string
+  field :data, 2, type: :string
+  field :source, 3, type: :string
+  field :userId, 4, type: :string
+  field :anonymousId, 5, type: :string
+  field :occurredAt, 6, type: :string
+  field :context, 7, repeated: true, type: ERWeb.Grpc.Eventrelay.NewEvent.ContextEntry, map: true
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Event.ContextEntry do
@@ -150,25 +177,29 @@ defmodule ERWeb.Grpc.Eventrelay.Event do
   field :id, 1, type: :string
   field :name, 2, type: :string
   field :topic, 3, type: :string
-  field :data, 4, repeated: true, type: ERWeb.Grpc.Eventrelay.Event.DataEntry, map: true
+  field :data, 4, type: :string
   field :source, 5, type: :string
   field :userId, 6, type: :string
-  field :eventOccurredAt, 7, type: :string
-  field :context, 8, repeated: true, type: ERWeb.Grpc.Eventrelay.Event.ContextEntry, map: true
+  field :anonymousId, 7, type: :string
+  field :occurredAt, 8, type: :string
+  field :context, 9, repeated: true, type: ERWeb.Grpc.Eventrelay.Event.ContextEntry, map: true
+  field :offset, 10, type: :int32
+  field :errors, 11, repeated: true, type: :string
 end
 
-defmodule ERWeb.Grpc.Eventrelay.CreateEventRequest do
+defmodule ERWeb.Grpc.Eventrelay.PublishEventsRequest do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :topic, 1, type: :string
+  field :events, 2, repeated: true, type: ERWeb.Grpc.Eventrelay.NewEvent
+end
+
+defmodule ERWeb.Grpc.Eventrelay.PublishEventsResponse do
   @moduledoc false
   use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
 
   field :events, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Event
-end
-
-defmodule ERWeb.Grpc.Eventrelay.CreateEventResponse do
-  @moduledoc false
-  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
-
-  field :eventId, 1, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PullEventsRequest do
@@ -191,9 +222,9 @@ defmodule ERWeb.Grpc.Eventrelay.EventRelay.Service do
   @moduledoc false
   use GRPC.Service, name: "eventrelay.EventRelay", protoc_gen_elixir_version: "0.11.0"
 
-  rpc :CreateEvents,
-      ERWeb.Grpc.Eventrelay.CreateEventRequest,
-      ERWeb.Grpc.Eventrelay.CreateEventResponse
+  rpc :PublishEvents,
+      ERWeb.Grpc.Eventrelay.PublishEventsRequest,
+      ERWeb.Grpc.Eventrelay.PublishEventsResponse
 
   rpc :PullEvents,
       ERWeb.Grpc.Eventrelay.PullEventsRequest,
@@ -203,15 +234,9 @@ defmodule ERWeb.Grpc.Eventrelay.EventRelay.Service do
       ERWeb.Grpc.Eventrelay.ListTopicsRequest,
       ERWeb.Grpc.Eventrelay.ListTopicsResponse
 
-  rpc :GetTopic, ERWeb.Grpc.Eventrelay.GetTopicRequest, ERWeb.Grpc.Eventrelay.GetTopicResponse
-
   rpc :CreateTopic,
       ERWeb.Grpc.Eventrelay.CreateTopicRequest,
       ERWeb.Grpc.Eventrelay.CreateTopicResponse
-
-  rpc :DeleteTopic,
-      ERWeb.Grpc.Eventrelay.DeleteTopicRequest,
-      ERWeb.Grpc.Eventrelay.DeleteTopicResponse
 
   rpc :ListSubscriptions,
       ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest,

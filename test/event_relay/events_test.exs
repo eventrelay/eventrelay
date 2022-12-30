@@ -21,6 +21,11 @@ defmodule ER.EventsTest do
       assert Events.list_events() == [event]
     end
 
+    test "list_events/1 returns all events for topic, offset and batch_size" do
+      event = insert(:event)
+      assert Events.list_events() == [event]
+    end
+
     test "get_event!/1 returns the event with given id" do
       event = insert(:event)
       assert Events.get_event!(event.id) == event
@@ -49,6 +54,68 @@ defmodule ER.EventsTest do
 
     test "create_event/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Events.create_event(@invalid_attrs)
+    end
+
+    test "create_event_for_topic/1 with invalid data creates a event in the dead letter events table" do
+      event = %{
+        context: %{},
+        data: %{},
+        name: "some name",
+        occurred_at: ~U[2022-12-21 18:27:00Z],
+        source: "some source",
+        topic_name: "albums"
+      }
+
+      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
+
+      assert Ecto.get_meta(event, :source) ==
+               "dead_letter_events"
+
+      assert event.errors == ["relation \"albums_events\" does not exist"]
+    end
+
+    test "create_event_for_topic/1 with no data creates a event in the dead letter events table" do
+      topic = insert(:topic)
+      ER.Events.Schema.create_topic_event_table!(topic)
+
+      event = %{
+        context: %{},
+        data: nil,
+        name: "some name",
+        occurred_at: ~U[2022-12-21 18:27:00Z],
+        source: "some source",
+        topic_name: topic.name
+      }
+
+      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
+
+      assert Ecto.get_meta(event, :source) ==
+               "dead_letter_events"
+
+      assert event.errors == ["Data can't be blank"]
+
+      ER.Events.Schema.drop_topic_event_table!(topic)
+    end
+
+    test "create_event_for_topic/1 with valid data creates a event in the dead letter events table" do
+      topic = insert(:topic)
+      ER.Events.Schema.create_topic_event_table!(topic)
+
+      event = %{
+        context: %{},
+        data: %{},
+        name: "some name",
+        occurred_at: ~U[2022-12-21 18:27:00Z],
+        source: "some source",
+        topic_name: topic.name
+      }
+
+      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
+
+      assert Ecto.get_meta(event, :source) ==
+               "test_events"
+
+      ER.Events.Schema.drop_topic_event_table!(topic)
     end
 
     test "update_event/2 with valid data updates the event" do
@@ -93,18 +160,17 @@ defmodule ER.EventsTest do
 
   describe "topics" do
     alias ER.Events.Topic
-
-    import ER.EventsFixtures
+    alias ER.Events.Event
 
     @invalid_attrs %{name: nil}
 
     test "list_topics/0 returns all topics" do
-      topic = topic_fixture()
+      topic = insert(:topic)
       assert Events.list_topics() == [topic]
     end
 
     test "get_topic!/1 returns the topic with given id" do
-      topic = topic_fixture()
+      topic = insert(:topic)
       assert Events.get_topic!(topic.id) == topic
     end
 
@@ -119,8 +185,33 @@ defmodule ER.EventsTest do
       assert {:error, %Ecto.Changeset{}} = Events.create_topic(@invalid_attrs)
     end
 
+    test "create_topic_and_table/1 with valid data creates a topic" do
+      valid_attrs = %{name: "some name"}
+
+      assert {:ok, %Topic{} = topic} = Events.create_topic_and_table(valid_attrs)
+      assert topic.name == "some_name"
+
+      event = %{
+        context: %{},
+        data: %{},
+        name: "some name",
+        occurred_at: ~U[2022-12-21 18:27:00Z],
+        source: "some source",
+        topic_name: topic.name
+      }
+
+      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
+    end
+
+    test "create_topic_and_table/1 with invalid data creates a topic" do
+      valid_attrs = %{name: "this_is_a_really_long_name_that_is_too_long_that_is_way_too_long"}
+
+      result = Events.create_topic_and_table(valid_attrs)
+      assert result == {:error, ["Name should be at most 45 character(s)"]}
+    end
+
     test "update_topic/2 with valid data updates the topic" do
-      topic = topic_fixture()
+      topic = insert(:topic)
       update_attrs = %{name: "some updated name"}
 
       assert {:ok, %Topic{} = topic} = Events.update_topic(topic, update_attrs)
@@ -128,19 +219,19 @@ defmodule ER.EventsTest do
     end
 
     test "update_topic/2 with invalid data returns error changeset" do
-      topic = topic_fixture()
+      topic = insert(:topic)
       assert {:error, %Ecto.Changeset{}} = Events.update_topic(topic, @invalid_attrs)
       assert topic == Events.get_topic!(topic.id)
     end
 
     test "delete_topic/1 deletes the topic" do
-      topic = topic_fixture()
+      topic = insert(:topic)
       assert {:ok, %Topic{}} = Events.delete_topic(topic)
       assert_raise Ecto.NoResultsError, fn -> Events.get_topic!(topic.id) end
     end
 
     test "change_topic/1 returns a topic changeset" do
-      topic = topic_fixture()
+      topic = insert(:topic)
       assert %Ecto.Changeset{} = Events.change_topic(topic)
     end
   end

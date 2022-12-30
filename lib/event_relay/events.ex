@@ -2,9 +2,10 @@ defmodule ER.Events do
   @moduledoc """
   The Events context.
   """
-
+  require Logger
   import Ecto.Query, warn: false
   alias ER.Repo
+  alias Phoenix.PubSub
 
   alias ER.Events.Event
 
@@ -17,6 +18,16 @@ defmodule ER.Events do
       [%Event{}, ...]
 
   """
+  def list_events(offset: offset, batch_size: batch_size, topic: topic) do
+    from(e in Event,
+      where: e.topic == ^topic,
+      order_by: [asc: e.offset],
+      limit: ^batch_size,
+      offset: ^offset
+    )
+    |> Repo.all()
+  end
+
   def list_events do
     Repo.all(Event)
   end
@@ -53,6 +64,71 @@ defmodule ER.Events do
     %Event{}
     |> Event.changeset(attrs)
     |> Repo.insert()
+  end
+
+  @spec create_event_for_topic(map()) :: {:ok, Event.t()} | {:error, Ecto.Changeset.t()}
+  def create_event_for_topic(attrs \\ %{}) do
+    changeset = %Event{} |> Event.changeset(attrs)
+
+    try do
+      # First attempt to insert it in the proper topic events table
+      event =
+        changeset
+        |> put_ecto_source_for_topic()
+        |> Repo.insert!()
+        |> publish_event()
+
+      {:ok, event}
+    rescue
+      e in Ecto.InvalidChangesetError ->
+        Logger.error("Invalid changeset for event: #{inspect(e)}")
+
+        event =
+          struct!(Event, e.changeset.changes)
+          |> Ecto.put_meta(source: "dead_letter_events", state: :built)
+
+        errors = ER.Ecto.changeset_errors_to_list(e.changeset)
+        event = %{event | errors: errors}
+        Repo.insert(event)
+
+      e in Postgrex.Error ->
+        Logger.error("Postgrex error for event: #{inspect(e)}")
+
+        event =
+          struct!(Event, attrs)
+          |> Ecto.put_meta(source: "dead_letter_events", state: :built)
+
+        event = %{event | errors: [e.postgres.message]}
+        Repo.insert(event)
+
+      e ->
+        Logger.error("Unknown error for event: #{inspect(e)}")
+
+        event =
+          struct!(Event, attrs)
+          |> Ecto.put_meta(source: "dead_letter_events", state: :built)
+
+        event = %{event | errors: [e.message]}
+        Repo.insert(event)
+    end
+  end
+
+  def publish_event(%Event{topic_name: topic_name} = event) do
+    PubSub.broadcast(ER.PubSub, topic_name, {:event_created, event})
+    event
+  end
+
+  def put_ecto_source_for_topic(%Event{} = event, attrs) do
+    source = ER.Events.Schema.build_topic_event_table_name(attrs[:topic_name])
+
+    Ecto.put_meta(event,
+      source: source,
+      state: :built
+    )
+  end
+
+  def put_ecto_source_for_topic(%Ecto.Changeset{} = changeset) do
+    %{changeset | data: put_ecto_source_for_topic(changeset.data, changeset.changes)}
   end
 
   @doc """
@@ -149,6 +225,36 @@ defmodule ER.Events do
     %Topic{}
     |> Topic.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def create_topic_and_table(attrs \\ %{}) do
+    try do
+      case Repo.transaction(fn ->
+             topic =
+               %Topic{}
+               |> Topic.changeset(attrs)
+               |> Repo.insert!()
+
+             ER.Events.Schema.create_topic_event_table!(topic)
+             topic
+           end) do
+        {:ok, topic} ->
+          {:ok, topic}
+
+        {:error, error} ->
+          {:error, error}
+      end
+    rescue
+      e in Ecto.InvalidChangesetError ->
+        {:error, e.changeset}
+
+      e in Postgrex.Error ->
+        {:error, e.postgres.message}
+
+      e ->
+        Logger.error("Error creating topic: #{inspect(e)}")
+        {:error, e.message}
+    end
   end
 
   @doc """
