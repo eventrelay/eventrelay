@@ -8,7 +8,7 @@ defmodule ER.Server do
       @spec factory(binary()) :: any()
       def factory(id) do
         Horde.DynamicSupervisor.start_child(
-          ER.HordeSupervisor,
+          ER.Horde.Supervisor,
           {__MODULE__, [name: name(id), id: id]}
         )
       end
@@ -31,12 +31,10 @@ defmodule ER.Server do
       end
 
       def start_link(name, id) do
-        Logger.info("#{__MODULE__}.start_link on node=#{inspect(Node.self())}")
-
         case GenServer.start_link(__MODULE__, %{id: id}, name: via_tuple(name)) do
           {:ok, pid} ->
             Logger.info(
-              "#{__MODULE__}.start_link: starting #{via_tuple(name)} on node=#{inspect(Node.self())}"
+              "#{__MODULE__}.start_link here: starting #{via_tuple(name)} on node=#{inspect(Node.self())}"
             )
 
             {:ok, pid}
@@ -83,7 +81,7 @@ defmodule ER.Server do
       end
 
       def via_tuple(id) do
-        {:via, Horde.Registry, {ER.HordeRegistry, id}}
+        {:via, Horde.Registry, {ER.Horde.Registry, id}}
       end
     end
   end

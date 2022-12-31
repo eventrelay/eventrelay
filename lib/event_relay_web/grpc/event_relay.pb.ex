@@ -57,6 +57,7 @@ defmodule ERWeb.Grpc.Eventrelay.NewSubscription do
     map: true
 
   field :paused, 7, type: :bool
+  field :subscriptionType, 8, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Subscription.ConfigEntry do
@@ -83,6 +84,7 @@ defmodule ERWeb.Grpc.Eventrelay.Subscription do
     map: true
 
   field :paused, 8, type: :bool
+  field :subscriptionType, 9, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest do

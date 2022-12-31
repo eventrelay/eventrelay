@@ -46,7 +46,9 @@ defmodule ER.Application do
       {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
       ER.NodeListener,
       {ER.Horde.Registry, [name: ER.Horde.Registry, shutdown: 60_000, keys: :unique]},
-      {ER.Horde.Supervisor, [name: ER.Horde.Supervisor, shutdown: 60_000, strategy: :one_for_one]}
+      {ER.Horde.Supervisor,
+       [name: ER.Horde.Supervisor, shutdown: 60_000, strategy: :one_for_one]},
+      ER.BootServer
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

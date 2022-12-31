@@ -13,7 +13,7 @@ defmodule ER.Subscriptions.Delivery do
       references: :id,
       type: :binary_id
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

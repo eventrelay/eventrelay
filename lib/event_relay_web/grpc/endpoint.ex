@@ -10,7 +10,9 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     CreateTopicResponse,
     CreateSubscriptionResponse,
     CreateSubscriptionRequest,
-    Subscription
+    Subscription,
+    DeleteSubscriptionResponse,
+    DeleteSubscriptionRequest
   }
 
   alias ERWeb.Grpc.Eventrelay.Event, as: GrpcEvent
@@ -112,20 +114,14 @@ defmodule ERWeb.Grpc.EventRelay.Server do
       topic_name: request.subscription.topicName,
       topic_identifier: request.subscription.topicIdentifier,
       config: request.subscription.config,
-      push: request.subscription.push
+      push: request.subscription.push,
+      subscription_type: request.subscription.subscriptionType
     }
 
     subscription =
       case ER.Subscriptions.create_subscription(attrs) do
         {:ok, subscription} ->
-          Subscription.new(
-            id: subscription.id,
-            name: subscription.name,
-            topicName: subscription.topic_name,
-            topicIdentifier: subscription.topic_identifier,
-            push: subscription.push,
-            config: subscription.config
-          )
+          build_subscription(subscription)
 
         {:error, %Ecto.Changeset{} = changeset} ->
           case changeset.errors do
@@ -146,6 +142,48 @@ defmodule ERWeb.Grpc.EventRelay.Server do
       end
 
     CreateSubscriptionResponse.new(subscription: subscription)
+  end
+
+  @spec delete_subscription(DeleteSubscriptionRequest.t(), GRPC.Server.Stream.t()) ::
+          DeleteSubscriptionResponse.t()
+  def delete_subscription(request, _stream) do
+    try do
+      db_subscription = ER.Subscriptions.get_subscription!(request.id)
+
+      subscription =
+        case ER.Subscriptions.delete_subscription(db_subscription) do
+          {:ok, subscription} ->
+            build_subscription(subscription)
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            raise GRPC.RPCError,
+              status: GRPC.Status.invalid_argument(),
+              message: ER.Ecto.changeset_errors_to_string(changeset)
+
+          {:error, error} ->
+            Logger.error("Failed to create subscription: #{inspect(error)}")
+            raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+        end
+
+      DeleteSubscriptionResponse.new(subscription: subscription)
+    rescue
+      _ in Ecto.NoResultsError ->
+        raise GRPC.RPCError,
+          status: GRPC.Status.not_found(),
+          message: "Subscription not found"
+    end
+  end
+
+  defp build_subscription(subscription) do
+    Subscription.new(
+      id: subscription.id,
+      name: subscription.name,
+      topicName: subscription.topic_name,
+      topicIdentifier: subscription.topic_identifier,
+      push: subscription.push,
+      config: subscription.config,
+      subscriptionType: subscription.subscription_type
+    )
   end
 end
 

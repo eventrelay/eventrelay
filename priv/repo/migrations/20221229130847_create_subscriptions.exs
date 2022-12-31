@@ -12,6 +12,7 @@ defmodule ER.Repo.Migrations.CreateSubscriptions do
       add :paused, :boolean, default: false, null: false
       add :ordered, :boolean, default: false, null: false
       add :config, :map, default: %{}
+      add :subscription_type, :string
 
       add :inserted_at, :utc_datetime, default: fragment("NOW()")
       add :updated_at, :utc_datetime, default: fragment("NOW()")

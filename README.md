@@ -51,7 +51,17 @@ grpcurl -plaintext -proto event_relay.proto -d '{"topic": "users", "events": [{"
 
 Create a subscription:
 ```
-grpcurl -plaintext -proto event_relay.proto -d '{"subscription": {"name": "tacos4life", "topicName": "users", "topicIdentifier": "123", "config": {"endpoint_url": "https://example.com/webhooks/users"}, "push": true}}' localhost:50051 eventrelay.EventRelay.CreateSubscription
+grpcurl -plaintext -proto event_relay.proto -d '{"subscription": {"name": "tacos4life", "topicName": "users", "topicIdentifier": "123", "config": {"endpoint_url": "https://example.com/webhooks/users"}, "push": true, "subscriptionType": "websocket"}}' localhost:50051 eventrelay.EventRelay.CreateSubscription
+```
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"subscription": {"name": "tacos4life", "topicName": "users", "config": {}, "push": true, "subscriptionType": "websocket"}}' localhost:50051 eventrelay.EventRelay.CreateSubscription
+```
+
+Delete a subscription:
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"id": "93132ce1-7e76-4439-956b-6001a1d43c32"}' localhost:50051 eventrelay.EventRelay.DeleteSubscription
 ```
 
 ## Event
@@ -114,14 +124,15 @@ it will pause sending events for that topic/destination to preserve the order.
 
 ## Todos
 
-- [ ] GRPC API to create event
-- [ ] GRPC API to create topic
-- [ ] pull events GRPC API (offset/batch based)
-- [ ] GRPC streaming implementation
+- [x] GRPC API to publish events
+- [x] GRPC API to list,create topics
+- [ ] GRPC API to create,delete,list subscriptions
 - [ ] websocket streaming implementation
+- [ ] pull events GRPC API (offset/batch based)
 - [ ] add auth
 - [ ] add rate limiting
 - [ ] webhook implementation
 - [ ] index event table properly
+- [ ] GRPC streaming implementation
 
 

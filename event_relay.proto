@@ -46,6 +46,7 @@ message NewSubscription {
   bool push = 4;
   map<string, string> config = 6;
   bool paused = 7;
+  string subscriptionType = 8;
 }
 
 message Subscription {
@@ -56,6 +57,7 @@ message Subscription {
   bool push = 5;
   map<string, string> config = 7;
   bool paused = 8;
+  string subscriptionType = 9;
 }
 
 message ListSubscriptionsRequest {

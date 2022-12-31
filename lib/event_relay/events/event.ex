@@ -4,6 +4,21 @@ defmodule ER.Events.Event do
 
   alias ER.Events.Topic
 
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :topic_name,
+             :topic_identifier,
+             :name,
+             :data,
+             :user_id,
+             :anonymous_id,
+             :occurred_at,
+             :offset,
+             :source,
+             :context,
+             :errors
+           ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "events" do
@@ -21,7 +36,7 @@ defmodule ER.Events.Event do
     field :source, :string
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

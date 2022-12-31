@@ -54,15 +54,24 @@ defmodule ER.Subscriptions do
     %Subscription{}
     |> Subscription.changeset(attrs)
     |> Repo.insert()
-    |> publish_subscription()
+    |> publish_subscription_created()
   end
 
-  def publish_subscription({:ok, subscription}) do
-    PubSub.broadcast(ER.PubSub, "subscription:created", subscription)
+  def publish_subscription_created({:ok, subscription}) do
+    PubSub.broadcast(ER.PubSub, "subscription:created", {:subscription_created, subscription.id})
     {:ok, subscription}
   end
 
-  def publish_subscription(result) do
+  def publish_subscription_created(result) do
+    result
+  end
+
+  def publish_subscription_deleted({:ok, subscription}) do
+    PubSub.broadcast(ER.PubSub, "subscription:deleted", {:subscription_deleted, subscription.id})
+    {:ok, subscription}
+  end
+
+  def publish_subscription_deleted(result) do
     result
   end
 
@@ -98,6 +107,7 @@ defmodule ER.Subscriptions do
   """
   def delete_subscription(%Subscription{} = subscription) do
     Repo.delete(subscription)
+    |> publish_subscription_deleted()
   end
 
   @doc """

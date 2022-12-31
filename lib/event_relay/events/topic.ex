@@ -10,7 +10,7 @@ defmodule ER.Events.Topic do
     field :name, :string
     has_many :events, Event, foreign_key: :topic_name, references: :name
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc """
@@ -35,7 +35,7 @@ defmodule ER.Events.Topic do
 
   @spec build_topic(String.t(), String.t()) :: String.t()
   def build_topic(topic_name, topic_identifier \\ "") do
-    if topic_identifier != "" do
+    unless ER.empty?(topic_identifier) do
       "#{topic_name}:#{topic_identifier}"
     else
       topic_name

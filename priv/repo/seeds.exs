@@ -28,6 +28,12 @@ topic = %Topic{name: "users"} |> Repo.insert!()
 ER.Events.Schema.create_topic_event_table!(topic)
 uuid = Faker.UUID.v4()
 
+subscription =
+  %ER.Subscriptions.Subscription{
+    topic_name: "users"
+  }
+  |> Repo.insert!()
+
 # events =
 #   Enum.map(1..1000, fn _ ->
 #     %{

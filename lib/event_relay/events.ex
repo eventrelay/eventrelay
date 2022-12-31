@@ -113,8 +113,14 @@ defmodule ER.Events do
     end
   end
 
-  def publish_event(%Event{topic_name: topic_name} = event) do
+  def publish_event(%Event{topic_name: topic_name, topic_identifier: topic_identifier} = event) do
     PubSub.broadcast(ER.PubSub, topic_name, {:event_created, event})
+    full_topic = ER.Events.Topic.build_topic(topic_name, topic_identifier)
+
+    if full_topic != topic_name do
+      PubSub.broadcast(ER.PubSub, full_topic, {:event_created, event})
+    end
+
     event
   end
 

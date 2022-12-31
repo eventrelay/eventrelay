@@ -34,7 +34,39 @@ defmodule ER.SubscriptionsServer do
 
   def init(args) do
     PubSub.subscribe(ER.PubSub, "subscription:created")
-    {:ok, args}
+    PubSub.subscribe(ER.PubSub, "subscription:deleted")
+    {:ok, args, {:continue, :load_state}}
+  end
+
+  def handle_continue(:load_state, state) do
+    # get all the subscriptions and start the subscription servers but
+    # only if this is the primary node
+    # TODO: need to figure out how to get the primary node
+    subscriptions = ER.Subscriptions.list_subscriptions()
+
+    Enum.each(subscriptions, fn subscription ->
+      ER.Subscription.Server.factory(subscription.id)
+    end)
+
+    {:noreply, state}
+  end
+
+  def handle_info({:subscription_created, subscription_id}, state) do
+    Logger.info(
+      "#{__MODULE__}.handle_info({:subscription_created, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
+    )
+
+    # ER.Subscription.Server.factory(subscription_id)
+    {:noreply, state}
+  end
+
+  def handle_info({:subscription_deleted, subscription_id}, state) do
+    Logger.info(
+      "#{__MODULE__}.handle_info({:subscription_deleted, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
+    )
+
+    # ER.Subscription.Server.stop(subscription.id)
+    {:noreply, state}
   end
 
   def via_tuple(name) do
