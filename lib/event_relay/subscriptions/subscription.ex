@@ -21,7 +21,16 @@ defmodule ER.Subscriptions.Subscription do
   @doc false
   def changeset(subscription, attrs) do
     subscription
-    |> cast(attrs, [:name, :offset, :topic_name, :push, :ordered])
+    |> cast(attrs, [
+      :name,
+      :offset,
+      :topic_name,
+      :push,
+      :ordered,
+      :paused,
+      :config,
+      :topic_identifier
+    ])
     |> validate_required([:name, :topic_name, :push])
     |> validate_length(:name, min: 3, max: 255)
     |> unique_constraint(:name)

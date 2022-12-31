@@ -98,7 +98,7 @@ defmodule ER.EventsTest do
     end
 
     test "create_event_for_topic/1 with valid data creates a event in the dead letter events table" do
-      topic = insert(:topic)
+      topic = insert(:topic, name: "test")
       ER.Events.Schema.create_topic_event_table!(topic)
 
       event = %{
@@ -178,7 +178,7 @@ defmodule ER.EventsTest do
       valid_attrs = %{name: "some name"}
 
       assert {:ok, %Topic{} = topic} = Events.create_topic(valid_attrs)
-      assert topic.name == "some name"
+      assert topic.name == "some_name"
     end
 
     test "create_topic/1 with invalid data returns error changeset" do
@@ -200,14 +200,19 @@ defmodule ER.EventsTest do
         topic_name: topic.name
       }
 
-      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
+      assert {:ok, %Event{} = _} = Events.create_event_for_topic(event)
     end
 
     test "create_topic_and_table/1 with invalid data creates a topic" do
       valid_attrs = %{name: "this_is_a_really_long_name_that_is_too_long_that_is_way_too_long"}
 
-      result = Events.create_topic_and_table(valid_attrs)
-      assert result == {:error, ["Name should be at most 45 character(s)"]}
+      {:error, changeset} = Events.create_topic_and_table(valid_attrs)
+
+      assert changeset.errors == [
+               name:
+                 {"should be at most %{count} character(s)",
+                  [count: 45, validation: :length, kind: :max, type: :string]}
+             ]
     end
 
     test "update_topic/2 with valid data updates the topic" do
@@ -215,7 +220,7 @@ defmodule ER.EventsTest do
       update_attrs = %{name: "some updated name"}
 
       assert {:ok, %Topic{} = topic} = Events.update_topic(topic, update_attrs)
-      assert topic.name == "some updated name"
+      assert topic.name == "some_updated_name"
     end
 
     test "update_topic/2 with invalid data returns error changeset" do

@@ -19,7 +19,9 @@ defmodule ER.Subscriptions.Delivery do
   @doc false
   def changeset(delivery, attrs) do
     delivery
-    |> cast(attrs, [:attempts])
-    |> validate_required([:attempts])
+    |> cast(attrs, [:attempts, :event_id, :subscription_id])
+    |> validate_required([:attempts, :event_id, :subscription_id])
+    |> assoc_constraint(:event)
+    |> assoc_constraint(:subscription)
   end
 end

@@ -44,7 +44,7 @@ defmodule ERWeb.TopicLiveTest do
         |> follow_redirect(conn, ~p"/topics")
 
       assert html =~ "Topic created successfully"
-      assert html =~ "some name"
+      assert html =~ "some_name"
     end
 
     test "updates topic in listing", %{conn: conn, topic: topic} do
@@ -66,7 +66,7 @@ defmodule ERWeb.TopicLiveTest do
         |> follow_redirect(conn, ~p"/topics")
 
       assert html =~ "Topic updated successfully"
-      assert html =~ "some updated name"
+      assert html =~ "some_updated_name"
     end
 
     test "deletes topic in listing", %{conn: conn, topic: topic} do
@@ -106,7 +106,7 @@ defmodule ERWeb.TopicLiveTest do
         |> follow_redirect(conn, ~p"/topics/#{topic}")
 
       assert html =~ "Topic updated successfully"
-      assert html =~ "some updated name"
+      assert html =~ "some_updated_name"
     end
   end
 end

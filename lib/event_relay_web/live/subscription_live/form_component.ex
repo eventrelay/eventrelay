@@ -23,7 +23,7 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
         <.input field={{f, :name}} type="text" label="name" />
         <.input field={{f, :offset}} type="number" label="offset" />
         <.input field={{f, :topic_name}} type="text" label="topic_name" />
-        <.input field={{f, :pull}} type="checkbox" label="pull" />
+        <.input field={{f, :push}} type="checkbox" label="push" />
         <.input field={{f, :ordered}} type="checkbox" label="ordered" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Subscription</.button>

@@ -43,7 +43,7 @@ defmodule ER.Events.Event do
     ])
     |> decode_context()
     |> decode_data()
-    |> decode_occurred_at()
+    # |> decode_occurred_at()
     |> assoc_constraint(:topic)
     |> foreign_key_constraint(:topic_name, name: :events_topic_name_fkey)
     |> validate_required([
@@ -81,6 +81,17 @@ defmodule ER.Events.Event do
 
   def decode_occurred_at(%Ecto.Changeset{changes: %{occurred_at: occurred_at}} = changeset) do
     # handle the default GRPC value for a string
+    cond do
+      occurred_at == "" ->
+        changeset
+
+      occurred_at == nil ->
+        changeset
+
+      true ->
+        changeset
+    end
+
     if occurred_at == "" do
       changeset
       |> put_change(:occurred_at, nil)
