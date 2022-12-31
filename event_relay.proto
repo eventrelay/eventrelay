@@ -92,26 +92,26 @@ message DeleteSubscriptionResponse {
 
 message NewEvent {
   string name = 1;
-  string data = 2; // json encoded data
+  string data = 2; // stringified JSON
   string source = 3;
   string userId = 4;
   string anonymousId = 5;
   string occurredAt = 6;
-  map<string, string> context = 7;
+  map<string, string> context = 7; // single level key-value pairs
 }
 
 message Event {
   string id = 1;
   string name = 2;
   string topic = 3;
-  string data = 4;
+  string data = 4; // stringified JSON
   string source = 5;
   string userId = 6;
   string anonymousId = 7;
   string occurredAt = 8;
-  map<string, string> context = 9;
+  map<string, string> context = 9; // single level key-value pairs
   int32 offset = 10;
-  repeated string errors = 11;
+  repeated string errors = 11; // list of strings representing errors
 }
 
 message PublishEventsRequest {
