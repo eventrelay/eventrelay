@@ -7,12 +7,10 @@ option java_outer_classname = "EventRelayProto";
 package eventrelay;
 
 service EventRelay {
-  rpc CreateEvents(CreateEventRequest) returns (CreateEventResponse) {}
+  rpc PublishEvents(PublishEventsRequest) returns (PublishEventsResponse) {}
   rpc PullEvents(PullEventsRequest) returns (PullEventsResponse) {}
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse) {}
-  rpc GetTopic(GetTopicRequest) returns (GetTopicResponse) {}
   rpc CreateTopic(CreateTopicRequest) returns (CreateTopicResponse) {}
-  rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {}
   rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse) {}
   rpc GetSubscription(GetSubscriptionRequest) returns (GetSubscriptionResponse) {}
   rpc CreateSubscription(CreateSubscriptionRequest) returns (CreateSubscriptionResponse) {}
@@ -32,14 +30,6 @@ message ListTopicsResponse {
   repeated Topic topics = 1;
 }
 
-message GetTopicRequest {
-  string id = 1;
-}
-
-message GetTopicResponse {
-  Topic topic = 1;
-}
-
 message CreateTopicRequest {
   string name = 1;
 }
@@ -48,19 +38,24 @@ message CreateTopicResponse {
   Topic topic = 1;
 }
  
-message DeleteTopicRequest {
-  string id = 1;
-}
 
-message DeleteTopicResponse {
-  Topic topic = 1;
+message NewSubscription {
+  string name = 1;
+  string topicName = 2;
+  string topicIdentifier = 3;
+  bool push = 4;
+  map<string, string> config = 6;
+  bool paused = 7;
 }
-
 
 message Subscription {
   string id = 1;
   string name = 2;
-  string topicId = 3;
+  string topicName = 3;
+  string topicIdentifier = 4;
+  bool push = 5;
+  map<string, string> config = 7;
+  bool paused = 8;
 }
 
 message ListSubscriptionsRequest {
@@ -80,7 +75,7 @@ message GetSubscriptionResponse {
 }
 
 message CreateSubscriptionRequest {
-  string name = 1;
+  NewSubscription subscription = 1;
 }
 
 message CreateSubscriptionResponse {
@@ -95,24 +90,37 @@ message DeleteSubscriptionResponse {
   Subscription subscription = 1;
 }
 
+message NewEvent {
+  string name = 1;
+  string data = 2; // stringified JSON
+  string source = 3;
+  string userId = 4;
+  string anonymousId = 5;
+  string occurredAt = 6;
+  map<string, string> context = 7; // single level key-value pairs
+}
 
 message Event {
   string id = 1;
   string name = 2;
   string topic = 3;
-  map<string, string> data = 4;
+  string data = 4; // stringified JSON
   string source = 5;
   string userId = 6;
-  string eventOccurredAt = 7;
-  map<string, string> context = 8;
+  string anonymousId = 7;
+  string occurredAt = 8;
+  map<string, string> context = 9; // single level key-value pairs
+  int32 offset = 10;
+  repeated string errors = 11; // list of strings representing errors
 }
 
-message CreateEventRequest {
-  repeated Event events = 1;
+message PublishEventsRequest {
+   string topic = 1;
+   repeated NewEvent events = 2;
 }
 
-message CreateEventResponse {
-  repeated string eventIds = 1;
+message PublishEventsResponse {
+   repeated Event events = 1;
 }
 
 message PullEventsRequest {

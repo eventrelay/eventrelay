@@ -15,7 +15,29 @@ defmodule ER.Factory do
 
   def topic_factory do
     %ER.Events.Topic{
-      name: "test"
+      name:
+        Faker.Internet.slug() |> String.replace(~r/[^[:alnum:]\w]/, "_") |> String.slice(0..45)
+    }
+  end
+
+  def subscription_factory do
+    %ER.Subscriptions.Subscription{
+      name: "some name",
+      offset: 42,
+      ordered: false,
+      push: true,
+      paused: false,
+      config: %{},
+      topic: build(:topic),
+      topic_identifier: "some_topic_identifier"
+    }
+  end
+
+  def delivery_factory do
+    %ER.Subscriptions.Delivery{
+      attempts: [],
+      event: build(:event),
+      subscription: build(:subscription)
     }
   end
 end

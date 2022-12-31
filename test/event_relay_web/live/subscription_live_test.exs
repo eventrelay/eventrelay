@@ -2,16 +2,32 @@ defmodule ERWeb.SubscriptionLiveTest do
   use ERWeb.ConnCase
 
   import Phoenix.LiveViewTest
-  import ER.SubscriptionsFixtures
 
-  @create_attrs %{name: "some name", offset: 42, ordered: true, pull: true, topic_name: "some topic_name"}
-  @update_attrs %{name: "some updated name", offset: 43, ordered: false, pull: false, topic_name: "some updated topic_name"}
-  @invalid_attrs %{name: nil, offset: nil, ordered: false, pull: false, topic_name: nil}
+  import ER.Factory
+
+  @create_attrs %{
+    name: "some_name",
+    offset: 42,
+    ordered: true,
+    push: true,
+    topic_name: "test"
+  }
+  @update_attrs %{
+    name: "some_updated_name",
+    offset: 43,
+    ordered: false,
+    push: false,
+    topic_name: "test"
+  }
+  @invalid_attrs %{name: nil, offset: nil, ordered: false, push: false, topic_name: nil}
 
   defp create_subscription(_) do
-    subscription = subscription_fixture()
-    %{subscription: subscription}
+    topic = insert(:topic, name: "test")
+    subscription = insert(:subscription, topic: topic)
+    %{subscription: subscription, topic: topic}
   end
+
+  setup [:register_and_log_in_user]
 
   describe "Index" do
     setup [:create_subscription]
@@ -23,7 +39,7 @@ defmodule ERWeb.SubscriptionLiveTest do
       assert html =~ subscription.name
     end
 
-    test "saves new subscription", %{conn: conn} do
+    test "saves new subscription", %{conn: conn, topic: topic} do
       {:ok, index_live, _html} = live(conn, ~p"/subscriptions")
 
       assert index_live |> element("a", "New Subscription") |> render_click() =~
@@ -48,7 +64,9 @@ defmodule ERWeb.SubscriptionLiveTest do
     test "updates subscription in listing", %{conn: conn, subscription: subscription} do
       {:ok, index_live, _html} = live(conn, ~p"/subscriptions")
 
-      assert index_live |> element("#subscriptions-#{subscription.id} a", "Edit") |> render_click() =~
+      assert index_live
+             |> element("#subscriptions-#{subscription.id} a", "Edit")
+             |> render_click() =~
                "Edit Subscription"
 
       assert_patch(index_live, ~p"/subscriptions/#{subscription}/edit")
@@ -64,13 +82,16 @@ defmodule ERWeb.SubscriptionLiveTest do
         |> follow_redirect(conn, ~p"/subscriptions")
 
       assert html =~ "Subscription updated successfully"
-      assert html =~ "some updated name"
+      assert html =~ "some_updated_name"
     end
 
     test "deletes subscription in listing", %{conn: conn, subscription: subscription} do
       {:ok, index_live, _html} = live(conn, ~p"/subscriptions")
 
-      assert index_live |> element("#subscriptions-#{subscription.id} a", "Delete") |> render_click()
+      assert index_live
+             |> element("#subscriptions-#{subscription.id} a", "Delete")
+             |> render_click()
+
       refute has_element?(index_live, "#subscription-#{subscription.id}")
     end
   end
@@ -104,7 +125,7 @@ defmodule ERWeb.SubscriptionLiveTest do
         |> follow_redirect(conn, ~p"/subscriptions/#{subscription}")
 
       assert html =~ "Subscription updated successfully"
-      assert html =~ "some updated name"
+      assert html =~ "some_updated_name"
     end
   end
 end

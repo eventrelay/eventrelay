@@ -52,20 +52,20 @@ defmodule ER.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-
+      {:exsync, "~> 0.2", only: :dev},
       # Rate Limiting - https://github.com/ExHammer/hammer
       {:hammer, "~> 6.1"},
-
       # GRPC - https://github.com/elixir-grpc/grpc
       {:grpc, "~> 0.5.0"},
       {:protobuf, "~> 0.11"},
-
       # JWT - https://github.com/joken-elixir/joken
       {:joken, "~> 2.5"},
-
       # Testing
       {:faker, "~> 0.17"},
-      {:ex_machina, "~> 2.7.0", only: :test}
+      {:ex_machina, "~> 2.7.0", only: :test},
+      # Distributed Elixir
+      {:horde, "~> 0.8.2"},
+      {:libcluster, "~> 3.2"}
     ]
   end
 

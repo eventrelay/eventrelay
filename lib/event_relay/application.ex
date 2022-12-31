@@ -7,6 +7,30 @@ defmodule ER.Application do
 
   @impl true
   def start(_type, _args) do
+    # dev
+    topologies = [
+      example: [
+        strategy: Cluster.Strategy.Epmd,
+        config: [hosts: [:a@eventrelay]]
+      ]
+    ]
+
+    # prod
+    # [
+    #   k8s: [
+    #     strategy: Elixir.Cluster.Strategy.Kubernetes,
+    #     config: [
+    #       mode: :hostname,
+    #       kubernetes_node_basename: "eventrelay",
+    #       kubernetes_service_name: "eventrelay-service",
+    #       kubernetes_selector: "app=eventrelay"
+    #       # Convert to env var
+    #       kubernetes_namespace: "default",
+    #       polling_interval: 5_000
+    #     ]
+    #   ]
+    # ]
+
     children = [
       # Start the Telemetry supervisor
       ERWeb.Telemetry,
@@ -18,9 +42,11 @@ defmodule ER.Application do
       {Finch, name: ER.Finch},
       # Start the Endpoint (http/https)
       ERWeb.Endpoint,
-      # Start a worker by calling: ER.Worker.start_link(arg)
-      # {ER.Worker, arg}
-      {GRPC.Server.Supervisor, {ERWeb.Grpc.Endpoint, 90001}}
+      {GRPC.Server.Supervisor, {ERWeb.Grpc.Endpoint, 50051}},
+      {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
+      ER.NodeListener,
+      {ER.Horde.Registry, [name: ER.Horde.Registry, shutdown: 60_000, keys: :unique]},
+      {ER.Horde.Supervisor, [name: ER.Horde.Supervisor, shutdown: 60_000, strategy: :one_for_one]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
