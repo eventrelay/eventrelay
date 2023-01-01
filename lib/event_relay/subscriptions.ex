@@ -9,6 +9,10 @@ defmodule ER.Subscriptions do
 
   alias ER.Subscriptions.Subscription
 
+  def from_subscriptions() do
+    from(s in Subscription)
+  end
+
   @doc """
   Returns the list of subscriptions.
 
@@ -18,8 +22,13 @@ defmodule ER.Subscriptions do
       [%Subscription{}, ...]
 
   """
-  def list_subscriptions do
-    Repo.all(Subscription)
+  def list_subscriptions() do
+    from_subscriptions() |> Repo.all()
+  end
+
+  def list_subscriptions(page: page, page_size: page_size) do
+    from_subscriptions()
+    |> ER.PaginatedResults.new(%{"page" => page, "page_size" => page_size})
   end
 
   @doc """

@@ -65,7 +65,7 @@ defmodule ER.SubscriptionsServer do
       "#{__MODULE__}.handle_info({:subscription_deleted, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    ER.Subscription.Server.stop(subscription.id)
+    ER.Subscription.Server.stop(subscription_id)
     {:noreply, state}
   end
 

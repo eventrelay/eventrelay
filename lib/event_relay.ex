@@ -26,6 +26,22 @@ defmodule ER do
     ""
   end
 
+  def to_integer(value) when is_binary(value) do
+    String.to_integer(value)
+  end
+
+  def to_integer(value) when is_integer(value) do
+    value
+  end
+
+  def to_integer(value) when is_float(value) do
+    Float.to_string(value) |> to_integer()
+  end
+
+  def to_integer(value) when is_nil(value) do
+    0
+  end
+
   @doc """
   Takes an {:ok, value} tuple and returns the value
 

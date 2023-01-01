@@ -12,7 +12,9 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     CreateSubscriptionRequest,
     Subscription,
     DeleteSubscriptionResponse,
-    DeleteSubscriptionRequest
+    DeleteSubscriptionRequest,
+    ListSubscriptionsResponse,
+    ListSubscriptionsRequest
   }
 
   alias ERWeb.Grpc.Eventrelay.Event, as: GrpcEvent
@@ -172,6 +174,25 @@ defmodule ERWeb.Grpc.EventRelay.Server do
           status: GRPC.Status.not_found(),
           message: "Subscription not found"
     end
+  end
+
+  @spec list_subscriptions(ListSubscriptionsRequest.t(), GRPC.Server.Stream.t()) ::
+          ListSubscriptionsResponse.t()
+  def list_subscriptions(request, _stream) do
+    page = if request.page == 0, do: 1, else: request.page
+    page_size = if request.pageSize == 0, do: 100, else: request.pageSize
+
+    paginated_results = ER.Subscriptions.list_subscriptions(page: page, page_size: page_size)
+
+    subscriptions = Enum.map(paginated_results.results, &build_subscription/1)
+
+    ListSubscriptionsResponse.new(
+      subscriptions: subscriptions,
+      total_count: paginated_results.total_count,
+      next_page: paginated_results.next_page,
+      previous_page: paginated_results.previous_page,
+      total_pages: paginated_results.total_pages
+    )
   end
 
   defp build_subscription(subscription) do

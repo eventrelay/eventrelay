@@ -62,10 +62,15 @@ message Subscription {
 
 message ListSubscriptionsRequest {
   int32 page = 1;
+  int32 pageSize = 2;
 }
 
 message ListSubscriptionsResponse {
   repeated Subscription subscriptions = 1;
+  int32 total_count = 2;
+  int32 next_page = 3;
+  int32 previous_page = 4;
+  int32 total_pages = 5;
 }
 
 message GetSubscriptionRequest {
