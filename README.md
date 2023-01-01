@@ -64,6 +64,12 @@ Delete a subscription:
 grpcurl -plaintext -proto event_relay.proto -d '{"id": "93132ce1-7e76-4439-956b-6001a1d43c32"}' localhost:50051 eventrelay.EventRelay.DeleteSubscription
 ```
 
+List subscriptions:
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"page": 1, "pageSize": 100}' localhost:50051 eventrelay.EventRelay.ListSubscriptions
+```
+
 ## Event
 
 {
