@@ -61,6 +61,10 @@ defmodule ER.Server do
       end
 
       def handle_cast(:stop, state) do
+        Logger.info(
+          "#{__MODULE__}.handle_cast(:stop, #{inspect(state)}) on node=#{inspect(Node.self())}"
+        )
+
         {:stop, :shutdown, state}
       end
 

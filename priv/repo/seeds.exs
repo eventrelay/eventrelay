@@ -30,6 +30,9 @@ uuid = Faker.UUID.v4()
 
 subscription =
   %ER.Subscriptions.Subscription{
+    name: "app1_websocket",
+    subscription_type: "websocket",
+    push: true,
     topic_name: "users"
   }
   |> Repo.insert!()
