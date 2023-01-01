@@ -100,10 +100,10 @@ defmodule ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse do
   use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
 
   field :subscriptions, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Subscription
-  field :total_count, 2, type: :int32, json_name: "totalCount"
-  field :next_page, 3, type: :int32, json_name: "nextPage"
-  field :previous_page, 4, type: :int32, json_name: "previousPage"
-  field :total_pages, 5, type: :int32, json_name: "totalPages"
+  field :totalCount, 2, type: :int32
+  field :nextPage, 3, type: :int32
+  field :previousPage, 4, type: :int32
+  field :totalPages, 5, type: :int32
 end
 
 defmodule ERWeb.Grpc.Eventrelay.GetSubscriptionRequest do
@@ -207,6 +207,10 @@ defmodule ERWeb.Grpc.Eventrelay.PublishEventsResponse do
   use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
 
   field :events, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Event
+  field :totalCount, 2, type: :int32
+  field :nextOffset, 3, type: :int32
+  field :previousOffset, 4, type: :int32
+  field :totalBatches, 5, type: :int32
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PullEventsRequest do

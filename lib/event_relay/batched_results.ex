@@ -26,14 +26,14 @@ defmodule ER.BatchedResults do
   #   end
   # end
 
-  def new(query, %{"offset" => offset, "batch_size" => batch_size}) do
+  def new(query, %{"offset" => offset, "batch_size" => batch_size}, result_transformer \\ nil) do
     offset = ER.to_integer(offset)
     batch_size = ER.to_integer(batch_size)
     total_count = total_count(query)
     total_batches = total_batches(total_count, batch_size)
 
     %BatchedResults{
-      results: results(query, offset, batch_size),
+      results: results(query, offset, batch_size, result_transformer),
       offset: offset,
       batch_size: batch_size,
       next_offset: next_offset(offset, batch_size, total_batches),
@@ -73,11 +73,18 @@ defmodule ER.BatchedResults do
     end
   end
 
-  defp results(query, offset, batch_size) do
-    query
-    |> limit(^batch_size)
-    |> offset(^offset)
-    |> Repo.all()
+  defp results(query, offset, batch_size, result_transformer) do
+    results =
+      query
+      |> limit(^batch_size)
+      |> offset(^offset)
+      |> Repo.all()
+
+    if result_transformer do
+      Enum.map(results, fn result -> result_transformer.(result) end)
+    else
+      results
+    end
   end
 
   defp total_count(query) do

@@ -14,7 +14,9 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     DeleteSubscriptionResponse,
     DeleteSubscriptionRequest,
     ListSubscriptionsResponse,
-    ListSubscriptionsRequest
+    ListSubscriptionsRequest,
+    PullEventsRequest,
+    PullEventsResponse
   }
 
   alias ERWeb.Grpc.Eventrelay.Event, as: GrpcEvent
@@ -42,19 +44,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
                topic_identifier: topic_identifier
              }) do
           {:ok, %Event{} = event} ->
-            GrpcEvent.new(
-              id: event.id,
-              name: event.name,
-              topic: topic,
-              source: event.source,
-              data: event.data_json,
-              context: event.context,
-              occurredAt: event.occurred_at,
-              offset: event.offset,
-              userId: event.user_id,
-              anonymousId: event.anonymous_id,
-              errors: event.errors
-            )
+            build_event(event, topic)
 
           {:error, error} ->
             # TODO: provide a better error message
@@ -64,6 +54,49 @@ defmodule ERWeb.Grpc.EventRelay.Server do
       end)
 
     PublishEventsResponse.new(events: events)
+  end
+
+  @spec pull_events(PullEventsRequest.t(), GRPC.Server.Stream.t()) :: PullEventsResponse.t()
+  def pull_events(request, _stream) do
+    topic = request.topic
+    {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
+    offset = if request.offset == 0, do: nil, else: request.offset
+    batch_size = if request.batchSize == 0, do: 100, else: request.batchSize
+
+    batched_results =
+      ER.Events.list_events_for_topic(
+        offset: offset,
+        batch_size: batch_size,
+        topic_name: topic_name,
+        topic_identifier: topic_identifier
+      )
+
+    IO.inspect(batched_results: batched_results)
+    events = Enum.map(batched_results.results, &build_event(&1, topic))
+
+    PullEventsResponse.new(
+      events: events,
+      nextOffset: batched_results.next_offset,
+      previousOffset: batched_results.previous_offset,
+      totalCount: batched_results.total_count,
+      totalBatches: batched_results.total_batches
+    )
+  end
+
+  defp build_event(event, topic) do
+    GrpcEvent.new(
+      id: event.id,
+      name: event.name,
+      topic: topic,
+      source: event.source,
+      data: event.data_json,
+      context: event.context,
+      occurredAt: event.occurred_at,
+      offset: event.offset,
+      userId: event.user_id,
+      anonymousId: event.anonymous_id,
+      errors: event.errors
+    )
   end
 
   @spec list_topics(ListTopicsRequest.t(), GRPC.Server.Stream.t()) :: ListTopicsResponse.t()
@@ -188,10 +221,10 @@ defmodule ERWeb.Grpc.EventRelay.Server do
 
     ListSubscriptionsResponse.new(
       subscriptions: subscriptions,
-      total_count: paginated_results.total_count,
-      next_page: paginated_results.next_page,
-      previous_page: paginated_results.previous_page,
-      total_pages: paginated_results.total_pages
+      totalCount: paginated_results.total_count,
+      nextPage: paginated_results.next_page,
+      previousPage: paginated_results.previous_page,
+      totalPages: paginated_results.total_pages
     )
   end
 

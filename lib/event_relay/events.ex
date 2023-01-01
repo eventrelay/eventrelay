@@ -9,27 +9,47 @@ defmodule ER.Events do
 
   alias ER.Events.Event
 
+  def from_events() do
+    from(e in Event, as: :events)
+  end
+
+  def from_events_for_topic(topic_name: topic_name) do
+    table_name = ER.Events.Schema.build_topic_event_table_name(topic_name)
+    from(e in {table_name, Event}, as: :events)
+  end
+
   @doc """
-  Returns the list of events.
+  Returns the list of events for a topic
 
   ## Examples
 
-      iex> list_events()
+      iex> list_events_for_topic()
       [%Event{}, ...]
 
   """
-  def list_events(offset: offset, batch_size: batch_size, topic: topic) do
-    from(e in Event,
-      where: e.topic == ^topic,
-      order_by: [asc: e.offset],
-      limit: ^batch_size,
-      offset: ^offset
-    )
-    |> Repo.all()
+  def list_events_for_topic(
+        offset: offset,
+        batch_size: batch_size,
+        topic_name: topic_name,
+        topic_identifier: topic_identifier
+      ) do
+    query =
+      from_events_for_topic(topic_name: topic_name)
+      |> where(as(:events).topic_name == ^topic_name)
+      |> order_by(as(:events).offset)
+
+    query =
+      unless ER.empty?(topic_identifier) do
+        query |> where(as(:events).topic_identifier == ^topic_identifier)
+      else
+        query
+      end
+
+    ER.BatchedResults.new(query, %{"offset" => offset, "batch_size" => batch_size})
   end
 
   def list_events do
-    Repo.all(Event)
+    from_events() |> Repo.all()
   end
 
   @doc """

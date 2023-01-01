@@ -67,10 +67,10 @@ message ListSubscriptionsRequest {
 
 message ListSubscriptionsResponse {
   repeated Subscription subscriptions = 1;
-  int32 total_count = 2;
-  int32 next_page = 3;
-  int32 previous_page = 4;
-  int32 total_pages = 5;
+  int32 totalCount = 2;
+  int32 nextPage = 3;
+  int32 previousPage = 4;
+  int32 totalPages = 5;
 }
 
 message GetSubscriptionRequest {
@@ -128,6 +128,10 @@ message PublishEventsRequest {
 
 message PublishEventsResponse {
    repeated Event events = 1;
+    int32 totalCount = 2;
+    int32 nextOffset = 3;
+    int32 previousOffset = 4;
+    int32 totalBatches = 5;
 }
 
 message PullEventsRequest {
