@@ -5,8 +5,8 @@ defmodule ER.Repo.Migrations.CreateDeliveries do
     create table(:deliveries, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :attempts, {:array, :map}
-
-      add :event_id, references(:events, type: :binary_id, on_delete: :delete_all), null: false
+      add :success, :boolean, default: false, null: false
+      add :event_id, type: :binary_id
 
       add :subscription_id, references(:subscriptions, type: :binary_id, on_delete: :delete_all),
         null: false

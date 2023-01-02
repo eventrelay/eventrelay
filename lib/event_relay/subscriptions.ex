@@ -161,7 +161,8 @@ defmodule ER.Subscriptions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_delivery!(id), do: Repo.get!(Delivery, id)
+  def get_delivery!(id),
+    do: Repo.get!(Delivery, id) |> Repo.preload(:subscription, event: [:topic])
 
   @doc """
   Creates a delivery.

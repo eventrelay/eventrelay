@@ -20,15 +20,15 @@ defmodule ER.SubscriptionsServer do
   def start_link(name) do
     case GenServer.start_link(__MODULE__, %{}, name: via_tuple(name)) do
       {:ok, pid} ->
-        Logger.info("#{__MODULE__}.start_link: starting #{via_tuple(name)}")
+        Logger.debug("#{__MODULE__}.start_link: starting #{via_tuple(name)}")
         {:ok, pid}
 
       {:error, {:already_started, pid}} ->
-        Logger.info("#{__MODULE__} already started at #{inspect(pid)}, returning :ignore")
+        Logger.debug("#{__MODULE__} already started at #{inspect(pid)}, returning :ignore")
         :ignore
 
       :ignore ->
-        Logger.info("#{__MODULE__}.start_link :ignore")
+        Logger.debug("#{__MODULE__}.start_link :ignore")
     end
   end
 
@@ -52,7 +52,7 @@ defmodule ER.SubscriptionsServer do
   end
 
   def handle_info({:subscription_created, subscription_id}, state) do
-    Logger.info(
+    Logger.debug(
       "#{__MODULE__}.handle_info({:subscription_created, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
@@ -61,7 +61,7 @@ defmodule ER.SubscriptionsServer do
   end
 
   def handle_info({:subscription_deleted, subscription_id}, state) do
-    Logger.info(
+    Logger.debug(
       "#{__MODULE__}.handle_info({:subscription_deleted, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 

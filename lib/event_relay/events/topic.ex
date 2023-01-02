@@ -4,6 +4,11 @@ defmodule ER.Events.Topic do
 
   alias ER.Events.Event
 
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :name
+           ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "topics" do

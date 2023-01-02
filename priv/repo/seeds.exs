@@ -28,14 +28,22 @@ topic = %Topic{name: "users"} |> Repo.insert!()
 ER.Events.Schema.create_topic_event_table!(topic)
 uuid = Faker.UUID.v4()
 
-subscription =
-  %ER.Subscriptions.Subscription{
-    name: "app1_websocket",
-    subscription_type: "websocket",
-    push: true,
-    topic_name: "users"
-  }
-  |> Repo.insert!()
+%ER.Subscriptions.Subscription{
+  name: "app1_websocket",
+  subscription_type: "websocket",
+  push: true,
+  topic_name: "users"
+}
+|> Repo.insert!()
+
+%ER.Subscriptions.Subscription{
+  name: "app1_webhook",
+  subscription_type: "webhook",
+  push: true,
+  topic_name: "users",
+  config: %{"endpoint_url" => "http://localhost:5006/api/webhook"}
+}
+|> Repo.insert!()
 
 # events =
 #   Enum.map(1..1000, fn _ ->

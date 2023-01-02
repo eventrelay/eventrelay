@@ -33,21 +33,21 @@ defmodule ER.Server do
       def start_link(name, id) do
         case GenServer.start_link(__MODULE__, %{id: id}, name: via_tuple(name)) do
           {:ok, pid} ->
-            Logger.info(
+            Logger.debug(
               "#{__MODULE__}.start_link here: starting #{via_tuple(name)} on node=#{inspect(Node.self())}"
             )
 
             {:ok, pid}
 
           {:error, {:already_started, pid}} ->
-            Logger.info(
+            Logger.debug(
               "#{__MODULE__}.start_link: already started at #{inspect(pid)}, returning :ignore on node=#{inspect(Node.self())}"
             )
 
             :ignore
 
           :ignore ->
-            Logger.info("#{__MODULE__}.start_link :ignore on node=#{inspect(Node.self())}")
+            Logger.debug("#{__MODULE__}.start_link :ignore on node=#{inspect(Node.self())}")
         end
       end
 
@@ -61,7 +61,7 @@ defmodule ER.Server do
       end
 
       def handle_cast(:stop, state) do
-        Logger.info(
+        Logger.debug(
           "#{__MODULE__}.handle_cast(:stop, #{inspect(state)}) on node=#{inspect(Node.self())}"
         )
 

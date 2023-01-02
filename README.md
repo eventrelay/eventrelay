@@ -49,13 +49,25 @@ Publish an event:
 grpcurl -plaintext -proto event_relay.proto -d '{"topic": "users", "events": [{"name": "user.created", "data": "{\"first_name\": \"Thomas\"}", "source": "grpc", "context": {"ip_address": "127.0.0.1"}}]}' localhost:50051 eventrelay.EventRelay.PublishEvents
 ```
 
+Pull Events:
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"topic": "users", "offset": 0, "batchSize": 10}' localhost:50051 eventrelay.EventRelay.PullEvents
+```
+
 Create a subscription:
 ```
-grpcurl -plaintext -proto event_relay.proto -d '{"subscription": {"name": "tacos4life", "topicName": "users", "topicIdentifier": "123", "config": {"endpoint_url": "https://example.com/webhooks/users"}, "push": true, "subscriptionType": "websocket"}}' localhost:50051 eventrelay.EventRelay.CreateSubscription
+grpcurl -plaintext -proto event_relay.proto -d '{"subscription": {"name": "events4life", "topicName": "users", "topicIdentifier": "123", "config": {"endpoint_url": "https://example.com/webhooks/users"}, "push": true, "subscriptionType": "websocket"}}' localhost:50051 eventrelay.EventRelay.CreateSubscription
 ```
 
 ```
-grpcurl -plaintext -proto event_relay.proto -d '{"subscription": {"name": "tacos4life", "topicName": "users", "config": {}, "push": true, "subscriptionType": "websocket"}}' localhost:50051 eventrelay.EventRelay.CreateSubscription
+grpcurl -plaintext -proto event_relay.proto -d '{"subscription": {"name": "events4life", "topicName": "users", "config": {}, "push": true, "subscriptionType": "websocket"}}' localhost:50051 eventrelay.EventRelay.CreateSubscription
+```
+
+Create webhook subscription:
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"subscription": {"name": "events4life_webhook", "topicName": "users", "config": {"endpoint_url": "http://localhost:5006/webhook"}, "push": true, "subscriptionType": "webhook"}}' localhost:50051 eventrelay.EventRelay.CreateSubscription
 ```
 
 Delete a subscription:
@@ -139,6 +151,7 @@ it will pause sending events for that topic/destination to preserve the order.
 - [ ] add rate limiting
 - [ ] webhook implementation
 - [ ] index event table properly
+- [ ] Need to load all the deliveries in progress in the boot server
 - [ ] GRPC streaming implementation
 
 

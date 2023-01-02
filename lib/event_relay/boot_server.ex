@@ -15,12 +15,14 @@ defmodule ER.BootServer do
   end
 
   def handle_info(:boot, state) do
-    Logger.info("BootServer.boot on node=#{inspect(Node.self())}")
+    Logger.debug("BootServer.boot on node=#{inspect(Node.self())}")
 
     Horde.DynamicSupervisor.start_child(
       ER.Horde.Supervisor,
       {ER.SubscriptionsServer, [name: "subscriptions_server"]}
     )
+
+    # TODO: needs to load all the deliveries that care still in progress
 
     {:noreply, state}
   end

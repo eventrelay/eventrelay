@@ -20,7 +20,7 @@ defmodule ER.Subscription.Server do
       |> Map.put(:full_topic, full_topic)
       |> Map.put(:subscription, subscription)
 
-    Logger.info("Subscriptions server started for #{inspect(full_topic)}")
+    Logger.debug("Subscriptions server started for #{inspect(full_topic)}")
     PubSub.subscribe(ER.PubSub, full_topic)
 
     schedule_next_tick()
@@ -31,12 +31,22 @@ defmodule ER.Subscription.Server do
         {:event_created, event},
         %{subscription: subscription} = state
       ) do
-    Logger.info(
+    Logger.debug(
       "#{__MODULE__}.handle_info({:event_created, #{inspect(event)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    if broadcast_to_websocket?(subscription) do
-      ERWeb.Endpoint.broadcast("events:#{subscription.id}", "event:published", event)
+    Logger.debug("------------------------------------------------------------------")
+
+    cond do
+      broadcast_to_websocket?(subscription) ->
+        ERWeb.Endpoint.broadcast("events:#{subscription.id}", "event:published", event)
+
+      push_to_webhook?(subscription) ->
+        Logger.debug("Pushing event to webhook #{inspect(subscription)}")
+        ER.Webhooks.push_event(subscription, event)
+
+      true ->
+        Logger.debug("Not pushing event=#{inspect(event)}")
     end
 
     {:noreply, state}
@@ -47,8 +57,12 @@ defmodule ER.Subscription.Server do
     subscription.push && subscription.subscription_type == "websocket"
   end
 
+  def push_to_webhook?(subscription) do
+    subscription.push && subscription.subscription_type == "webhook"
+  end
+
   def handle_info(:tick, state) do
-    Logger.info("#{__MODULE__}.handle_info(:tick)")
+    Logger.debug("#{__MODULE__}.handle_info(:tick)")
     schedule_next_tick()
     {:noreply, state}
   end

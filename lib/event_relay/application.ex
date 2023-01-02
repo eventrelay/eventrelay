@@ -38,12 +38,11 @@ defmodule ER.Application do
       ER.Repo,
       # Start the PubSub system
       {Phoenix.PubSub, name: ER.PubSub},
-      # Start Finch
-      {Finch, name: ER.Finch},
       # Start the Endpoint (http/https)
       ERWeb.Endpoint,
       {GRPC.Server.Supervisor, {ERWeb.Grpc.Endpoint, 50051}},
       {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
+      ER.Redix,
       ER.NodeListener,
       {ER.Horde.Registry, [name: ER.Horde.Registry, shutdown: 60_000, keys: :unique]},
       {ER.Horde.Supervisor,
