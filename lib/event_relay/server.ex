@@ -6,20 +6,22 @@ defmodule ER.Server do
   defmacro __using__(_opts) do
     quote do
       @spec factory(binary()) :: any()
-      def factory(id) do
+      def factory(id, args \\ %{}) do
+        initial_state = Map.merge(args, %{"id" => id})
+
         Horde.DynamicSupervisor.start_child(
           ER.Horde.Supervisor,
-          {__MODULE__, [name: name(id), id: id]}
+          {__MODULE__, [name: name(id), initial_state: initial_state]}
         )
       end
 
       def child_spec(opts) do
         name = Keyword.get(opts, :name, __MODULE__)
-        id = Keyword.get(opts, :id)
+        initial_state = Keyword.get(opts, :initial_state, %{})
 
         %{
           id: "#{__MODULE__}_#{name}",
-          start: {__MODULE__, :start_link, [name, id]},
+          start: {__MODULE__, :start_link, [name, initial_state]},
           shutdown: 60_000,
           restart: :transient
         }
@@ -30,8 +32,8 @@ defmodule ER.Server do
         {:ok, args, {:continue, :load_state}}
       end
 
-      def start_link(name, id) do
-        case GenServer.start_link(__MODULE__, %{id: id}, name: via_tuple(name)) do
+      def start_link(name, initial_state) do
+        case GenServer.start_link(__MODULE__, initial_state, name: via_tuple(name)) do
           {:ok, pid} ->
             Logger.debug(
               "#{__MODULE__}.start_link here: starting #{via_tuple(name)} on node=#{inspect(Node.self())}"
@@ -72,6 +74,8 @@ defmodule ER.Server do
         Logger.debug(
           "#{__MODULE__} terminating with reason=#{inspect(reason)} with state=#{inspect(state)}"
         )
+
+        handle_terminate(reason, state)
       end
 
       def schedule_next_tick() do

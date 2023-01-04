@@ -29,14 +29,14 @@ defmodule ER.Factory do
       paused: false,
       config: %{},
       topic: build(:topic),
-      topic_identifier: "some_topic_identifier"
+      topic_identifier: "some_topic_identifier",
+      subscription_type: "webhook"
     }
   end
 
   def delivery_factory do
     %ER.Subscriptions.Delivery{
       attempts: [],
-      event: build(:event),
       subscription: build(:subscription)
     }
   end

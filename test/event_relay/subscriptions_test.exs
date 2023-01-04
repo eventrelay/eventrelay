@@ -30,7 +30,8 @@ defmodule ER.SubscriptionsTest do
         offset: 42,
         ordered: true,
         pull: true,
-        topic_name: topic.name
+        topic_name: topic.name,
+        subscription_type: "webhook"
       }
 
       assert {:ok, %Subscription{} = subscription} =
@@ -105,7 +106,7 @@ defmodule ER.SubscriptionsTest do
       delivery = insert(:delivery)
 
       assert Subscriptions.get_delivery!(delivery.id)
-             |> Repo.preload([:event, subscription: [:topic]]) == delivery
+             |> Repo.preload(subscription: [:topic]) == delivery
     end
 
     test "create_delivery/1 with valid data creates a delivery" do
@@ -121,8 +122,59 @@ defmodule ER.SubscriptionsTest do
       assert {:error, %Ecto.Changeset{}} = Subscriptions.create_delivery(@invalid_attrs)
     end
 
+    test "create_delivery_for_topic/2 with invalid data creates a event in the dead letter events table" do
+      subscription = insert(:subscription)
+      topic_name = subscription.topic_name
+
+      event = %{
+        subscription_id: subscription.id
+      }
+
+      assert {:error, %Ecto.Changeset{} = changeset} =
+               Subscriptions.create_delivery_for_topic(topic_name, event)
+
+      assert [event_id: {"can't be blank", [validation: :required]}] = changeset.errors
+    end
+
+    test "create_delivery_for_topic/2 with no data creates a event in the dead letter events table" do
+      topic = insert(:topic)
+      subscription = insert(:subscription, topic: topic)
+      event = insert(:event, topic: topic)
+      ER.Events.Schema.create_topic_delivery_table!(topic)
+
+      attrs = %{
+        event_id: event.id,
+        subscription_id: subscription.id
+      }
+
+      assert {:ok, %Delivery{} = delivery} =
+               Subscriptions.create_delivery_for_topic(topic.name, attrs)
+
+      assert Ecto.get_meta(delivery, :source) ==
+               "#{topic.name}_deliveries"
+
+      ER.Events.Schema.drop_topic_delivery_table!(topic)
+    end
+
+    test "create_delivery_for_topic/2 when the topic delivery table does not exist it returns an error tuple" do
+      topic = insert(:topic)
+      subscription = insert(:subscription, topic: topic)
+      event = insert(:event, topic: topic)
+
+      attrs = %{
+        event_id: event.id,
+        subscription_id: subscription.id
+      }
+
+      assert {:error, reason} = Subscriptions.create_delivery_for_topic(topic.name, attrs)
+
+      assert reason ==
+               "relation \"#{topic.name}_deliveries\" does not exist"
+    end
+
     test "update_delivery/2 with valid data updates the delivery" do
-      delivery = insert(:delivery)
+      event = insert(:event)
+      delivery = insert(:delivery, event_id: event.id)
       update_attrs = %{attempts: []}
 
       assert {:ok, %Delivery{} = delivery} = Subscriptions.update_delivery(delivery, update_attrs)
@@ -135,7 +187,7 @@ defmodule ER.SubscriptionsTest do
 
       assert delivery ==
                Subscriptions.get_delivery!(delivery.id)
-               |> Repo.preload([:event, subscription: [:topic]])
+               |> Repo.preload(subscription: [:topic])
     end
 
     test "delete_delivery/1 deletes the delivery" do

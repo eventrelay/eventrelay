@@ -6,7 +6,7 @@ defmodule ER.Repo.Migrations.CreateDeliveries do
       add :id, :binary_id, primary_key: true
       add :attempts, {:array, :map}
       add :success, :boolean, default: false, null: false
-      add :event_id, type: :binary_id
+      add :event_id, :binary_id
 
       add :subscription_id, references(:subscriptions, type: :binary_id, on_delete: :delete_all),
         null: false

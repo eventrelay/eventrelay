@@ -6,6 +6,19 @@ defmodule ER do
   Contexts are also responsible for managing your data, regardless
   if it comes from the database, an external API or others.
   """
+
+  def test?() do
+    Application.get_env(:event_relay, :environment) == :test
+  end
+
+  def dev?() do
+    Application.get_env(:event_relay, :environment) == :dev
+  end
+
+  def prod?() do
+    Application.get_env(:event_relay, :environment) == :prod
+  end
+
   def to_string(value) when is_binary(value) do
     value
   end
@@ -60,6 +73,9 @@ defmodule ER do
   def unwrap_ok!(value) do
     raise ArgumentError, message: "#{inspect(value)} is not an :ok tuple"
   end
+
+  def unwrap({:ok, value}), do: value
+  def unwrap({:error, value}), do: value
 
   @doc """
   Check if something is empty

@@ -10,16 +10,25 @@ defmodule ERWeb.SubscriptionLiveTest do
     offset: 42,
     ordered: true,
     push: true,
-    topic_name: "test"
+    topic_name: "test",
+    subscription_type: "webhook"
   }
   @update_attrs %{
     name: "some_updated_name",
     offset: 43,
     ordered: false,
     push: false,
-    topic_name: "test"
+    topic_name: "test",
+    subscription_type: "webhook"
   }
-  @invalid_attrs %{name: nil, offset: nil, ordered: false, push: false, topic_name: nil}
+  @invalid_attrs %{
+    name: nil,
+    offset: nil,
+    ordered: false,
+    push: false,
+    topic_name: nil,
+    subscription_type: nil
+  }
 
   defp create_subscription(_) do
     topic = insert(:topic, name: "test")

@@ -1,4 +1,4 @@
-defmodule ER.Subscription.Server do
+defmodule ER.Subscriptions.Server do
   @moduledoc """
   Manages the subscriptions
   """
@@ -7,7 +7,7 @@ defmodule ER.Subscription.Server do
   use ER.Server
   alias Phoenix.PubSub
 
-  def handle_continue(:load_state, %{id: id} = state) do
+  def handle_continue(:load_state, %{"id" => id} = state) do
     subscription = ER.Subscriptions.get_subscription!(id)
     topic_name = subscription.topic_name
     topic_identifier = subscription.topic_identifier
@@ -35,15 +35,12 @@ defmodule ER.Subscription.Server do
       "#{__MODULE__}.handle_info({:event_created, #{inspect(event)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    Logger.debug("------------------------------------------------------------------")
-
     cond do
       broadcast_to_websocket?(subscription) ->
-        ERWeb.Endpoint.broadcast("events:#{subscription.id}", "event:published", event)
+        ER.Subscriptions.Delivery.Websocket.push(subscription, event)
 
       push_to_webhook?(subscription) ->
-        Logger.debug("Pushing event to webhook #{inspect(subscription)}")
-        ER.Webhooks.push_event(subscription, event)
+        ER.Subscriptions.Delivery.Webhook.push(subscription, event)
 
       true ->
         Logger.debug("Not pushing event=#{inspect(event)}")
@@ -62,9 +59,15 @@ defmodule ER.Subscription.Server do
   end
 
   def handle_info(:tick, state) do
-    Logger.debug("#{__MODULE__}.handle_info(:tick)")
+    # Logger.debug("#{__MODULE__}.handle_info(:tick)")
     schedule_next_tick()
     {:noreply, state}
+  end
+
+  def handle_terminate(reason, state) do
+    Logger.debug("Subscription server terminated: #{inspect(reason)}")
+    Logger.debug("Subscription server state: #{inspect(state)}")
+    # TODO: save state to redis if needed or delete it if this is a good termination
   end
 
   @spec name(binary()) :: binary()

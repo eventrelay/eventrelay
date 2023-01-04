@@ -55,7 +55,7 @@ defmodule ER.Events do
   @doc """
   Gets a single event.
 
-  Raises `Ecto.NoResultsError` if the Event does not exist.
+  Raises `Ecto.NoResltsError` if the Event does not exist.
 
   ## Examples
 
@@ -63,10 +63,18 @@ defmodule ER.Events do
       %Event{}
 
       iex> get_event!(456)
-      ** (Ecto.NoResultsError)
+      ** (Ecto.NoResltsError)
 
   """
   def get_event!(id), do: Repo.get!(Event, id)
+
+  def get_event_for_topic!(id, topic_name: topic_name) do
+    uuid = Ecto.UUID.dump!(id)
+
+    from_events_for_topic(topic_name: topic_name)
+    |> where(as(:events).id == ^uuid)
+    |> Repo.one!()
+  end
 
   @doc """
   Creates a event.
@@ -262,6 +270,7 @@ defmodule ER.Events do
                |> Repo.insert!()
 
              ER.Events.Schema.create_topic_event_table!(topic)
+             ER.Events.Schema.create_topic_delivery_table!(topic)
              topic
            end) do
         {:ok, topic} ->
@@ -314,7 +323,28 @@ defmodule ER.Events do
 
   """
   def delete_topic(%Topic{} = topic) do
-    Repo.delete(topic)
+    try do
+      case Repo.transaction(fn ->
+             {:ok, topic} = Repo.delete(topic)
+
+             ER.Events.Schema.drop_topic_event_table!(topic)
+             ER.Events.Schema.drop_topic_delivery_table!(topic)
+             topic
+           end) do
+        {:ok, topic} ->
+          {:ok, topic}
+
+        {:error, error} ->
+          {:error, error}
+      end
+    rescue
+      e in Postgrex.Error ->
+        {:error, e.postgres.message}
+
+      e ->
+        Logger.error("Error creating topic: #{inspect(e)}")
+        {:error, e.message}
+    end
   end
 
   @doc """

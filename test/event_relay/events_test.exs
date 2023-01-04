@@ -97,7 +97,7 @@ defmodule ER.EventsTest do
       ER.Events.Schema.drop_topic_event_table!(topic)
     end
 
-    test "create_event_for_topic/1 with valid data creates a event in the dead letter events table" do
+    test "create_event_for_topic/1 with valid data creates a event in the proper topic events table" do
       topic = insert(:topic, name: "test")
       ER.Events.Schema.create_topic_event_table!(topic)
 
@@ -200,7 +200,7 @@ defmodule ER.EventsTest do
         topic_name: topic.name
       }
 
-      assert {:ok, %Event{} = _} = Events.create_event_for_topic(event)
+      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
     end
 
     test "create_topic_and_table/1 with invalid data creates a topic" do

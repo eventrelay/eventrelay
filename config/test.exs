@@ -26,6 +26,8 @@ config :event_relay, ERWeb.Endpoint,
 # In test we don't send emails.
 config :event_relay, ER.Mailer, adapter: Swoosh.Adapters.Test
 
+config :event_relay, :environment, :test
+
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
 

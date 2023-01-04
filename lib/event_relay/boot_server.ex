@@ -10,7 +10,10 @@ defmodule ER.BootServer do
   end
 
   def handle_continue(:init_children, state) do
-    Process.send_after(self(), :boot, 10)
+    unless ER.test?() do
+      Process.send_after(self(), :boot, 10)
+    end
+
     {:noreply, state}
   end
 
@@ -19,7 +22,7 @@ defmodule ER.BootServer do
 
     Horde.DynamicSupervisor.start_child(
       ER.Horde.Supervisor,
-      {ER.SubscriptionsServer, [name: "subscriptions_server"]}
+      {ER.Subscriptions.Manager.Server, [name: "subscriptions_manager"]}
     )
 
     # TODO: needs to load all the deliveries that care still in progress

@@ -10,9 +10,9 @@ defmodule ER.Subscriptions.Delivery do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "deliveries" do
-    field :attempts, {:array, :map}
+    field :attempts, {:array, :map}, default: []
     field :success, :boolean, default: false
-    field :event_id, type: :binary_id
+    field :event_id, :binary_id
 
     belongs_to :subscription, ER.Subscriptions.Subscription,
       foreign_key: :subscription_id,
@@ -27,7 +27,6 @@ defmodule ER.Subscriptions.Delivery do
     delivery
     |> cast(attrs, [:attempts, :event_id, :subscription_id])
     |> validate_required([:event_id, :subscription_id])
-    |> assoc_constraint(:event)
-    |> assoc_constraint(:subscription)
+    |> unique_constraint([:event_id, :subscription_id])
   end
 end

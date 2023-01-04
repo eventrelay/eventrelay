@@ -3,7 +3,7 @@ defmodule ER.Subscriptions do
   The Subscriptions context.
   """
   alias Phoenix.PubSub, as: PubSub
-
+  import Logger
   import Ecto.Query, warn: false
   alias ER.Repo
 
@@ -134,6 +134,11 @@ defmodule ER.Subscriptions do
 
   alias ER.Subscriptions.Delivery
 
+  def from_deliveries_for_topic(topic_name: topic_name) do
+    table_name = ER.Events.Schema.build_topic_delivery_table_name(topic_name)
+    from(e in {table_name, Delivery}, as: :deliveries)
+  end
+
   @doc """
   Returns the list of deliveries.
 
@@ -162,7 +167,16 @@ defmodule ER.Subscriptions do
 
   """
   def get_delivery!(id),
-    do: Repo.get!(Delivery, id) |> Repo.preload(:subscription, event: [:topic])
+    do: Repo.get!(Delivery, id) |> Repo.preload(subscription: [:topic])
+
+  def get_delivery_for_topic!(id, topic_name: topic_name) do
+    uuid = Ecto.UUID.dump!(id)
+
+    from_deliveries_for_topic(topic_name: topic_name)
+    |> where(as(:deliveries).id == ^uuid)
+    |> preload([:subscription])
+    |> Repo.one!()
+  end
 
   @doc """
   Creates a delivery.
@@ -180,6 +194,46 @@ defmodule ER.Subscriptions do
     %Delivery{}
     |> Delivery.changeset(attrs)
     |> Repo.insert()
+  end
+
+  @spec create_delivery_for_topic(map()) :: {:ok, Delivery.t()} | {:error, Ecto.Changeset.t()}
+  def create_delivery_for_topic(topic_name, attrs \\ %{}) do
+    changeset = %Delivery{} |> Delivery.changeset(attrs)
+
+    try do
+      # First attempt to insert it in the proper topic deliveries table
+      delivery =
+        changeset
+        |> put_ecto_source_for_topic(topic_name)
+        |> Repo.insert!()
+
+      {:ok, delivery}
+    rescue
+      e in Ecto.InvalidChangesetError ->
+        {:error, e.changeset}
+
+      e in Postgrex.Error ->
+        Logger.debug("Postgrex error for delivery=#{inspect(attrs)} exception=#{inspect(e)}")
+        {:error, e.postgres.message}
+
+      e ->
+        Logger.error("Unknown error for event: #{inspect(e)}")
+        {:error, e.message}
+    end
+  end
+
+  def put_ecto_source_for_topic(%Delivery{} = delivery, topic_name) do
+    # TODO: refactor this to use protocols along with the event source switching
+    source = ER.Events.Schema.build_topic_delivery_table_name(topic_name)
+
+    Ecto.put_meta(delivery,
+      source: source,
+      state: :built
+    )
+  end
+
+  def put_ecto_source_for_topic(%Ecto.Changeset{} = changeset, topic_name) do
+    %{changeset | data: put_ecto_source_for_topic(changeset.data, topic_name)}
   end
 
   @doc """

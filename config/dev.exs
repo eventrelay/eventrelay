@@ -66,6 +66,8 @@ config :event_relay, ERWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :event_relay, dev_routes: true
 
+config :event_relay, :environment, :dev
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 

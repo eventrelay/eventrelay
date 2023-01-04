@@ -5,17 +5,32 @@ defmodule ER.Subscriptions.Delivery.Server do
   require Logger
   use GenServer
   use ER.Server
+  import ER, only: [unwrap: 1]
 
-  def handle_continue(:load_state, %{id: id} = state) do
-    delivery = ER.Subscriptions.get_delivery!(id)
+  def handle_continue(:load_state, %{"id" => id, "topic_name" => topic_name} = state) do
+    # Check Redis cache to see if we have a delivery in progress
+    # if we do, then we need to load the delivery and then
+    # if not then we need to initialize normally
+
+    delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: topic_name)
+
+    event =
+      ER.Events.get_event_for_topic!(delivery.event_id,
+        topic_name: delivery.subscription.topic_name
+      )
 
     state =
       state
-      |> Map.put("delivery", delivery)
-      |> Map.put("subscription", delivery.subscription)
-      |> Map.put("event", delivery.event)
+      |> Map.put("delivery_attempts", delivery.attempts)
+      |> Map.put("subscription_endpoint_url", delivery.subscription.config["endpoint_url"])
+      |> Map.put("subscription_id", delivery.subscription.id)
+      |> Map.put("subscription_name", delivery.subscription.name)
+      |> Map.put("subscription_topic_name", delivery.subscription.topic_name)
+      |> Map.put("subscription_topic_identifier", delivery.subscription.topic_identifier)
+      # this could be a problem with serialization
+      |> Map.put("event", event)
       |> Map.put("attempt_count", 0)
-      |> Map.put("retry_delay", 30)
+      |> Map.put("retry_delay", 30_000)
       |> Map.put("max_attempts", 10)
 
     Logger.debug("Delivery server started for #{inspect(delivery)}")
@@ -27,62 +42,86 @@ defmodule ER.Subscriptions.Delivery.Server do
   def handle_info(
         :attempt,
         %{
-          "subscription" => subscription,
+          "subscription_endpoint_url" => webhook_url,
+          "subscription_id" => subscription_id,
+          "subscription_topic_name" => subscription_topic_name,
+          "subscription_topic_identifier" => subscription_topic_identifier,
           "event" => event,
-          "delivery" => delivery,
-          "retry_delay" => retry_delay
+          "delivery_attempts" => delivery_attempts
         } = state
       ) do
     Logger.debug(
       "#{__MODULE__}.handle_info(:attempt, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    webhook_url = subscription.config["endpoint_url"]
-
     response =
       HTTPoison.post(webhook_url, Jason.encode!(event), [
         {"Content-Type", "application/json"},
-        {"X-Event-Relay-Subscription-Id", subscription.id},
-        {"X-Event-Relay-Subscription-Topic-Name", subscription.topic_name},
-        {"X-Event-Relay-Subscription-Topic-Identifier", subscription.topic_identifier}
+        {"X-Event-Relay-Subscription-Id", subscription_id},
+        {"X-Event-Relay-Subscription-Topic-Name", subscription_topic_name},
+        {"X-Event-Relay-Subscription-Topic-Identifier", subscription_topic_identifier}
       ])
       |> handle_response()
 
-    attempts = [%{response: response, attempted_at: DateTime.utc_now()} | delivery.attempts]
-    delivery = ER.Subscriptions.update_delivery(delivery, %{attempts: attempts})
+    delivery_attempts = [
+      %{"response" => unwrap(response), "attempted_at" => DateTime.utc_now()} | delivery_attempts
+    ]
 
     state =
       state
       |> Map.put("attempt_count", state["attempt_count"] + 1)
-      |> Map.put("delivery", delivery)
-
-    IO.inspect(response: response, state: state)
+      |> Map.put("delivery_attempts", delivery_attempts)
 
     cond do
       success?(response) ->
-        Logger.debug("Webhook #{inspect(subscription)} delivered successfully")
-        {:stop, :shutdown, state}
+        handle_success(state)
 
       retry?(state) ->
-        Logger.debug(
-          "Webhook #{inspect(subscription)} failed, retrying in #{retry_delay} seconds"
-        )
-
-        retry_delay = retry_delay * 2
-        state = state |> Map.put("retry_delay", retry_delay)
-        Process.send_after(self(), :attempt, retry_delay, [])
-        {:noreply, state}
+        handle_retry(state)
 
       true ->
-        Logger.debug("Webhook #{inspect(delivery)} failed, not retrying")
-
-        {:stop, :shutdown, state}
+        handle_failure(state)
     end
+  end
 
-    # if ok then shutdown the delivery server
-    # if not ok and can retry then schedule a retry
-    # if not ok and can't retry then shutdown the delivery server and mark the delivery as failed
+  def handle_success(
+        %{
+          "delivery_attempts" => delivery_attempts,
+          "subscription_id" => subscription_id,
+          "subscription_topic_name" => subscription_topic_name,
+          "id" => id
+        } = state
+      ) do
+    Logger.debug(
+      "Webhook subscription=#{inspect(subscription_id)} and delivery=#{inspect(id)} delivered successfully"
+    )
 
+    delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: subscription_topic_name)
+    ER.Subscriptions.update_delivery(delivery, %{success: true, attempts: delivery_attempts})
+    {:stop, :shutdown, state}
+  end
+
+  def handle_failure(
+        %{
+          "id" => id,
+          "subscription_topic_name" => subscription_topic_name,
+          "delivery_attempts" => delivery_attempts
+        } = state
+      ) do
+    Logger.debug("Webhook delivery #{inspect(id)} failed, not retrying")
+
+    delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: subscription_topic_name)
+    ER.Subscriptions.update_delivery(delivery, %{success: false, attempts: delivery_attempts})
+    {:stop, :shutdown, state}
+  end
+
+  def handle_retry(%{"subscription_id" => subscription_id, "retry_delay" => retry_delay} = state) do
+    retry_delay = retry_delay * 2
+
+    Logger.debug("Webhook #{inspect(subscription_id)} failed, retrying in #{retry_delay} seconds")
+
+    state = state |> Map.put("retry_delay", retry_delay)
+    Process.send_after(self(), :attempt, retry_delay, [])
     {:noreply, state}
   end
 
@@ -103,21 +142,38 @@ defmodule ER.Subscriptions.Delivery.Server do
     false
   end
 
-  def handle_response({:ok, %HTTPoison.Response{status_code: status_code, body: body}}) do
+  # TODO Move this to a helper module
+  def response_to_map(response) do
+    %{status_code: response.status_code, headers: response_headers_to_map(response.headers)}
+  end
+
+  def response_headers_to_map(headers) do
+    headers
+    |> Enum.map(fn {k, v} -> {String.upcase(k), v} end)
+    |> Enum.into(%{})
+  end
+
+  def error_response_to_map(%HTTPoison.Error{reason: reason}) do
+    %{error_reason: reason}
+  end
+
+  def handle_response({:ok, %HTTPoison.Response{status_code: status_code, body: body} = response}) do
     Logger.debug(
       "Webhook response: status_code=#{inspect(status_code)} and body=#{inspect(body)}"
     )
 
+    # TODO handle redirects better
     if status_code in 200..299 do
-      {:ok, status_code}
+      {:ok, response_to_map(response)}
     else
-      {:error, Plug.Conn.Status.reason_phrase(status_code)}
+      {:error, response_to_map(response)}
     end
   end
 
   def handle_response({:error, error}) do
     Logger.error("Webhook error: #{inspect(error)}")
-    {:error, error}
+
+    {:error, error_response_to_map(error)}
   end
 
   @spec name(binary()) :: binary()
@@ -125,9 +181,14 @@ defmodule ER.Subscriptions.Delivery.Server do
     "delivery:" <> id
   end
 
-  def terminate(reason, state) do
-    Logger.debug("Delivery server terminated: #{inspect(reason)}")
-    Logger.debug("Delivery server state: #{inspect(state)}")
-    # TODO: save state to redis if needed or delete it if this is a good termination
+  def handle_terminate(reason, state) do
+    case reason do
+      :shutdown ->
+        :ok
+
+      _ ->
+        Logger.error("Delivery server terminated unexpectedly: #{inspect(reason)}")
+        Logger.debug("Delivery server state: #{inspect(state)}")
+    end
   end
 end

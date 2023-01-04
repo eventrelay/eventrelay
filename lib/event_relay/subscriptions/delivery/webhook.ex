@@ -1,9 +1,9 @@
-defmodule ER.Webhooks do
+defmodule ER.Subscriptions.Delivery.Webhook do
   require Logger
   alias ER.Subscriptions.Subscription
   alias ER.Events.Event
 
-  def push_event(%Subscription{} = subscription, %Event{} = event) do
+  def push(%Subscription{} = subscription, %Event{} = event) do
     Logger.debug("Pushing event to webhook #{inspect(subscription)}")
     topic_name = subscription.topic_name
 

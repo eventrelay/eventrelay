@@ -152,6 +152,8 @@ it will pause sending events for that topic/destination to preserve the order.
 - [ ] webhook implementation
 - [ ] index event table properly
 - [ ] Need to load all the deliveries in progress in the boot server
+- [ ] Test various scenarios of creating and droping topics
 - [ ] GRPC streaming implementation
+
 
 

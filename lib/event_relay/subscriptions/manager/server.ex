@@ -1,4 +1,4 @@
-defmodule ER.SubscriptionsServer do
+defmodule ER.Subscriptions.Manager.Server do
   @moduledoc """
   Manages all the subscription servers
   """
@@ -45,7 +45,7 @@ defmodule ER.SubscriptionsServer do
     subscriptions = ER.Subscriptions.list_subscriptions()
 
     Enum.each(subscriptions, fn subscription ->
-      ER.Subscription.Server.factory(subscription.id)
+      ER.Subscriptions.Server.factory(subscription.id)
     end)
 
     {:noreply, state}
@@ -56,7 +56,7 @@ defmodule ER.SubscriptionsServer do
       "#{__MODULE__}.handle_info({:subscription_created, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    ER.Subscription.Server.factory(subscription_id)
+    ER.Subscriptions.Server.factory(subscription_id)
     {:noreply, state}
   end
 
@@ -65,7 +65,7 @@ defmodule ER.SubscriptionsServer do
       "#{__MODULE__}.handle_info({:subscription_deleted, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    ER.Subscription.Server.stop(subscription_id)
+    ER.Subscriptions.Server.stop(subscription_id)
     {:noreply, state}
   end
 

@@ -88,7 +88,55 @@ defmodule ER.Events.Schema do
   """
   def build_drop_topic_event_table_query(topic_or_name) do
     """
-    DROP TABLE #{build_topic_event_table_name(topic_or_name)};
+    DROP TABLE IF EXISTS #{build_topic_event_table_name(topic_or_name)};
     """
+  end
+
+  def create_topic_delivery_table!(topic_or_name) do
+    query = build_create_topic_delivery_table_query(topic_or_name)
+    Ecto.Adapters.SQL.query!(Repo, query, [])
+  end
+
+  def drop_topic_delivery_table!(topic_or_name) do
+    Ecto.Adapters.SQL.query!(Repo, build_drop_topic_event_table_query(topic_or_name), [])
+  end
+
+  @doc """
+  Builds a query to create a table for the given topic name.
+  """
+  def build_create_topic_delivery_table_query(topic_or_name) do
+    """
+    CREATE TABLE #{build_topic_delivery_table_name(topic_or_name)} ( LIKE deliveries INCLUDING ALL );
+    """
+  end
+
+  @doc """
+  Builds a query to drop a table for the given topic name.
+  """
+  def build_drop_topic_delivery_table_query(topic_or_name) do
+    """
+    DROP TABLE IF EXISTS #{build_topic_delivery_table_name(topic_or_name)};
+    """
+  end
+
+  @doc """
+  Creates a table name for the given topic name.
+
+  Examples:
+
+    iex> ER.Events.Schema.build_topic_delivery_table_name("users")
+    "users_deliveries"
+
+    iex> topic = %ER.Events.Topic{name: "test"}
+    iex> ER.Events.Schema.build_topic_delivery_table_name(topic)
+    "test_deliveries"
+  """
+
+  def build_topic_delivery_table_name(%Topic{} = topic) do
+    build_topic_delivery_table_name(topic.name)
+  end
+
+  def build_topic_delivery_table_name(topic_name) do
+    topic_name <> "_deliveries"
   end
 end
