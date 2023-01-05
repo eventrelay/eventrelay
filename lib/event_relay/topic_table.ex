@@ -1,7 +1,7 @@
 defmodule ER.TopicTable do
   alias ER.Events.Topic
 
-  @callback put_ecto_source(struct(), Topic.t(), Topic.topic_name()) :: struct()
+  @callback put_ecto_source(struct(), Topic.t() | Topic.topic_name()) :: struct()
 
   @callback table_name(Topic.t() | Topic.topic_name()) :: String.t()
 

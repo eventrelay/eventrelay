@@ -11,6 +11,7 @@ service EventRelay {
   rpc PullEvents(PullEventsRequest) returns (PullEventsResponse) {}
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse) {}
   rpc CreateTopic(CreateTopicRequest) returns (CreateTopicResponse) {}
+  rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {}
   rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse) {}
   rpc GetSubscription(GetSubscriptionRequest) returns (GetSubscriptionResponse) {}
   rpc CreateSubscription(CreateSubscriptionRequest) returns (CreateSubscriptionResponse) {}
@@ -35,6 +36,14 @@ message CreateTopicRequest {
 }
 
 message CreateTopicResponse {
+  Topic topic = 1;
+}
+
+message DeleteTopicRequest {
+  string id = 1;
+}
+
+message DeleteTopicResponse {
   Topic topic = 1;
 }
  

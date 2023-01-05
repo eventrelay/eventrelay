@@ -1,6 +1,7 @@
 defmodule ER.Events.Event do
   use Ecto.Schema
   import Ecto.Changeset
+  @behaviour ER.TopicTable
 
   alias ER.Events.Topic
   alias ER.Repo
@@ -159,6 +160,7 @@ defmodule ER.Events.Event do
   @doc """
   Changes the source in the struct to the topic table name
   """
+  @impl ER.TopicTable
   def put_ecto_source(%__MODULE__{} = event, topic_name) do
     source = table_name(topic_name)
 
@@ -180,6 +182,7 @@ defmodule ER.Events.Event do
     iex> ER.Events.Event.table_name(topic)
     "test_events"
   """
+  @impl ER.TopicTable
   def table_name(%Topic{} = topic) do
     table_name(topic.name)
   end
@@ -191,12 +194,22 @@ defmodule ER.Events.Event do
   @doc """
   Builds a query to create a table for the given topic name.
   """
+  @impl ER.TopicTable
   def create_queries(topic_or_name) do
     table_name = table_name(topic_or_name)
+    # TODO: add sequence for offset to new table
+    # CREATE SEQUENCE table_name_id_seq;
 
+    # CREATE TABLE table_name (
+    #     id integer NOT NULL DEFAULT nextval('table_name_id_seq')
+    # );
+
+    # ALTER SEQUENCE table_name_id_seq
+    # OWNED BY table_name.id;
+    # ALTER TABLE products ALTER COLUMN price SET DEFAULT 7.77;
     [
       """
-      CREATE TABLE #{table_name} ( LIKE events INCLUDING ALL );
+      CREATE TABLE IF NOT EXISTS #{table_name} ( LIKE events INCLUDING ALL );
       """,
       """
       ALTER TABLE #{table_name} ADD CONSTRAINT "#{table_name}_topic_name_fkey" FOREIGN KEY (topic_name) REFERENCES topics(name);
@@ -207,6 +220,7 @@ defmodule ER.Events.Event do
   @doc """
   Builds a query to drop a table for the given topic name.
   """
+  @impl ER.TopicTable
   def drop_queries(topic_or_name) do
     [
       """
@@ -218,6 +232,7 @@ defmodule ER.Events.Event do
   @doc """
   Creates the table for the event topic table
   """
+  @impl ER.TopicTable
   def create_table!(topic_or_name) do
     create_queries(topic_or_name)
     |> Enum.each(fn query -> Ecto.Adapters.SQL.query!(Repo, query, []) end)
@@ -226,6 +241,7 @@ defmodule ER.Events.Event do
   @doc """
   Drops the table for the event topic table
   """
+  @impl ER.TopicTable
   def drop_table!(topic_or_name) do
     drop_queries(topic_or_name)
     |> Enum.each(fn query -> Ecto.Adapters.SQL.query!(Repo, query, []) end)

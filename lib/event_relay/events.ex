@@ -8,6 +8,7 @@ defmodule ER.Events do
   alias Phoenix.PubSub
 
   alias ER.Events.Event
+  alias ER.Events.Topic
 
   def from_events() do
     from(e in Event, as: :events)
@@ -188,6 +189,11 @@ defmodule ER.Events do
     Repo.delete(event)
   end
 
+  def delete_events_for_topic!(%Topic{} = topic) do
+    from_events_for_topic(topic_name: topic.name)
+    |> Repo.delete_all()
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking event changes.
 
@@ -232,6 +238,8 @@ defmodule ER.Events do
   """
   def get_topic!(id), do: Repo.get!(Topic, id)
 
+  def get_topic(id), do: Repo.get(Topic, id)
+
   @doc """
   Creates a topic.
 
@@ -250,7 +258,7 @@ defmodule ER.Events do
     |> Repo.insert()
   end
 
-  def create_topic_and_table(attrs \\ %{}) do
+  def create_topic_and_tables(attrs \\ %{}) do
     try do
       case Repo.transaction(fn ->
              topic =
@@ -304,16 +312,17 @@ defmodule ER.Events do
 
   ## Examples
 
-      iex> delete_topic(topic)
+      iex> delete_topic_and_tables(topic)
       {:ok, %Topic{}}
 
-      iex> delete_topic(topic)
+      iex> delete_topic_and_tables(topic)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_topic(%Topic{} = topic) do
+  def delete_topic_and_tables(%Topic{} = topic) do
     try do
       case Repo.transaction(fn ->
+             delete_events_for_topic!(topic)
              {:ok, topic} = Repo.delete(topic)
 
              ER.Events.Event.drop_table!(topic)

@@ -40,7 +40,13 @@ Response:
 Create a topic:
 
 ```
-grpcurl -plaintext -proto event_relay.proto -d '{"name": "users"}' localhost:50051 eventrelay.EventRelay.CreateTopic
+grpcurl -plaintext -proto event_relay.proto -d '{"name": "metrics"}' localhost:50051 eventrelay.EventRelay.CreateTopic
+```
+
+Delete a topic:
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"id": ""}' localhost:50051 eventrelay.EventRelay.DeleteTopic
 ```
 
 Publish an event:
@@ -143,16 +149,18 @@ it will pause sending events for that topic/destination to preserve the order.
 ## Todos
 
 - [x] GRPC API to publish events
-- [x] GRPC API to list,create topics
-- [ ] GRPC API to create,delete,list subscriptions
-- [ ] websocket streaming implementation
-- [ ] pull events GRPC API (offset/batch based)
+- [x] GRPC API to list,create,delete topics
+- [x] GRPC API to create,delete,list subscriptions
+- [x] websocket streaming implementation
+- [x] pull events GRPC API (offset/batch based)
+- [x] webhook implementation
 - [ ] add auth
 - [ ] add rate limiting
-- [ ] webhook implementation
 - [ ] index event table properly
 - [ ] Need to load all the deliveries in progress in the boot server
 - [ ] Test various scenarios of creating and droping topics
+- [ ] Add sequence for topic based event tables 
+- [ ] Standardize logging formatting
 - [ ] GRPC streaming implementation
 
 

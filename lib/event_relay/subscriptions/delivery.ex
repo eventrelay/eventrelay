@@ -3,6 +3,7 @@ defmodule ER.Subscriptions.Delivery do
   import Ecto.Changeset
   alias ER.Events.Topic
   alias ER.Repo
+  @behaviour ER.TopicTable
 
   @derive {Jason.Encoder,
            only: [
@@ -35,6 +36,7 @@ defmodule ER.Subscriptions.Delivery do
   @doc """
   Changes the source in the struct to the topic table name
   """
+  @impl ER.TopicTable
   def put_ecto_source(%__MODULE__{} = delivery, topic_name) do
     source = table_name(topic_name)
 
@@ -56,6 +58,7 @@ defmodule ER.Subscriptions.Delivery do
     iex> ER.Subscriptions.Delivery.table_name(topic)
     "test_events"
   """
+  @impl ER.TopicTable
   def table_name(%Topic{} = topic) do
     table_name(topic.name)
   end
@@ -67,12 +70,13 @@ defmodule ER.Subscriptions.Delivery do
   @doc """
   Builds a query to create a table for the given topic name.
   """
+  @impl ER.TopicTable
   def create_queries(topic_or_name) do
     table_name = table_name(topic_or_name)
 
     [
       """
-      CREATE TABLE #{table_name} ( LIKE deliveries INCLUDING ALL );
+      CREATE TABLE IF NOT EXISTS #{table_name} ( LIKE deliveries INCLUDING ALL );
       """
     ]
   end
@@ -80,6 +84,7 @@ defmodule ER.Subscriptions.Delivery do
   @doc """
   Builds a query to drop a table for the given topic name.
   """
+  @impl ER.TopicTable
   def drop_queries(topic_or_name) do
     [
       """
@@ -91,6 +96,7 @@ defmodule ER.Subscriptions.Delivery do
   @doc """
   Creates the table for the topic table
   """
+  @impl ER.TopicTable
   def create_table!(topic_or_name) do
     create_queries(topic_or_name)
     |> Enum.each(fn query -> Ecto.Adapters.SQL.query!(Repo, query, []) end)
@@ -99,6 +105,7 @@ defmodule ER.Subscriptions.Delivery do
   @doc """
   Drops the table for the topic table
   """
+  @impl ER.TopicTable
   def drop_table!(topic_or_name) do
     drop_queries(topic_or_name)
     |> Enum.each(fn query -> Ecto.Adapters.SQL.query!(Repo, query, []) end)

@@ -34,6 +34,20 @@ defmodule ERWeb.Grpc.Eventrelay.CreateTopicResponse do
   field :topic, 1, type: ERWeb.Grpc.Eventrelay.Topic
 end
 
+defmodule ERWeb.Grpc.Eventrelay.DeleteTopicRequest do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :id, 1, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.DeleteTopicResponse do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :topic, 1, type: ERWeb.Grpc.Eventrelay.Topic
+end
+
 defmodule ERWeb.Grpc.Eventrelay.NewSubscription.ConfigEntry do
   @moduledoc false
   use Protobuf, map: true, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
@@ -248,6 +262,10 @@ defmodule ERWeb.Grpc.Eventrelay.EventRelay.Service do
   rpc :CreateTopic,
       ERWeb.Grpc.Eventrelay.CreateTopicRequest,
       ERWeb.Grpc.Eventrelay.CreateTopicResponse
+
+  rpc :DeleteTopic,
+      ERWeb.Grpc.Eventrelay.DeleteTopicRequest,
+      ERWeb.Grpc.Eventrelay.DeleteTopicResponse
 
   rpc :ListSubscriptions,
       ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest,

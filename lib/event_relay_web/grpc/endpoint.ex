@@ -1,6 +1,7 @@
 defmodule ERWeb.Grpc.EventRelay.Server do
   use GRPC.Server, service: ERWeb.Grpc.Eventrelay.EventRelay.Service
   require Logger
+  alias ER.Repo
 
   alias ERWeb.Grpc.Eventrelay.{
     PublishEventsRequest,
@@ -71,7 +72,6 @@ defmodule ERWeb.Grpc.EventRelay.Server do
         topic_identifier: topic_identifier
       )
 
-    IO.inspect(batched_results: batched_results)
     events = Enum.map(batched_results.results, &build_event(&1, topic))
 
     PullEventsResponse.new(
@@ -116,7 +116,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
   @spec create_topic(CreateTopicRequest.t(), GRPC.Server.Stream.t()) :: CreateTopicResponse.t()
   def create_topic(request, _stream) do
     topic =
-      case ER.Events.create_topic_and_table(%{name: request.name}) do
+      case ER.Events.create_topic_and_tables(%{name: request.name}) do
         {:ok, topic} ->
           Topic.new(id: topic.id, name: topic.name)
 
@@ -139,6 +139,45 @@ defmodule ERWeb.Grpc.EventRelay.Server do
       end
 
     CreateTopicResponse.new(topic: topic)
+  end
+
+  @spec delete_topic(DeleteTopicRequest.t(), GRPC.Server.Stream.t()) :: DeleteTopicResponse.t()
+  def delete_topic(request, _stream) do
+    IO.inspect(request: request)
+
+    case ER.Events.get_topic(request.id) do
+      nil ->
+        raise GRPC.RPCError,
+          status: GRPC.Status.not_found(),
+          message: "Topic not found"
+
+      topic ->
+        topic =
+          try do
+            case ER.Events.delete_topic_and_tables(topic) do
+              {:ok, topic} ->
+                Topic.new(id: topic.id, name: topic.name)
+
+              {:error, %Ecto.Changeset{} = changeset} ->
+                raise GRPC.RPCError,
+                  status: GRPC.Status.invalid_argument(),
+                  message: ER.Ecto.changeset_errors_to_string(changeset)
+
+              {:error, error} ->
+                Logger.error("Failed to delete topic: #{inspect(error)}")
+
+                raise GRPC.RPCError,
+                  status: GRPC.Status.unknown(),
+                  message: "Something went wrong"
+            end
+          rescue
+            error ->
+              Logger.error("Failed to delete topic: #{inspect(error)}")
+              raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+          end
+
+        CreateTopicResponse.new(topic: topic)
+    end
   end
 
   @spec create_subscription(CreateSubscriptionRequest.t(), GRPC.Server.Stream.t()) ::
