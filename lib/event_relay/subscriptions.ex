@@ -135,7 +135,7 @@ defmodule ER.Subscriptions do
   alias ER.Subscriptions.Delivery
 
   def from_deliveries_for_topic(topic_name: topic_name) do
-    table_name = ER.Events.Schema.build_topic_delivery_table_name(topic_name)
+    table_name = ER.Subscriptions.Delivery.table_name(topic_name)
     from(e in {table_name, Delivery}, as: :deliveries)
   end
 
@@ -198,13 +198,15 @@ defmodule ER.Subscriptions do
 
   @spec create_delivery_for_topic(map()) :: {:ok, Delivery.t()} | {:error, Ecto.Changeset.t()}
   def create_delivery_for_topic(topic_name, attrs \\ %{}) do
-    changeset = %Delivery{} |> Delivery.changeset(attrs)
+    changeset =
+      %Delivery{}
+      |> ER.Subscriptions.Delivery.put_ecto_source(topic_name)
+      |> Delivery.changeset(attrs)
 
     try do
       # First attempt to insert it in the proper topic deliveries table
       delivery =
         changeset
-        |> put_ecto_source_for_topic(topic_name)
         |> Repo.insert!()
 
       {:ok, delivery}
@@ -224,7 +226,7 @@ defmodule ER.Subscriptions do
 
   def put_ecto_source_for_topic(%Delivery{} = delivery, topic_name) do
     # TODO: refactor this to use protocols along with the event source switching
-    source = ER.Events.Schema.build_topic_delivery_table_name(topic_name)
+    source = ER.Subscriptions.Delivery.table_name(topic_name)
 
     Ecto.put_meta(delivery,
       source: source,

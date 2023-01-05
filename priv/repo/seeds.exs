@@ -25,8 +25,8 @@ Faker.start()
 Repo.insert!(%Topic{name: "default"})
 
 topic = %Topic{name: "users"} |> Repo.insert!()
-ER.Events.Schema.create_topic_event_table!(topic)
-ER.Events.Schema.create_topic_delivery_table!(topic)
+ER.Events.Event.create_table!(topic)
+ER.Subscriptions.Delivery.create_table!(topic)
 uuid = Faker.UUID.v4()
 
 %ER.Subscriptions.Subscription{

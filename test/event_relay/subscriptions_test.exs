@@ -140,7 +140,7 @@ defmodule ER.SubscriptionsTest do
       topic = insert(:topic)
       subscription = insert(:subscription, topic: topic)
       event = insert(:event, topic: topic)
-      ER.Events.Schema.create_topic_delivery_table!(topic)
+      ER.Subscriptions.Delivery.create_table!(topic)
 
       attrs = %{
         event_id: event.id,
@@ -153,7 +153,7 @@ defmodule ER.SubscriptionsTest do
       assert Ecto.get_meta(delivery, :source) ==
                "#{topic.name}_deliveries"
 
-      ER.Events.Schema.drop_topic_delivery_table!(topic)
+      ER.Subscriptions.Delivery.drop_table!(topic)
     end
 
     test "create_delivery_for_topic/2 when the topic delivery table does not exist it returns an error tuple" do

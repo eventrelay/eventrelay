@@ -3,6 +3,27 @@ defmodule ER.Events.Event do
   import Ecto.Changeset
 
   alias ER.Events.Topic
+  alias ER.Repo
+
+  @typedoc """
+  The Event schema
+  """
+  @type t :: %__MODULE__{
+          id: binary(),
+          topic_name: String.t(),
+          topic_identifier: String.t(),
+          data_json: String.t(),
+          data: map(),
+          user_id: integer(),
+          anonymous_id: String.t(),
+          occurred_at: DateTime.t(),
+          offset: integer(),
+          source: String.t(),
+          context: map(),
+          errors: list(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 
   @derive {Jason.Encoder,
            only: [
@@ -133,5 +154,80 @@ defmodule ER.Events.Event do
 
   def data_json(event) do
     Jason.encode!(event.data)
+  end
+
+  @doc """
+  Changes the source in the struct to the topic table name
+  """
+  def put_ecto_source(%__MODULE__{} = event, topic_name) do
+    source = table_name(topic_name)
+
+    Ecto.put_meta(event,
+      source: source,
+      state: :built
+    )
+  end
+
+  @doc """
+  Creates a table name for the given topic name.
+
+  Examples:
+
+    iex> ER.Events.Event.table_name("users")
+    "users_events"
+
+    iex> topic = %ER.Events.Topic{name: "test"}
+    iex> ER.Events.Event.table_name(topic)
+    "test_events"
+  """
+  def table_name(%Topic{} = topic) do
+    table_name(topic.name)
+  end
+
+  def table_name(topic_name) do
+    topic_name <> "_events"
+  end
+
+  @doc """
+  Builds a query to create a table for the given topic name.
+  """
+  def create_queries(topic_or_name) do
+    table_name = table_name(topic_or_name)
+
+    [
+      """
+      CREATE TABLE #{table_name} ( LIKE events INCLUDING ALL );
+      """,
+      """
+      ALTER TABLE #{table_name} ADD CONSTRAINT "#{table_name}_topic_name_fkey" FOREIGN KEY (topic_name) REFERENCES topics(name);
+      """
+    ]
+  end
+
+  @doc """
+  Builds a query to drop a table for the given topic name.
+  """
+  def drop_queries(topic_or_name) do
+    [
+      """
+      DROP TABLE IF EXISTS #{table_name(topic_or_name)};
+      """
+    ]
+  end
+
+  @doc """
+  Creates the table for the event topic table
+  """
+  def create_table!(topic_or_name) do
+    create_queries(topic_or_name)
+    |> Enum.each(fn query -> Ecto.Adapters.SQL.query!(Repo, query, []) end)
+  end
+
+  @doc """
+  Drops the table for the event topic table
+  """
+  def drop_table!(topic_or_name) do
+    drop_queries(topic_or_name)
+    |> Enum.each(fn query -> Ecto.Adapters.SQL.query!(Repo, query, []) end)
   end
 end

@@ -14,7 +14,7 @@ defmodule ER.Events do
   end
 
   def from_events_for_topic(topic_name: topic_name) do
-    table_name = ER.Events.Schema.build_topic_event_table_name(topic_name)
+    table_name = ER.Events.Event.table_name(topic_name)
     from(e in {table_name, Event}, as: :events)
   end
 
@@ -96,13 +96,15 @@ defmodule ER.Events do
 
   @spec create_event_for_topic(map()) :: {:ok, Event.t()} | {:error, Ecto.Changeset.t()}
   def create_event_for_topic(attrs \\ %{}) do
-    changeset = %Event{} |> Event.changeset(attrs)
+    changeset =
+      %Event{}
+      |> ER.Events.Event.put_ecto_source(attrs[:topic_name])
+      |> Event.changeset(attrs)
 
     try do
       # First attempt to insert it in the proper topic events table
       event =
         changeset
-        |> put_ecto_source_for_topic()
         |> Repo.insert!()
         |> publish_event()
 
@@ -150,19 +152,6 @@ defmodule ER.Events do
     end
 
     event
-  end
-
-  def put_ecto_source_for_topic(%Event{} = event, attrs) do
-    source = ER.Events.Schema.build_topic_event_table_name(attrs[:topic_name])
-
-    Ecto.put_meta(event,
-      source: source,
-      state: :built
-    )
-  end
-
-  def put_ecto_source_for_topic(%Ecto.Changeset{} = changeset) do
-    %{changeset | data: put_ecto_source_for_topic(changeset.data, changeset.changes)}
   end
 
   @doc """
@@ -269,8 +258,8 @@ defmodule ER.Events do
                |> Topic.changeset(attrs)
                |> Repo.insert!()
 
-             ER.Events.Schema.create_topic_event_table!(topic)
-             ER.Events.Schema.create_topic_delivery_table!(topic)
+             ER.Events.Event.create_table!(topic)
+             ER.Subscriptions.Delivery.create_table!(topic)
              topic
            end) do
         {:ok, topic} ->
@@ -327,8 +316,8 @@ defmodule ER.Events do
       case Repo.transaction(fn ->
              {:ok, topic} = Repo.delete(topic)
 
-             ER.Events.Schema.drop_topic_event_table!(topic)
-             ER.Events.Schema.drop_topic_delivery_table!(topic)
+             ER.Events.Event.drop_table!(topic)
+             ER.Subscriptions.Delivery.drop_table!(topic)
              topic
            end) do
         {:ok, topic} ->
