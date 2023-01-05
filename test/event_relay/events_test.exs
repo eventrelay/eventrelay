@@ -76,7 +76,7 @@ defmodule ER.EventsTest do
 
     test "create_event_for_topic/1 with no data creates a event in the dead letter events table" do
       topic = insert(:topic)
-      ER.Events.Schema.create_topic_event_table!(topic)
+      ER.Events.Event.create_table!(topic)
 
       event = %{
         context: %{},
@@ -94,12 +94,12 @@ defmodule ER.EventsTest do
 
       assert event.errors == ["Data can't be blank"]
 
-      ER.Events.Schema.drop_topic_event_table!(topic)
+      ER.Events.Event.drop_table!(topic)
     end
 
-    test "create_event_for_topic/1 with valid data creates a event in the dead letter events table" do
+    test "create_event_for_topic/1 with valid data creates a event in the proper topic events table" do
       topic = insert(:topic, name: "test")
-      ER.Events.Schema.create_topic_event_table!(topic)
+      ER.Events.Event.create_table!(topic)
 
       event = %{
         context: %{},
@@ -115,7 +115,7 @@ defmodule ER.EventsTest do
       assert Ecto.get_meta(event, :source) ==
                "test_events"
 
-      ER.Events.Schema.drop_topic_event_table!(topic)
+      ER.Events.Event.drop_table!(topic)
     end
 
     test "update_event/2 with valid data updates the event" do
@@ -200,7 +200,7 @@ defmodule ER.EventsTest do
         topic_name: topic.name
       }
 
-      assert {:ok, %Event{} = _} = Events.create_event_for_topic(event)
+      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
     end
 
     test "create_topic_and_table/1 with invalid data creates a topic" do

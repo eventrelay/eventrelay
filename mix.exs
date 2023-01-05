@@ -8,6 +8,7 @@ defmodule ER.MixProject do
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
+      consolidate_protocols: Mix.env() != :test,
       aliases: aliases(),
       deps: deps()
     ]
@@ -46,7 +47,7 @@ defmodule ER.MixProject do
       {:esbuild, "~> 0.5", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.1.8", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
-      {:finch, "~> 0.13"},
+      # {:finch, "~> 0.13"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
@@ -65,7 +66,11 @@ defmodule ER.MixProject do
       {:ex_machina, "~> 2.7.0", only: :test},
       # Distributed Elixir
       {:horde, "~> 0.8.2"},
-      {:libcluster, "~> 3.2"}
+      {:libcluster, "~> 3.2"},
+      # HTTP Client
+      {:httpoison, "~> 1.8"},
+      # Redis
+      {:redix, "~> 1.2"}
     ]
   end
 

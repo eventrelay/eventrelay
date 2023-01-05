@@ -21,6 +21,7 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
         phx-submit="save"
       >
         <.input field={{f, :name}} type="text" label="name" />
+        <.input field={{f, :subscription_type}} type="text" label="subscription_type" />
         <.input field={{f, :offset}} type="number" label="offset" />
         <.input field={{f, :topic_name}} type="text" label="topic_name" />
         <.input field={{f, :push}} type="checkbox" label="push" />

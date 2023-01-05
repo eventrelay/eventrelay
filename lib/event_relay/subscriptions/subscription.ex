@@ -3,6 +3,19 @@ defmodule ER.Subscriptions.Subscription do
   import Ecto.Changeset
   alias ER.Events.Topic
 
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :name,
+             :topic_name,
+             :topic_identifier,
+             :offset,
+             :ordered,
+             :subscription_type,
+             :push,
+             :paused,
+             :config
+           ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "subscriptions" do

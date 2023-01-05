@@ -20,6 +20,8 @@ if System.get_env("PHX_SERVER") do
   config :event_relay, ERWeb.Endpoint, server: true
 end
 
+config :event_relay, :account_key, System.get_env("ER_ACCOUNT_KEY")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

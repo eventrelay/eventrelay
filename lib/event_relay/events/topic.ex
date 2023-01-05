@@ -1,8 +1,31 @@
 defmodule ER.Events.Topic do
   use Ecto.Schema
   import Ecto.Changeset
-
   alias ER.Events.Event
+
+  @typedoc """
+  The name for the topic.
+  """
+  @type topic_name :: String.t()
+
+  @typedoc """
+  An identifier for the topic.
+  """
+  @type topic_identifier :: String.t()
+
+  @typedoc """
+  The topic schema.
+  """
+  @type t :: %__MODULE__{
+          name: topic_name(),
+          events: [Event.t()]
+        }
+
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :name
+           ]}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id

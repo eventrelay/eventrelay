@@ -1,4 +1,4 @@
-defmodule ER.SubscriptionsServer do
+defmodule ER.Subscriptions.Manager.Server do
   @moduledoc """
   Manages all the subscription servers
   """
@@ -20,15 +20,15 @@ defmodule ER.SubscriptionsServer do
   def start_link(name) do
     case GenServer.start_link(__MODULE__, %{}, name: via_tuple(name)) do
       {:ok, pid} ->
-        Logger.info("#{__MODULE__}.start_link: starting #{via_tuple(name)}")
+        Logger.debug("#{__MODULE__}.start_link: starting #{via_tuple(name)}")
         {:ok, pid}
 
       {:error, {:already_started, pid}} ->
-        Logger.info("#{__MODULE__} already started at #{inspect(pid)}, returning :ignore")
+        Logger.debug("#{__MODULE__} already started at #{inspect(pid)}, returning :ignore")
         :ignore
 
       :ignore ->
-        Logger.info("#{__MODULE__}.start_link :ignore")
+        Logger.debug("#{__MODULE__}.start_link :ignore")
     end
   end
 
@@ -45,27 +45,27 @@ defmodule ER.SubscriptionsServer do
     subscriptions = ER.Subscriptions.list_subscriptions()
 
     Enum.each(subscriptions, fn subscription ->
-      ER.Subscription.Server.factory(subscription.id)
+      ER.Subscriptions.Server.factory(subscription.id)
     end)
 
     {:noreply, state}
   end
 
   def handle_info({:subscription_created, subscription_id}, state) do
-    Logger.info(
+    Logger.debug(
       "#{__MODULE__}.handle_info({:subscription_created, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    ER.Subscription.Server.factory(subscription_id)
+    ER.Subscriptions.Server.factory(subscription_id)
     {:noreply, state}
   end
 
   def handle_info({:subscription_deleted, subscription_id}, state) do
-    Logger.info(
+    Logger.debug(
       "#{__MODULE__}.handle_info({:subscription_deleted, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    ER.Subscription.Server.stop(subscription_id)
+    ER.Subscriptions.Server.stop(subscription_id)
     {:noreply, state}
   end
 
