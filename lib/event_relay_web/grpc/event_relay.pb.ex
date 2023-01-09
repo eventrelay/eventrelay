@@ -243,45 +243,158 @@ defmodule ERWeb.Grpc.Eventrelay.PullEventsResponse do
   field :events, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Event
 end
 
+defmodule ERWeb.Grpc.Eventrelay.ApiKey do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :id, 1, type: :string
+  field :key, 2, type: :string
+  field :secret, 3, type: :string
+  field :status, 4, type: :string
+  field :type, 5, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.CreateApiKeyRequest do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :type, 4, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.CreateApiKeyResponse do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :apiKey, 1, type: ERWeb.Grpc.Eventrelay.ApiKey
+end
+
+defmodule ERWeb.Grpc.Eventrelay.RevokeApiKeyRequest do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :id, 1, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.RevokeApiKeyResponse do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :apiKey, 1, type: ERWeb.Grpc.Eventrelay.ApiKey
+end
+
+defmodule ERWeb.Grpc.Eventrelay.AddSubscriptionToApiKeyRequest do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :apiKeyId, 1, type: :string
+  field :subscriptionId, 2, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.AddSubscriptionToApiKeyResponse do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :apiKeyId, 1, type: :string
+  field :subscriptionId, 2, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionFromApiKeyRequest do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :apiKeyId, 1, type: :string
+  field :subscriptionId, 2, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionFromApiKeyResponse do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.11.0", syntax: :proto3
+
+  field :apiKeyId, 1, type: :string
+  field :subscriptionId, 2, type: :string
+end
+
 defmodule ERWeb.Grpc.Eventrelay.EventRelay.Service do
   @moduledoc false
   use GRPC.Service, name: "eventrelay.EventRelay", protoc_gen_elixir_version: "0.11.0"
 
-  rpc :PublishEvents,
-      ERWeb.Grpc.Eventrelay.PublishEventsRequest,
-      ERWeb.Grpc.Eventrelay.PublishEventsResponse
+  rpc(
+    :PublishEvents,
+    ERWeb.Grpc.Eventrelay.PublishEventsRequest,
+    ERWeb.Grpc.Eventrelay.PublishEventsResponse
+  )
 
-  rpc :PullEvents,
-      ERWeb.Grpc.Eventrelay.PullEventsRequest,
-      ERWeb.Grpc.Eventrelay.PullEventsResponse
+  rpc(
+    :PullEvents,
+    ERWeb.Grpc.Eventrelay.PullEventsRequest,
+    ERWeb.Grpc.Eventrelay.PullEventsResponse
+  )
 
-  rpc :ListTopics,
-      ERWeb.Grpc.Eventrelay.ListTopicsRequest,
-      ERWeb.Grpc.Eventrelay.ListTopicsResponse
+  rpc(
+    :ListTopics,
+    ERWeb.Grpc.Eventrelay.ListTopicsRequest,
+    ERWeb.Grpc.Eventrelay.ListTopicsResponse
+  )
 
-  rpc :CreateTopic,
-      ERWeb.Grpc.Eventrelay.CreateTopicRequest,
-      ERWeb.Grpc.Eventrelay.CreateTopicResponse
+  rpc(
+    :CreateTopic,
+    ERWeb.Grpc.Eventrelay.CreateTopicRequest,
+    ERWeb.Grpc.Eventrelay.CreateTopicResponse
+  )
 
-  rpc :DeleteTopic,
-      ERWeb.Grpc.Eventrelay.DeleteTopicRequest,
-      ERWeb.Grpc.Eventrelay.DeleteTopicResponse
+  rpc(
+    :DeleteTopic,
+    ERWeb.Grpc.Eventrelay.DeleteTopicRequest,
+    ERWeb.Grpc.Eventrelay.DeleteTopicResponse
+  )
 
-  rpc :ListSubscriptions,
-      ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest,
-      ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse
+  rpc(
+    :ListSubscriptions,
+    ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest,
+    ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse
+  )
 
-  rpc :GetSubscription,
-      ERWeb.Grpc.Eventrelay.GetSubscriptionRequest,
-      ERWeb.Grpc.Eventrelay.GetSubscriptionResponse
+  rpc(
+    :GetSubscription,
+    ERWeb.Grpc.Eventrelay.GetSubscriptionRequest,
+    ERWeb.Grpc.Eventrelay.GetSubscriptionResponse
+  )
 
-  rpc :CreateSubscription,
-      ERWeb.Grpc.Eventrelay.CreateSubscriptionRequest,
-      ERWeb.Grpc.Eventrelay.CreateSubscriptionResponse
+  rpc(
+    :CreateSubscription,
+    ERWeb.Grpc.Eventrelay.CreateSubscriptionRequest,
+    ERWeb.Grpc.Eventrelay.CreateSubscriptionResponse
+  )
 
-  rpc :DeleteSubscription,
-      ERWeb.Grpc.Eventrelay.DeleteSubscriptionRequest,
-      ERWeb.Grpc.Eventrelay.DeleteSubscriptionResponse
+  rpc(
+    :DeleteSubscription,
+    ERWeb.Grpc.Eventrelay.DeleteSubscriptionRequest,
+    ERWeb.Grpc.Eventrelay.DeleteSubscriptionResponse
+  )
+
+  rpc(
+    :CreateApiKey,
+    ERWeb.Grpc.Eventrelay.CreateApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.CreateApiKeyResponse
+  )
+
+  rpc(
+    :RevokeApiKey,
+    ERWeb.Grpc.Eventrelay.RevokeApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.RevokeApiKeyResponse
+  )
+
+  rpc(
+    :AddSubscriptionToApiKey,
+    ERWeb.Grpc.Eventrelay.AddSubscriptionToApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.AddSubscriptionToApiKeyResponse
+  )
+
+  rpc(
+    :DeleteSubscriptionFromApiKey,
+    ERWeb.Grpc.Eventrelay.DeleteSubscriptionFromApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.DeleteSubscriptionFromApiKeyResponse
+  )
 end
 
 defmodule ERWeb.Grpc.Eventrelay.EventRelay.Stub do

@@ -40,13 +40,15 @@ defmodule ER.Application do
       {Phoenix.PubSub, name: ER.PubSub},
       # Start the Endpoint (http/https)
       ERWeb.Endpoint,
-      {GRPC.Server.Supervisor, {ERWeb.Grpc.Endpoint, 50051}},
+      {GRPC.Server.Supervisor, {ERWeb.Grpc.Endpoint, ER.Env.grpc_port()}},
       {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
       ER.Redix,
+      {ER.Events.ChannelCache, []},
       ER.NodeListener,
       {ER.Horde.Registry, [name: ER.Horde.Registry, shutdown: 60_000, keys: :unique]},
       {ER.Horde.Supervisor,
        [name: ER.Horde.Supervisor, shutdown: 60_000, strategy: :one_for_one]},
+      {ER.ChannelMonitor, :events},
       ER.BootServer
     ]
 

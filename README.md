@@ -55,6 +55,11 @@ Publish an event:
 grpcurl -plaintext -proto event_relay.proto -d '{"topic": "users", "events": [{"name": "user.created", "data": "{\"first_name\": \"Thomas\"}", "source": "grpc", "context": {"ip_address": "127.0.0.1"}}]}' localhost:50051 eventrelay.EventRelay.PublishEvents
 ```
 
+Load test the publish event:
+```
+ghz --rps 200 --total 20000 --insecure --proto event_relay.proto --call eventrelay.EventRelay.PublishEvents -d '{"topic": "users", "events": [{"name": "user.created", "data": "{\"first_name\": \"Thomas\"}", "source": "grpc", "context": {"ip_address": "127.0.0.1"}}]}'  localhost:50051
+```
+
 Pull Events:
 
 ```
@@ -86,6 +91,13 @@ List subscriptions:
 
 ```
 grpcurl -plaintext -proto event_relay.proto -d '{"page": 1, "pageSize": 100}' localhost:50051 eventrelay.EventRelay.ListSubscriptions
+```
+
+Create ApiKey:
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"type": "consumer"}' localhost:50051
+eventrelay.EventRelay.CreateApiKey
 ```
 
 ## Event
@@ -126,13 +138,9 @@ A topic name can only be a max of 50 characters.
 
 ## Authentication and Authorization
 
-Both are handled using JWTs. EventRelay uses the `HS256` signing algorithm with a shared secret. You can set the shared
-secret via the `ER_JWT_SECRET` environment variable. The secret should be strong and at least 32 characters long. 
+There are two types of API keys: producer and consumer.
 
-In the JWT you can set claims for authorization:
-
-- `topics` - which is a comma seperated list of topics the JWT is authorized to use. ex.
-    `users:123,visits:123,checkouts:123`
+A producer API key is allowed to interact with the all of the GRPC API and
 
 
 ## Delivery Guarantees
@@ -156,11 +164,12 @@ it will pause sending events for that topic/destination to preserve the order.
 - [x] webhook implementation
 - [ ] add auth
 - [ ] add rate limiting
-- [ ] index event table properly
 - [ ] Need to load all the deliveries in progress in the boot server
 - [ ] Test various scenarios of creating and droping topics
 - [ ] Add sequence for topic based event tables 
 - [ ] Standardize logging formatting
+- [ ] index event table properly
+- [ ] test all the authorization policies 
 - [ ] GRPC streaming implementation
 
 

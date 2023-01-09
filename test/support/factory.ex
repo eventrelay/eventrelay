@@ -40,4 +40,23 @@ defmodule ER.Factory do
       subscription: build(:subscription)
     }
   end
+
+  def api_key_factory do
+    key =
+      :crypto.strong_rand_bytes(42)
+      |> Base.url_encode64()
+      |> binary_part(0, 42)
+
+    secret =
+      :crypto.strong_rand_bytes(42)
+      |> Base.url_encode64()
+      |> binary_part(0, 42)
+
+    %ER.Accounts.ApiKey{
+      key: key,
+      secret: secret,
+      status: "active",
+      type: "consumer"
+    }
+  end
 end

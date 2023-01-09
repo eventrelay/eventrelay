@@ -14,7 +14,12 @@
 
 <.back navigate={~p"/topics"}>Back to topics</.back>
 
-<.modal :if={@live_action == :edit} id="topic-modal" show on_cancel={JS.patch(~p"/topics/#{@topic}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="topic-modal"
+  show
+  on_cancel={JS.patch(~p"/topics/#{@topic}")}
+>
   <.live_component
     module={ERWeb.TopicLive.FormComponent}
     id={@topic.id}

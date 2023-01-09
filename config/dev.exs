@@ -27,6 +27,9 @@ config :event_relay, ERWeb.Endpoint,
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
+  ],
+  protocol_options: [
+    idle_timeout: 1000
   ]
 
 # ## SSL Support
@@ -81,7 +84,14 @@ config :phoenix, :plug_init_mode, :runtime
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
 
-config :hammer,
-  backend: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]}
+# config :hammer,
+#   backend: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]}
 
-config :grpc, start_server: true
+config :hammer,
+  backend:
+    {Hammer.Backend.Redis,
+     [
+       delete_buckets_timeout: 10_0000,
+       expiry_ms: 60_000 * 60 * 2,
+       redix_config: [host: "localhost", port: 6379]
+     ]}

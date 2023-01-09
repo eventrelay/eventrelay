@@ -155,26 +155,17 @@ defmodule ER.EventsTest do
     test "delete_events_for_topic!/1 deletes the event" do
       topic = insert(:topic, name: "test")
       ER.Events.Event.create_table!(topic)
-
-      Events.create_event_for_topic(%{
-        context: %{},
-        data: %{},
-        name: "some name",
-        occurred_at: ~U[2022-12-21 18:27:00Z],
-        source: "some source",
-        topic_name: topic.name
-      })
-
-      insert(:event, topic: topic)
+      ER.Events.create_event_for_topic(params_for(:event, topic: topic))
+      ER.Events.create_event_for_topic(params_for(:event, topic: topic))
 
       %ER.BatchedResults{
-        results: [],
+        results: results,
         offset: 0,
         batch_size: 100,
         next_offset: nil,
         previous_offset: nil,
-        total_count: 0,
-        total_batches: 0
+        total_count: 2,
+        total_batches: 1
       } =
         Events.list_events_for_topic(
           offset: 0,
@@ -183,21 +174,25 @@ defmodule ER.EventsTest do
           topic_identifier: nil
         )
 
-      IO.inspect(events)
-
-      assert length(events) == 2
+      assert length(results) == 2
 
       Events.delete_events_for_topic!(topic)
 
-      events =
-        Events.list_events_for_topic(
-          offset: 0,
-          batch_size: 100,
-          topic_name: topic.name,
-          topic_identifier: topic.identifier
-        )
-
-      assert events == []
+      assert %ER.BatchedResults{
+               results: [],
+               offset: 0,
+               batch_size: 100,
+               next_offset: nil,
+               previous_offset: nil,
+               total_count: 0,
+               total_batches: 0
+             } ==
+               Events.list_events_for_topic(
+                 offset: 0,
+                 batch_size: 100,
+                 topic_name: topic.name,
+                 topic_identifier: nil
+               )
     end
 
     test "change_event/1 returns a event changeset" do
@@ -248,7 +243,7 @@ defmodule ER.EventsTest do
         topic_name: topic.name
       }
 
-      assert {:ok, %Event{} = _event} = Events.create_event_for_topic(event)
+      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
     end
 
     test "create_topic_and_table/1 with invalid data creates a topic" do
@@ -278,7 +273,7 @@ defmodule ER.EventsTest do
     end
 
     test "delete_topic_and_tables/1 deletes the topic" do
-      topic = insert(:topic)
+      {:ok, topic} = Events.create_topic_and_tables(%{name: "test"})
       assert {:ok, %Topic{}} = Events.delete_topic_and_tables(topic)
       assert_raise Ecto.NoResultsError, fn -> Events.get_topic!(topic.id) end
     end

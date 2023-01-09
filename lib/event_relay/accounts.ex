@@ -6,7 +6,7 @@ defmodule ER.Accounts do
   import Ecto.Query, warn: false
   alias ER.Repo
 
-  alias ER.Accounts.{User, UserToken, UserNotifier}
+  alias ER.Accounts.{User, UserToken, UserNotifier, ApiKey, ApiKeySubscription}
 
   ## Database getters
 
@@ -349,5 +349,141 @@ defmodule ER.Accounts do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
+  end
+
+  @doc """
+  Starts an ApiKey query
+  """
+  def from_api_keys() do
+    from(a in ApiKey, as: :api_keys)
+  end
+
+  @doc """
+  Returns the list of api_keys.
+  """
+  def list_api_keys() do
+    from_api_keys() |> Repo.all()
+  end
+
+  @doc """
+  Returns the list of active api_keys.
+  """
+  def list_active_api_keys() do
+    from_api_keys() |> where(as(:api_keys).status == "active") |> Repo.all()
+  end
+
+  @doc """
+  Gets a single api_key.
+  """
+  def get_api_key(id) do
+    from_api_keys() |> Repo.get(id)
+  end
+
+  @doc """
+  Gets a single api_key by the key 
+  """
+  def get_by_key(key) do
+    from_api_keys() |> where(as(:api_keys).key == ^key) |> Repo.one()
+  end
+
+  @doc """
+  Gets a single api_key by the key and secret and active 
+  """
+  def get_active_api_key_by_key_and_secret(key, secret) do
+    # TODO write test for this
+    from_api_keys()
+    |> where(as(:api_keys).key == ^key)
+    |> where(as(:api_keys).secret == ^secret)
+    |> where(as(:api_keys).status == "active")
+    |> preload([:subscriptions])
+    |> Repo.one()
+  end
+
+  @doc """
+  Gets a single active consumer api_key by the key and secret
+  """
+  def get_active_consumer_by_key_and_secret(key, secret) do
+    from_api_keys()
+    |> where(as(:api_keys).key == ^key)
+    |> where(as(:api_keys).secret == ^secret)
+    |> where(as(:api_keys).status == "active")
+    |> where(as(:api_keys).type == "consumer")
+    |> Repo.one()
+  end
+
+  @doc """
+  Gets a single active producer api_key by the key and secret
+  """
+  def get_active_producer_by_key_and_secret(key, secret) do
+    from_api_keys()
+    |> where(as(:api_keys).key == ^key)
+    |> where(as(:api_keys).secret == ^secret)
+    |> where(as(:api_keys).status == "active")
+    |> where(as(:api_keys).type == "producer")
+    |> Repo.one()
+  end
+
+  @doc """
+  Creates a api_key.
+  """
+  def create_api_key(api_key) when is_struct(api_key) do
+    api_key
+    |> ApiKey.changeset(%{})
+    |> Repo.insert()
+  end
+
+  def create_api_key(attrs \\ %{}) do
+    %ApiKey{}
+    |> ApiKey.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a api_key.
+  """
+  def update_api_key(%ApiKey{} = api_key, attrs) do
+    api_key
+    |> ApiKey.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a api_key.
+  """
+  def delete_api_key(%ApiKey{} = api_key) do
+    Repo.delete(api_key)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking api_key changes.
+  """
+  def change_api_key(%ApiKey{} = api_key, attrs \\ %{}) do
+    ApiKey.changeset(api_key, attrs)
+  end
+
+  @doc """
+  Get a api key subscription
+  """
+  def get_api_key_subscription(api_key, subscription) do
+    from(a in ApiKeySubscription)
+    |> where([a], a.api_key_id == ^api_key.id)
+    |> where([a], a.subscription_id == ^subscription.id)
+    |> Repo.one()
+  end
+
+  @doc """
+  Create an api key subscription
+  """
+  def create_api_key_subscription(api_key, subscription) do
+    %ApiKeySubscription{}
+    |> ApiKeySubscription.changeset(%{api_key_id: api_key.id, subscription_id: subscription.id})
+    |> Repo.insert()
+  end
+
+  @doc """
+  Delete an api key subscription
+  """
+  def delete_api_key_subscription(api_key_subscription) do
+    Repo.delete(api_key_subscription)
   end
 end

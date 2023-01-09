@@ -50,8 +50,8 @@ defmodule ER.Subscriptions.Server do
   end
 
   def broadcast_to_websocket?(subscription) do
-    # TODO: add check to see if there are any websocket connections for this subscription
-    subscription.push && subscription.subscription_type == "websocket"
+    subscription.push && subscription.subscription_type == "websocket" &&
+      ER.Events.ChannelCache.any_sockets?(subscription.id)
   end
 
   def push_to_webhook?(subscription) do

@@ -21,12 +21,6 @@ defmodule ER.Events do
 
   @doc """
   Returns the list of events for a topic
-
-  ## Examples
-
-      iex> list_events_for_topic()
-      [%Event{}, ...]
-
   """
   def list_events_for_topic(
         offset: offset,

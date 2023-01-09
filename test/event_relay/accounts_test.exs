@@ -4,7 +4,7 @@ defmodule ER.AccountsTest do
   alias ER.Accounts
 
   import ER.AccountsFixtures
-  alias ER.Accounts.{User, UserToken}
+  alias ER.Accounts.{User, UserToken, ApiKey, ApiKeySubscription}
 
   describe "get_user_by_email/1" do
     test "does not return the user if the email does not exist" do
@@ -503,6 +503,129 @@ defmodule ER.AccountsTest do
   describe "inspect/2 for the User module" do
     test "does not include password" do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
+    end
+  end
+
+  describe "api_keys" do
+    alias ER.Accounts.ApiKey
+    import ER.Factory
+
+    @invalid_attrs %{key: nil, secret: nil, status: nil, type: nil}
+
+    test "list_api_keys/1 returns all api_keys" do
+      api_key = insert(:api_key)
+      assert api_key.id in Enum.map(Accounts.list_api_keys(), & &1.id)
+    end
+
+    test "list_active_api_keys/1 returns all active api_keys" do
+      insert(:api_key)
+      revoked_api_key = insert(:api_key, status: :revoked)
+
+      assert revoked_api_key.id not in Enum.map(
+               Accounts.list_active_api_keys(),
+               & &1.id
+             )
+    end
+
+    test "get_api_key/2 returns the api_key with given id" do
+      api_key = insert(:api_key)
+      assert Accounts.get_api_key(api_key.id).id == api_key.id
+    end
+
+    test "get_active_consumer_by_key_and_secret/2 returns the active consumer api_key with given secret and key" do
+      api_key = insert(:api_key)
+
+      assert Accounts.get_active_consumer_by_key_and_secret(
+               api_key.key,
+               api_key.secret
+             ).id ==
+               api_key.id
+    end
+
+    test "get_active_producer_by_key_and_secret/2 returns the active consumer api_key with given secret and key" do
+      api_key = insert(:api_key, type: :producer)
+
+      assert Accounts.get_active_producer_by_key_and_secret(
+               api_key.key,
+               api_key.secret
+             ).id ==
+               api_key.id
+    end
+
+    test "create_api_key/1 with valid data creates a api_key" do
+      valid_attrs = %{
+        key: "somekey",
+        secret: "somesecret",
+        status: :active,
+        type: "consumer"
+      }
+
+      assert {:ok, %ApiKey{} = api_key} = Accounts.create_api_key(valid_attrs)
+      assert api_key.key == "somekey"
+      assert api_key.secret == "somesecret"
+    end
+
+    test "create_api_key/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Accounts.create_api_key(@invalid_attrs)
+    end
+
+    test "create_api_key/1 with duplicate key, secret, and status returns error changeset" do
+      api_key =
+        insert(:api_key, key: "somekey", secret: "somesecret", status: :active, type: :consumer)
+
+      result =
+        Accounts.create_api_key(%{
+          key: api_key.key,
+          secret: api_key.secret,
+          status: api_key.status,
+          type: api_key.type
+        })
+
+      assert {:error,
+              %Ecto.Changeset{
+                action: :insert,
+                changes: %{
+                  key: "somekey",
+                  secret: "somesecret",
+                  status: :active,
+                  type: :consumer
+                },
+                errors: [
+                  key_secret_status_type_unique:
+                    {"has already been taken",
+                     [
+                       constraint: :unique,
+                       constraint_name: "api_keys_key_secret_status_type_index"
+                     ]}
+                ],
+                valid?: false,
+                data: %ApiKey{}
+              }} = result
+    end
+
+    test "update_api_key/2 with valid data updates the api_key" do
+      api_key = insert(:api_key)
+      update_attrs = %{key: "someupdatedkey"}
+
+      assert {:ok, %ApiKey{} = api_key} = Accounts.update_api_key(api_key, update_attrs)
+      assert api_key.key == "someupdatedkey"
+    end
+
+    test "update_api_key/2 with invalid data returns error changeset" do
+      api_key = insert(:api_key)
+      assert {:error, %Ecto.Changeset{}} = Accounts.update_api_key(api_key, @invalid_attrs)
+      assert api_key.id == Accounts.get_api_key(api_key.id).id
+    end
+
+    test "delete_api_key/1 deletes the api_key" do
+      api_key = insert(:api_key)
+      assert {:ok, %ApiKey{}} = Accounts.delete_api_key(api_key)
+      assert Accounts.get_api_key(api_key.id) == nil
+    end
+
+    test "change_api_key/1 returns a api_key changeset" do
+      api_key = insert(:api_key)
+      assert %Ecto.Changeset{} = Accounts.change_api_key(api_key)
     end
   end
 end

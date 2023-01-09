@@ -15,6 +15,8 @@ alias ER.Repo
 alias ER.Accounts.User
 alias ER.Events.Topic
 alias ER.Events.Event
+alias ER.Accounts.ApiKey
+alias ER.Accounts
 
 Faker.start()
 
@@ -45,6 +47,16 @@ uuid = Faker.UUID.v4()
   config: %{"endpoint_url" => "http://localhost:5006/api/webhook"}
 }
 |> Repo.insert!()
+
+[:admin, :producer, :consumer]
+|> Enum.each(fn type ->
+  api_key = ApiKey.build(type, :active)
+  Accounts.create_api_key(api_key)
+  IO.puts("------------- #{inspect(type)} API Key Token -------------")
+
+  ApiKey.encode_key_and_secret(api_key)
+  |> IO.puts()
+end)
 
 # events =
 #   Enum.map(1..1000, fn _ ->

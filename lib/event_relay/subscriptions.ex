@@ -15,12 +15,6 @@ defmodule ER.Subscriptions do
 
   @doc """
   Returns the list of subscriptions.
-
-  ## Examples
-
-      iex> list_subscriptions()
-      [%Subscription{}, ...]
-
   """
   def list_subscriptions() do
     from_subscriptions() |> Repo.all()
@@ -33,19 +27,10 @@ defmodule ER.Subscriptions do
 
   @doc """
   Gets a single subscription.
-
-  Raises `Ecto.NoResultsError` if the Subscription does not exist.
-
-  ## Examples
-
-      iex> get_subscription!(123)
-      %Subscription{}
-
-      iex> get_subscription!(456)
-      ** (Ecto.NoResultsError)
-
   """
   def get_subscription!(id), do: Repo.get!(Subscription, id)
+
+  def get_subscription(id), do: Repo.get(Subscription, id)
 
   @doc """
   Creates a subscription.

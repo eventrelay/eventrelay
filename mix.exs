@@ -55,22 +55,29 @@ defmodule ER.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:exsync, "~> 0.2", only: :dev},
       # Rate Limiting - https://github.com/ExHammer/hammer
+      {:hammer_backend_redis, "~> 6.1"},
       {:hammer, "~> 6.1"},
       # GRPC - https://github.com/elixir-grpc/grpc
       {:grpc, "~> 0.5.0"},
       {:protobuf, "~> 0.11"},
       # JWT - https://github.com/joken-elixir/joken
       {:joken, "~> 2.5"},
+      # Authorization https://github.com/themusicman/bosun
+      {:bosun, "~> 1.0.1"},
       # Testing
       {:faker, "~> 0.17"},
       {:ex_machina, "~> 2.7.0", only: :test},
+      {:hammox, "~> 0.7", only: :test},
       # Distributed Elixir
       {:horde, "~> 0.8.2"},
       {:libcluster, "~> 3.2"},
       # HTTP Client
       {:httpoison, "~> 1.8"},
       # Redis
-      {:redix, "~> 1.2"}
+      {:redix, "~> 1.2"},
+      # Cache
+      {:nebulex, "~> 2.4"},
+      {:nebulex_adapters_horde, "~> 1.0.0"}
     ]
   end
 

@@ -16,6 +16,10 @@ service EventRelay {
   rpc GetSubscription(GetSubscriptionRequest) returns (GetSubscriptionResponse) {}
   rpc CreateSubscription(CreateSubscriptionRequest) returns (CreateSubscriptionResponse) {}
   rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse) {}
+  rpc CreateApiKey(CreateApiKeyRequest) returns (CreateApiKeyResponse) {}
+  rpc RevokeApiKey(RevokeApiKeyRequest) returns (RevokeApiKeyResponse) {}
+  rpc AddSubscriptionToApiKey(AddSubscriptionToApiKeyRequest) returns (AddSubscriptionToApiKeyResponse) {}
+  rpc DeleteSubscriptionFromApiKey(DeleteSubscriptionFromApiKeyRequest) returns (DeleteSubscriptionFromApiKeyResponse) {}
 }
 
 message Topic {
@@ -46,7 +50,6 @@ message DeleteTopicRequest {
 message DeleteTopicResponse {
   Topic topic = 1;
 }
- 
 
 message NewSubscription {
   string name = 1;
@@ -151,4 +154,48 @@ message PullEventsRequest {
 
 message PullEventsResponse {
   repeated Event events = 1;
+}
+
+
+message ApiKey {
+  string id = 1;
+  string key = 2;
+  string secret = 3;
+  string status = 4;
+  string type = 5;
+}
+
+message CreateApiKeyRequest {
+  string type = 4;
+}
+
+message CreateApiKeyResponse {
+  ApiKey apiKey = 1;
+}
+
+message RevokeApiKeyRequest {
+  string id = 1;
+}
+
+message RevokeApiKeyResponse {
+  ApiKey apiKey = 1;
+}
+
+message AddSubscriptionToApiKeyRequest {
+  string apiKeyId = 1;
+  string subscriptionId = 2;
+}
+
+message AddSubscriptionToApiKeyResponse {
+  string apiKeyId = 1;
+  string subscriptionId = 2;
+}
+ 
+message DeleteSubscriptionFromApiKeyRequest {
+  string apiKeyId = 1;
+  string subscriptionId = 2;
+}
+ message DeleteSubscriptionFromApiKeyResponse {
+  string apiKeyId = 1;
+  string subscriptionId = 2;
 }

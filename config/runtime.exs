@@ -20,8 +20,6 @@ if System.get_env("PHX_SERVER") do
   config :event_relay, ERWeb.Endpoint, server: true
 end
 
-config :event_relay, :account_key, System.get_env("ER_ACCOUNT_KEY")
-
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
@@ -117,3 +115,10 @@ if config_env() == :prod do
   #
   config :event_relay, :jwt_secret, System.get_env("ER_JWT_SECRET")
 end
+
+if System.get_env("ER_GRPC_SERVER") do
+  config :grpc, start_server: true
+end
+
+config :event_relay, :account_key, System.get_env("ER_ACCOUNT_KEY")
+config :event_relay, :skip_grpc_auth, not is_nil(System.get_env("ER_SKIP_GRPC_AUTH"))

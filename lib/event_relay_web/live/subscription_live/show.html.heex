@@ -18,7 +18,12 @@
 
 <.back navigate={~p"/subscriptions"}>Back to subscriptions</.back>
 
-<.modal :if={@live_action == :edit} id="subscription-modal" show on_cancel={JS.patch(~p"/subscriptions/#{@subscription}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="subscription-modal"
+  show
+  on_cancel={JS.patch(~p"/subscriptions/#{@subscription}")}
+>
   <.live_component
     module={ERWeb.SubscriptionLive.FormComponent}
     id={@subscription.id}

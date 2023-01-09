@@ -7,7 +7,11 @@
   </:actions>
 </.header>
 
-<.table id="subscriptions" rows={@subscriptions} row_click={&JS.navigate(~p"/subscriptions/#{&1}")}>
+<.table
+  id="subscriptions"
+  rows={@subscriptions}
+  row_click={&JS.navigate(~p"/subscriptions/#{&1}")}
+>
   <:col :let={subscription} label="Name"><%= subscription.name %></:col>
   <:col :let={subscription} label="Offset"><%= subscription.offset %></:col>
   <:col :let={subscription} label="Topic name"><%= subscription.topic_name %></:col>
@@ -20,7 +24,10 @@
     <.link patch={~p"/subscriptions/#{subscription}/edit"}>Edit</.link>
   </:action>
   <:action :let={subscription}>
-    <.link phx-click={JS.push("delete", value: %{id: subscription.id})} data-confirm="Are you sure?">
+    <.link
+      phx-click={JS.push("delete", value: %{id: subscription.id})}
+      data-confirm="Are you sure?"
+    >
       Delete
     </.link>
   </:action>
