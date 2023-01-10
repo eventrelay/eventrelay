@@ -121,4 +121,3 @@ if System.get_env("ER_GRPC_SERVER") do
 end
 
 config :event_relay, :account_key, System.get_env("ER_ACCOUNT_KEY")
-config :event_relay, :skip_grpc_auth, not is_nil(System.get_env("ER_SKIP_GRPC_AUTH"))

@@ -2,52 +2,51 @@ defmodule ER.JWT.TokenAdapter do
   @moduledoc """
   Adapter for the JWT Token
   """
-  @callback user_token(user :: User.t()) :: binary()
+  alias ER.Accounts.ApiKey
+  @callback build(api_key :: ApiKey.t(), claims :: map()) :: {:ok, binary()} | {:error, any()}
 end
 
 defmodule ER.JWT.Token do
   @moduledoc """
   JWT tokens 
-
-  User Tokens
-
-
   """
   use Joken.Config
   alias ER.Repo
   @behaviour ER.JWT.TokenAdapter
 
-  @impl ELWeb.JWT.TokenAdapter
-  def user_token(user, claims \\ %{}) do
-    user = Repo.preload(user, team_users: [role: [:permissions]])
+  @impl true
+  def build(api_key, claims \\ %{}) do
+    claims =
+      claims
+      |> Map.merge(%{api_key_id: api_key.id, subscriptions: []})
+      |> ensure_exp()
 
-    teams =
-      Enum.reduce(user.team_users, %{}, fn team_user, acc ->
-        Map.put(
-          acc,
-          EL.to_string(team_user.team_id),
-          Enum.map(team_user.role.permissions, fn permission -> permission.name end)
-        )
-      end)
+    case encode_and_sign(
+           claims,
+           signer()
+         ) do
+      {:ok, token, _claims} ->
+        {:ok, token}
 
-    claims = Map.merge(claims, %{user_id: user.id, teams: teams, exp: user_token_exp()})
-
-    {:ok, token, _claims} =
-      encode_and_sign(
-        claims,
-        signer()
-      )
-
-    token
+      {:error, reason} ->
+        Logger.error("Error building token: #{inspect(reason)}")
+        {:error, reason}
+    end
   end
 
-  defp user_token_exp() do
-    DateTime.now!("Etc/UTC") |> DateTime.add(2_592_000) |> DateTime.to_unix()
+  defp ensure_exp(%{exp: exp} = claims) when is_nil(exp) do
+    # 1 hour exp default
+    exp = DateTime.now!("Etc/UTC") |> DateTime.add(3_600_000) |> DateTime.to_unix()
+    Map.merge(claims, %{exp: exp})
+  end
+
+  defp ensure_exp(claims) do
+    claims
   end
 
   @spec signer :: Joken.Signer.t()
   def signer do
-    key = Application.get_env(:everylink, ELWeb.Endpoint)[:secret_key_base]
+    key = Application.get_env(:event_relay, ERWeb.Endpoint)[:secret_key_base]
     Joken.Signer.create("HS256", key)
   end
 

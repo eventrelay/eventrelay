@@ -17,6 +17,7 @@ defmodule ERWeb.Grpc.EventRelay.Interceptors.Authenticator do
   @impl GRPC.Server.Interceptor
   def call(req, stream, next, opts) do
     if ER.Env.skip_grpc_auth?() do
+      Logger.debug("Skipping GRPC auth--------------------------")
       next.(req, stream)
     else
       headers = GRPC.Stream.get_headers(stream)

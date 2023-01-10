@@ -20,6 +20,7 @@ service EventRelay {
   rpc RevokeApiKey(RevokeApiKeyRequest) returns (RevokeApiKeyResponse) {}
   rpc AddSubscriptionToApiKey(AddSubscriptionToApiKeyRequest) returns (AddSubscriptionToApiKeyResponse) {}
   rpc DeleteSubscriptionFromApiKey(DeleteSubscriptionFromApiKeyRequest) returns (DeleteSubscriptionFromApiKeyResponse) {}
+  rpc CreateJWT(CreateJWTRequest) returns (CreateJWTResponse) {}
 }
 
 message Topic {
@@ -147,8 +148,11 @@ message PublishEventsResponse {
 }
 
 message PullEventsRequest {
+  // ex. "users" or "users:123"
   string topic = 1;
+  // max batchSize is 1000, if not specified, defaults to 100
   int32 batchSize = 2;
+  // defaults to 0
   int32 offset = 3;
 }
 
@@ -198,4 +202,13 @@ message DeleteSubscriptionFromApiKeyRequest {
  message DeleteSubscriptionFromApiKeyResponse {
   string apiKeyId = 1;
   string subscriptionId = 2;
+}
+
+message CreateJWTRequest {
+  // unix timestamp in seconds
+  int32 expiration = 1;
+}
+
+message CreateJWTResponse {
+  string jwt = 1;
 }

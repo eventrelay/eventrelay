@@ -25,12 +25,34 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     AddSubscriptionToApiKeyRequest,
     AddSubscriptionToApiKeyResponse,
     DeleteSubscriptionFromApiKeyRequest,
-    DeleteSubscriptionFromApiKeyResponse
+    DeleteSubscriptionFromApiKeyResponse,
+    CreateJWTRequest,
+    CreateJWTResponse
   }
 
   alias ERWeb.Grpc.Eventrelay.Event, as: GrpcEvent
 
   alias ER.Events.Event
+
+  @spec create_jwt(CreateJWTRequest.t(), GRPC.Server.Stream.t()) :: CreateJWTResponse.t()
+  def create_jwt(request, _stream) do
+    claims =
+      unless ER.empty?(request.expiration) do
+        %{
+          exp: request.expiration
+        }
+      else
+        %{}
+      end
+
+    case ER.JWT.Token.build(request.api_key, claims) do
+      {:ok, jwt} ->
+        CreateJWTResponse.new(jwt: jwt)
+
+      {:error, reason} ->
+        raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+    end
+  end
 
   @spec publish_events(PublishEventsRequest.t(), GRPC.Server.Stream.t()) ::
           PublishEventsResponse.t()
@@ -71,6 +93,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
     offset = if request.offset == 0, do: nil, else: request.offset
     batch_size = if request.batchSize == 0, do: 100, else: request.batchSize
+    batch_size = if batch_size > 1000, do: 100, else: batch_size
 
     batched_results =
       ER.Events.list_events_for_topic(
@@ -124,7 +147,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
   @spec create_topic(CreateTopicRequest.t(), GRPC.Server.Stream.t()) :: CreateTopicResponse.t()
   def create_topic(request, _stream) do
     topic =
-      case ER.Events.create_topic_and_tables(%{name: request.name}) do
+      case ER.Events.create_topic(%{name: request.name}) do
         {:ok, topic} ->
           Topic.new(id: topic.id, name: topic.name)
 
@@ -159,7 +182,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
 
       topic ->
         try do
-          case ER.Events.delete_topic_and_tables(topic) do
+          case ER.Events.delete_topic(topic) do
             {:ok, topic} ->
               CreateTopicResponse.new(topic: Topic.new(id: topic.id, name: topic.name))
 

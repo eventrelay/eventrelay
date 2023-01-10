@@ -9,7 +9,7 @@ defmodule ERWeb.TopicLiveTest do
   @invalid_attrs %{name: nil}
 
   defp create_topic(_) do
-    {:ok, topic} = ER.Events.create_topic_and_tables(params_for(:topic))
+    {:ok, topic} = ER.Events.create_topic(params_for(:topic))
     %{topic: topic}
   end
 

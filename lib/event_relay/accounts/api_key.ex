@@ -62,7 +62,7 @@ defmodule ER.Accounts.ApiKey do
   @key_size 42
   @secret_size 64
 
-  def build(type, status \\ "active") do
+  def build(type, status \\ :active) do
     key =
       :crypto.strong_rand_bytes(@key_size)
       |> Base.url_encode64()

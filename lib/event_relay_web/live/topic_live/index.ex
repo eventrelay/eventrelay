@@ -35,7 +35,7 @@ defmodule ERWeb.TopicLive.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     topic = Events.get_topic!(id)
-    {:ok, _} = Events.delete_topic_and_tables(topic)
+    {:ok, _} = Events.delete_topic(topic)
 
     {:noreply, assign(socket, :topics, list_topics())}
   end

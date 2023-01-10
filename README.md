@@ -159,18 +159,21 @@ it will pause sending events for that topic/destination to preserve the order.
 - [x] GRPC API to publish events
 - [x] GRPC API to list,create,delete topics
 - [x] GRPC API to create,delete,list subscriptions
+- [x] GRPC API to create,revoke api keys
+- [x] GRPC API to create JWT for an api key
 - [x] websocket streaming implementation
 - [x] pull events GRPC API (offset/batch based)
 - [x] webhook implementation
-- [ ] add auth
-- [ ] add rate limiting
+- [x] add auth
+- [x] add rate limiting
 - [ ] Need to load all the deliveries in progress in the boot server
 - [ ] Test various scenarios of creating and droping topics
 - [ ] Add sequence for topic based event tables 
 - [ ] Standardize logging formatting
-- [ ] index event table properly
 - [ ] test all the authorization policies 
+- [ ] make sure subscription and delivery servers restart properly
 - [ ] GRPC streaming implementation
+- [ ] index event table properly
 
 
 

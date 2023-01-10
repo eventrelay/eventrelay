@@ -1,8 +1,11 @@
 defmodule ERWeb.Grpc.Endpoint do
   use GRPC.Endpoint
 
-  intercept(GRPC.Logger.Server, level: :debug)
-  intercept(ERWeb.Grpc.EventRelay.Interceptors.RateLimiter)
-  intercept(ERWeb.Grpc.EventRelay.Interceptors.Authenticator)
-  run(ERWeb.Grpc.EventRelay.Server)
+  run(ERWeb.Grpc.EventRelay.Server,
+    interceptors: [
+      GRPC.Logger.Server,
+      ERWeb.Grpc.EventRelay.Interceptors.RateLimiter,
+      ERWeb.Grpc.EventRelay.Interceptors.Authenticator
+    ]
+  )
 end

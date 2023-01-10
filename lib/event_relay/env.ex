@@ -1,6 +1,7 @@
 defmodule ER.Env do
   def skip_grpc_auth? do
-    Application.get_env(:event_relay, :skip_grpc_auth)
+    System.get_env("ER_SKIP_GRPC_AUTH") == "true"
+    true
   end
 
   def grpc_port do

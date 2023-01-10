@@ -236,23 +236,8 @@ defmodule ER.Events do
 
   @doc """
   Creates a topic.
-
-  ## Examples
-
-      iex> create_topic(%{field: value})
-      {:ok, %Topic{}}
-
-      iex> create_topic(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
   """
-  def create_topic(attrs \\ %{}) do
-    %Topic{}
-    |> Topic.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  def create_topic_and_tables(attrs \\ %{}) do
+  def create_topic(attrs) do
     try do
       case Repo.transaction(fn ->
              topic =
@@ -303,17 +288,8 @@ defmodule ER.Events do
 
   @doc """
   Deletes a topic.
-
-  ## Examples
-
-      iex> delete_topic_and_tables(topic)
-      {:ok, %Topic{}}
-
-      iex> delete_topic_and_tables(topic)
-      {:error, %Ecto.Changeset{}}
-
   """
-  def delete_topic_and_tables(%Topic{} = topic) do
+  def delete_topic(%Topic{} = topic) do
     try do
       case Repo.transaction(fn ->
              delete_events_for_topic!(topic)

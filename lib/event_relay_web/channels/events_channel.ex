@@ -3,6 +3,7 @@ defmodule ERWeb.EventsChannel do
 
   @impl true
   def join("events:" <> subscription_id, payload, socket) do
+    IO.inspect(payload)
     ER.Events.ChannelCache.register_socket(self(), subscription_id)
 
     if authorized?(payload) do

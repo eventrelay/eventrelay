@@ -231,7 +231,7 @@ defmodule ER.EventsTest do
     test "create_topic_and_table/1 with valid data creates a topic" do
       valid_attrs = %{name: "some name"}
 
-      assert {:ok, %Topic{} = topic} = Events.create_topic_and_tables(valid_attrs)
+      assert {:ok, %Topic{} = topic} = Events.create_topic(valid_attrs)
       assert topic.name == "some_name"
 
       event = %{
@@ -249,7 +249,7 @@ defmodule ER.EventsTest do
     test "create_topic_and_table/1 with invalid data creates a topic" do
       valid_attrs = %{name: "this_is_a_really_long_name_that_is_too_long_that_is_way_too_long"}
 
-      {:error, changeset} = Events.create_topic_and_tables(valid_attrs)
+      {:error, changeset} = Events.create_topic(valid_attrs)
 
       assert changeset.errors == [
                name:
@@ -272,9 +272,9 @@ defmodule ER.EventsTest do
       assert topic == Events.get_topic!(topic.id)
     end
 
-    test "delete_topic_and_tables/1 deletes the topic" do
-      {:ok, topic} = Events.create_topic_and_tables(%{name: "test"})
-      assert {:ok, %Topic{}} = Events.delete_topic_and_tables(topic)
+    test "delete_topic/1 deletes the topic" do
+      {:ok, topic} = Events.create_topic(%{name: "test"})
+      assert {:ok, %Topic{}} = Events.delete_topic(topic)
       assert_raise Ecto.NoResultsError, fn -> Events.get_topic!(topic.id) end
     end
 
