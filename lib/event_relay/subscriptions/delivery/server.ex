@@ -6,27 +6,36 @@ defmodule ER.Subscriptions.Delivery.Server do
   use GenServer
   use ER.Server
   import ER, only: [unwrap: 1]
+  alias ER.Events.Event
 
-  def handle_continue(:load_state, %{"id" => id, "topic_name" => topic_name} = state) do
+  def handle_continue(
+        :load_state,
+        %{
+          "event" => event,
+          "subscription" => subscription,
+          "delivery" => delivery
+        } = state
+      ) do
     # Check Redis cache to see if we have a delivery in progress
     # if we do, then we need to load the delivery and then
     # if not then we need to initialize normally
 
-    delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: topic_name)
+    # delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: topic_name)
+    IO.inspect(delivery, label: "delivery")
 
-    event =
-      ER.Events.get_event_for_topic!(delivery.event_id,
-        topic_name: delivery.subscription.topic_name
-      )
+    #     event =
+    #       ER.Events.get_event_for_topic!(delivery.event_id,
+    #         topic_name: delivery.subscription.topic_name
+    #       )
 
     state =
       state
       |> Map.put("delivery_attempts", delivery.attempts)
-      |> Map.put("subscription_endpoint_url", delivery.subscription.config["endpoint_url"])
-      |> Map.put("subscription_id", delivery.subscription.id)
-      |> Map.put("subscription_name", delivery.subscription.name)
-      |> Map.put("subscription_topic_name", delivery.subscription.topic_name)
-      |> Map.put("subscription_topic_identifier", delivery.subscription.topic_identifier)
+      |> Map.put("subscription_endpoint_url", subscription.config["endpoint_url"])
+      |> Map.put("subscription_id", subscription.id)
+      |> Map.put("subscription_name", subscription.name)
+      |> Map.put("subscription_topic_name", subscription.topic_name)
+      |> Map.put("subscription_topic_identifier", subscription.topic_identifier)
       # this could be a problem with serialization
       |> Map.put("event", event)
       |> Map.put("attempt_count", 0)
@@ -88,30 +97,47 @@ defmodule ER.Subscriptions.Delivery.Server do
         %{
           "delivery_attempts" => delivery_attempts,
           "subscription_id" => subscription_id,
-          "subscription_topic_name" => subscription_topic_name,
-          "id" => id
+          "event" => event,
+          "id" => id,
+          "delivery" => delivery
         } = state
       ) do
     Logger.debug(
       "Webhook subscription=#{inspect(subscription_id)} and delivery=#{inspect(id)} delivered successfully"
     )
 
-    delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: subscription_topic_name)
-    ER.Subscriptions.update_delivery(delivery, %{success: true, attempts: delivery_attempts})
+    create_delivery_for_event(event, delivery, %{
+      event_id: event.id,
+      subscription_id: subscription_id,
+      attempts: delivery_attempts,
+      success: true
+    })
+
+    # delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: subscription_topic_name)
+    # ER.Subscriptions.update_delivery(delivery, %{success: true, attempts: delivery_attempts})
     {:stop, :shutdown, state}
   end
 
   def handle_failure(
         %{
           "id" => id,
-          "subscription_topic_name" => subscription_topic_name,
-          "delivery_attempts" => delivery_attempts
+          "subscription_id" => subscription_id,
+          "delivery_attempts" => delivery_attempts,
+          "event" => event,
+          "delivery" => delivery
         } = state
       ) do
     Logger.debug("Webhook delivery #{inspect(id)} failed, not retrying")
 
-    delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: subscription_topic_name)
-    ER.Subscriptions.update_delivery(delivery, %{success: false, attempts: delivery_attempts})
+    create_delivery_for_event(event, delivery, %{
+      event_id: event.id,
+      subscription_id: subscription_id,
+      attempts: delivery_attempts,
+      success: false
+    })
+
+    # delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: subscription_topic_name)
+    # ER.Subscriptions.update_delivery(delivery, %{success: false, attempts: delivery_attempts})
     {:stop, :shutdown, state}
   end
 
@@ -140,6 +166,24 @@ defmodule ER.Subscriptions.Delivery.Server do
 
   def retry?(_) do
     false
+  end
+
+  def create_delivery_for_event(%Event{topic_name: topic_name, durable: true}, delivery, attrs) do
+    ER.Subscriptions.create_delivery_for_topic(
+      topic_name,
+      attrs,
+      delivery
+    )
+  end
+
+  def create_delivery_for_event(
+        %Event{durable: false} = event,
+        delivery,
+        _attrs
+      ) do
+    Logger.debug(
+      "Not creating delivery for non-durable event #{inspect(event)} and delivery #{inspect(delivery)}"
+    )
   end
 
   # TODO Move this to a helper module

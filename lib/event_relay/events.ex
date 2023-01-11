@@ -89,56 +89,61 @@ defmodule ER.Events do
     |> Repo.insert()
   end
 
+  def produce_event_for_topic(%{durable: true} = attrs) do
+    create_event_for_topic(attrs)
+    |> publish_event()
+  end
+
+  def produce_event_for_topic(attrs) do
+    event = struct!(Event, attrs)
+    publish_event({:ok, event})
+  end
+
   @spec create_event_for_topic(map()) :: {:ok, Event.t()} | {:error, Ecto.Changeset.t()}
   def create_event_for_topic(attrs \\ %{}) do
-    changeset =
-      %Event{}
-      |> ER.Events.Event.put_ecto_source(attrs[:topic_name])
-      |> Event.changeset(attrs)
-
     try do
       # First attempt to insert it in the proper topic events table
       event =
-        changeset
+        %Event{}
+        |> ER.Events.Event.put_ecto_source(attrs[:topic_name])
+        |> Event.changeset(attrs)
         |> Repo.insert!()
-        |> publish_event()
 
       {:ok, event}
     rescue
       e in Ecto.InvalidChangesetError ->
         Logger.error("Invalid changeset for event: #{inspect(e)}")
 
-        event =
-          struct!(Event, e.changeset.changes)
-          |> Ecto.put_meta(source: "dead_letter_events", state: :built)
-
-        errors = ER.Ecto.changeset_errors_to_list(e.changeset)
-        event = %{event | errors: errors}
-        Repo.insert(event)
+        insert_dead_letter_event(
+          struct!(Event, e.changeset.changes),
+          ER.Ecto.changeset_errors_to_list(e.changeset)
+        )
 
       e in Postgrex.Error ->
         Logger.error("Postgrex error for event: #{inspect(e)}")
-
-        event =
-          struct!(Event, attrs)
-          |> Ecto.put_meta(source: "dead_letter_events", state: :built)
-
-        event = %{event | errors: [e.postgres.message]}
-        Repo.insert(event)
+        insert_dead_letter_event(struct!(Event, attrs), [e.postgres.message])
 
       e ->
         Logger.error("Unknown error for event: #{inspect(e)}")
-
-        event =
-          struct!(Event, attrs)
-          |> Ecto.put_meta(source: "dead_letter_events", state: :built)
-
-        event = %{event | errors: [e.message]}
-        Repo.insert(event)
+        insert_dead_letter_event(struct!(Event, attrs), [e.message])
     end
   end
 
-  def publish_event(%Event{topic_name: topic_name, topic_identifier: topic_identifier} = event) do
+  defp insert_dead_letter_event(event, errors) do
+    event =
+      %{event | errors: errors}
+      |> Ecto.put_meta(source: "dead_letter_events", state: :built)
+
+    case Repo.insert(event) do
+      {:ok, event} -> {:error, event}
+      {:error, _changeset} -> {:error, event}
+    end
+  end
+
+  def publish_event(
+        {:ok, %Event{topic_name: topic_name, topic_identifier: topic_identifier} = event}
+      ) do
+    # TODO rewrite so that dead letter is taken into consideration and support for ephemeral
     PubSub.broadcast(ER.PubSub, topic_name, {:event_created, event})
     full_topic = ER.Events.Topic.build_topic(topic_name, topic_identifier)
 
@@ -146,7 +151,11 @@ defmodule ER.Events do
       PubSub.broadcast(ER.PubSub, full_topic, {:event_created, event})
     end
 
-    event
+    {:ok, event}
+  end
+
+  def publish_event({:error, event}) do
+    {:error, event}
   end
 
   @doc """

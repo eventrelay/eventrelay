@@ -137,6 +137,7 @@ message Event {
 message PublishEventsRequest {
    string topic = 1;
    repeated NewEvent events = 2;
+   bool durable = 3;
 }
 
 message PublishEventsResponse {
@@ -152,7 +153,6 @@ message PullEventsRequest {
   string topic = 1;
   // max batchSize is 1000, if not specified, defaults to 100
   int32 batchSize = 2;
-  // defaults to 0
   int32 offset = 3;
 }
 

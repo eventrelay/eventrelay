@@ -7,19 +7,14 @@ defmodule ER.Subscriptions.Delivery.Webhook do
     Logger.debug("Pushing event to webhook #{inspect(subscription)}")
     topic_name = subscription.topic_name
 
-    case ER.Subscriptions.create_delivery_for_topic(topic_name, %{
-           subscription_id: subscription.id,
-           event_id: event.id
-         }) do
-      {:ok, delivery} ->
-        Logger.debug("Created delivery #{inspect(delivery)}")
+    delivery = ER.Subscriptions.build_delivery_for_topic(topic_name)
+    Logger.debug("Created delivery #{inspect(delivery)}")
 
-        ER.Subscriptions.Delivery.Server.factory(delivery.id, %{
-          "topic_name" => topic_name
-        })
-
-      {:error, changeset} ->
-        Logger.error("Failed to create delivery: #{inspect(changeset)}")
-    end
+    ER.Subscriptions.Delivery.Server.factory(delivery.id, %{
+      "topic_name" => topic_name,
+      "delivery" => delivery,
+      "subscription" => subscription,
+      "event" => event
+    })
   end
 end

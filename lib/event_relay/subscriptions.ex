@@ -6,7 +6,7 @@ defmodule ER.Subscriptions do
   import Logger
   import Ecto.Query, warn: false
   alias ER.Repo
-
+  alias ER.Events.Event
   alias ER.Subscriptions.Subscription
 
   def from_subscriptions() do
@@ -34,15 +34,6 @@ defmodule ER.Subscriptions do
 
   @doc """
   Creates a subscription.
-
-  ## Examples
-
-      iex> create_subscription(%{field: value})
-      {:ok, %Subscription{}}
-
-      iex> create_subscription(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
   """
   def create_subscription(attrs \\ %{}) do
     %Subscription{}
@@ -139,17 +130,6 @@ defmodule ER.Subscriptions do
 
   @doc """
   Gets a single delivery.
-
-  Raises `Ecto.NoResultsError` if the Delivery does not exist.
-
-  ## Examples
-
-      iex> get_delivery!(123)
-      %Delivery{}
-
-      iex> get_delivery!(456)
-      ** (Ecto.NoResultsError)
-
   """
   def get_delivery!(id),
     do: Repo.get!(Delivery, id) |> Repo.preload(subscription: [:topic])
@@ -165,15 +145,6 @@ defmodule ER.Subscriptions do
 
   @doc """
   Creates a delivery.
-
-  ## Examples
-
-      iex> create_delivery(%{field: value})
-      {:ok, %Delivery{}}
-
-      iex> create_delivery(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
   """
   def create_delivery(attrs \\ %{}) do
     %Delivery{}
@@ -181,10 +152,18 @@ defmodule ER.Subscriptions do
     |> Repo.insert()
   end
 
+  def build_delivery_for_topic(topic_name) do
+    struct!(
+      Delivery,
+      %{id: Ecto.UUID.generate()}
+    )
+    |> ER.Subscriptions.Delivery.put_ecto_source(topic_name)
+  end
+
   @spec create_delivery_for_topic(map()) :: {:ok, Delivery.t()} | {:error, Ecto.Changeset.t()}
-  def create_delivery_for_topic(topic_name, attrs \\ %{}) do
+  def create_delivery_for_topic(topic_name, attrs \\ %{}, delivery \\ %Delivery{}) do
     changeset =
-      %Delivery{}
+      delivery
       |> ER.Subscriptions.Delivery.put_ecto_source(topic_name)
       |> Delivery.changeset(attrs)
 

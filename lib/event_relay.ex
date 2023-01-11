@@ -107,4 +107,7 @@ defmodule ER do
   def empty?(str) when is_binary(str), do: String.trim(str) == ""
   def empty?(map) when is_map(map), do: map == %{}
   def empty?(list) when is_list(list), do: list == []
+
+  def boolean?(value) when is_boolean(value), do: true
+  def boolean?(value) when not is_boolean(value), do: false
 end

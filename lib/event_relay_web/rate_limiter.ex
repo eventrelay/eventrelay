@@ -1,21 +1,27 @@
 defmodule ERWeb.RateLimiter do
-  def check_rate(method) do
-    {time_frame, max_req} = rate(method)
+  def check_rate(type, context \\ []) do
+    {key, time_frame, max_req} = rate(type, context)
 
-    case Hammer.check_rate("request:#{method}", time_frame, max_req) do
+    case Hammer.check_rate(key, time_frame, max_req) do
       {:allow, count} -> {:allow, count}
-      {:deny, _} -> {:deny, method, time_frame, max_req}
+      {:deny, _} -> {:deny, type, time_frame, max_req}
     end
   end
 
-  defp rate(method) do
+  defp rate(type, context) do
     # TODO make this configurable via ENV
-    case method do
-      "publish_events" ->
-        {1_000, 200}
+    case {type, context} do
+      {"publish_events", [durable: false]} ->
+        {"request:publish_events:ephemeral", 1_000, 10_000}
+
+      {"publish_events", [durable: true]} ->
+        {"request:publish_events:durable", 1_000, 100}
+
+      {"create_topic", _context} ->
+        {"request:create_topic", 1_000, 5}
 
       _ ->
-        {1_000, 5}
+        {"request:#{type}", 1_000, 20}
     end
   end
 end

@@ -22,6 +22,7 @@ defmodule ER.Events.Event do
           source: String.t(),
           context: map(),
           errors: list(),
+          durable: boolean(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }
@@ -56,6 +57,7 @@ defmodule ER.Events.Event do
     field :occurred_at, :utc_datetime
     field :offset, :integer, read_after_writes: true
     field :source, :string
+    field :durable, :boolean, default: true, virtual: true
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
     timestamps(type: :utc_datetime)

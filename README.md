@@ -166,10 +166,13 @@ it will pause sending events for that topic/destination to preserve the order.
 - [x] webhook implementation
 - [x] add auth
 - [x] add rate limiting
+- [ ] websocket publish events
+- [ ] non-durable events 
+- [ ] Add sequence for topic based event tables 
+- [ ] json logger 
+- [ ] Standardize logging formatting
 - [ ] Need to load all the deliveries in progress in the boot server
 - [ ] Test various scenarios of creating and droping topics
-- [ ] Add sequence for topic based event tables 
-- [ ] Standardize logging formatting
 - [ ] test all the authorization policies 
 - [ ] make sure subscription and delivery servers restart properly
 - [ ] GRPC streaming implementation

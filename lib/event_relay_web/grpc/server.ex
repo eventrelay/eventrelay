@@ -60,10 +60,11 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     events = request.events
     topic = request.topic
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
+    durable = if ER.boolean?(request.durable), do: false, else: request.durable
 
     events =
       Enum.map(events, fn event ->
-        case ER.Events.create_event_for_topic(%{
+        case ER.Events.produce_event_for_topic(%{
                name: Map.get(event, :name),
                source: Map.get(event, :source),
                data_json: Map.get(event, :data),
@@ -71,6 +72,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
                occurred_at: Map.get(event, :occurredAt),
                user_id: Map.get(event, :userId),
                anonymous_id: Map.get(event, :anonymousId),
+               durable: durable,
                topic_name: topic_name,
                topic_identifier: topic_identifier
              }) do

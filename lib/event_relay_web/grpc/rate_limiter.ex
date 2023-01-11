@@ -14,8 +14,9 @@ defmodule ERWeb.Grpc.EventRelay.Interceptors.RateLimiter do
   @impl GRPC.Server.Interceptor
   def call(req, stream, next, opts) do
     rpc_method = stream.rpc |> elem(0) |> to_string()
+    context = get_context(req)
 
-    case ERWeb.RateLimiter.check_rate(rpc_method) do
+    case ERWeb.RateLimiter.check_rate(rpc_method, context) do
       {:allow, _count} ->
         next.(req, stream)
 
@@ -27,5 +28,14 @@ defmodule ERWeb.Grpc.EventRelay.Interceptors.RateLimiter do
           status: GRPC.Status.resource_exhausted(),
           message: message
     end
+  end
+
+  defp get_context(%ERWeb.Grpc.Eventrelay.PublishEventsRequest{} = request) do
+    durable = if ER.boolean?(request.durable), do: false, else: request.durable
+    [durable: durable]
+  end
+
+  defp get_context(_req) do
+    []
   end
 end
