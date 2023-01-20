@@ -6,7 +6,7 @@ defmodule ER.Accounts do
   import Ecto.Query, warn: false
   alias ER.Repo
 
-  alias ER.Accounts.{User, UserToken, UserNotifier, ApiKey, ApiKeySubscription}
+  alias ER.Accounts.{User, UserToken, UserNotifier, ApiKey, ApiKeySubscription, ApiKeyTopic}
 
   ## Database getters
 
@@ -426,13 +426,15 @@ defmodule ER.Accounts do
   @doc """
   Creates a api_key.
   """
+  def create_api_key(attrs \\ %{})
+
   def create_api_key(api_key) when is_struct(api_key) do
     api_key
     |> ApiKey.changeset(%{})
     |> Repo.insert()
   end
 
-  def create_api_key(attrs \\ %{}) do
+  def create_api_key(attrs) do
     %ApiKey{}
     |> ApiKey.changeset(attrs)
     |> Repo.insert()
@@ -475,8 +477,11 @@ defmodule ER.Accounts do
   Create an api key subscription
   """
   def create_api_key_subscription(api_key, subscription) do
-    %ApiKeySubscription{}
-    |> ApiKeySubscription.changeset(%{api_key_id: api_key.id, subscription_id: subscription.id})
+    %ApiKeySubscription{
+      api_key_id: api_key.id,
+      subscription_id: subscription.id
+    }
+    |> ApiKeySubscription.changeset(%{})
     |> Repo.insert()
   end
 
@@ -485,5 +490,34 @@ defmodule ER.Accounts do
   """
   def delete_api_key_subscription(api_key_subscription) do
     Repo.delete(api_key_subscription)
+  end
+
+  @doc """
+  Get a api key topic
+  """
+  def get_api_key_topic(api_key, topic) do
+    from(a in ApiKeyTopic)
+    |> where([a], a.api_key_id == ^api_key.id)
+    |> where([a], a.topic_name == ^topic.name)
+    |> Repo.one()
+  end
+
+  @doc """
+  Create an api key topic
+  """
+  def create_api_key_topic(api_key, topic) do
+    %ApiKeyTopic{
+      api_key_id: api_key.id,
+      topic_name: topic.name
+    }
+    |> ApiKeyTopic.changeset(%{})
+    |> Repo.insert()
+  end
+
+  @doc """
+  Delete an api key topic
+  """
+  def delete_api_key_topic(api_key_topic) do
+    Repo.delete(api_key_topic)
   end
 end

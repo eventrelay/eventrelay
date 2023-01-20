@@ -22,10 +22,14 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     ApiKey,
     RevokeApiKeyRequest,
     RevokeApiKeyResponse,
-    AddSubscriptionToApiKeyRequest,
-    AddSubscriptionToApiKeyResponse,
-    DeleteSubscriptionFromApiKeyRequest,
-    DeleteSubscriptionFromApiKeyResponse,
+    AddSubscriptionsToApiKeyRequest,
+    AddSubscriptionsToApiKeyResponse,
+    DeleteSubscriptionsFromApiKeyRequest,
+    DeleteSubscriptionsFromApiKeyResponse,
+    AddTopicsToApiKeyResponse,
+    AddTopicsToApiKeyRequest,
+    DeleteTopicsFromApiKeyRequest,
+    DeleteTopicsFromApiKeyResponse,
     CreateJWTRequest,
     CreateJWTResponse
   }
@@ -33,6 +37,8 @@ defmodule ERWeb.Grpc.EventRelay.Server do
   alias ERWeb.Grpc.Eventrelay.Event, as: GrpcEvent
 
   alias ER.Events.Event
+  alias ER.Repo
+  import ERWeb.Grpc.Enums, only: [to_grpc_enum: 1, from_grpc_enum: 1]
 
   @spec create_jwt(CreateJWTRequest.t(), GRPC.Server.Stream.t()) :: CreateJWTResponse.t()
   def create_jwt(request, _stream) do
@@ -49,7 +55,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
       {:ok, jwt} ->
         CreateJWTResponse.new(jwt: jwt)
 
-      {:error, reason} ->
+      {:error, _reason} ->
         raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
     end
   end
@@ -60,7 +66,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     events = request.events
     topic = request.topic
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
-    durable = if ER.boolean?(request.durable), do: false, else: request.durable
+    durable = unless ER.boolean?(request.durable), do: false, else: request.durable
 
     events =
       Enum.map(events, fn event ->
@@ -69,9 +75,9 @@ defmodule ERWeb.Grpc.EventRelay.Server do
                source: Map.get(event, :source),
                data_json: Map.get(event, :data),
                context: Map.get(event, :context),
-               occurred_at: Map.get(event, :occurredAt),
-               user_id: Map.get(event, :userId),
-               anonymous_id: Map.get(event, :anonymousId),
+               occurred_at: Map.get(event, :occurred_at),
+               user_id: Map.get(event, :user_id),
+               anonymous_id: Map.get(event, :anonymous_id),
                durable: durable,
                topic_name: topic_name,
                topic_identifier: topic_identifier
@@ -94,7 +100,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     topic = request.topic
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
     offset = if request.offset == 0, do: nil, else: request.offset
-    batch_size = if request.batchSize == 0, do: 100, else: request.batchSize
+    batch_size = if request.batch_size == 0, do: 100, else: request.batch_size
     batch_size = if batch_size > 1000, do: 100, else: batch_size
 
     batched_results =
@@ -109,10 +115,10 @@ defmodule ERWeb.Grpc.EventRelay.Server do
 
     PullEventsResponse.new(
       events: events,
-      nextOffset: batched_results.next_offset,
-      previousOffset: batched_results.previous_offset,
-      totalCount: batched_results.total_count,
-      totalBatches: batched_results.total_batches
+      next_offset: batched_results.next_offset,
+      previous_offset: batched_results.previous_offset,
+      total_count: batched_results.total_count,
+      total_batches: batched_results.total_batches
     )
   end
 
@@ -124,16 +130,16 @@ defmodule ERWeb.Grpc.EventRelay.Server do
       source: event.source,
       data: event.data_json,
       context: event.context,
-      occurredAt: event.occurred_at,
+      occurred_at: event.occurred_at,
       offset: event.offset,
-      userId: event.user_id,
-      anonymousId: event.anonymous_id,
+      user_id: event.user_id,
+      anonymous_id: event.anonymous_id,
       errors: event.errors
     )
   end
 
   @spec list_topics(ListTopicsRequest.t(), GRPC.Server.Stream.t()) :: ListTopicsResponse.t()
-  def list_topics(request, _stream) do
+  def list_topics(_request, _stream) do
     topics =
       ER.Events.list_topics()
       |> Enum.map(fn topic ->
@@ -213,11 +219,11 @@ defmodule ERWeb.Grpc.EventRelay.Server do
   def create_subscription(request, _stream) do
     attrs = %{
       name: request.subscription.name,
-      topic_name: request.subscription.topicName,
-      topic_identifier: request.subscription.topicIdentifier,
+      topic_name: request.subscription.topic_name,
+      topic_identifier: request.subscription.topic_identifier,
       config: request.subscription.config,
       push: request.subscription.push,
-      subscription_type: request.subscription.subscriptionType
+      subscription_type: request.subscription.subscription_type
     }
 
     subscription =
@@ -280,7 +286,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
           ListSubscriptionsResponse.t()
   def list_subscriptions(request, _stream) do
     page = if request.page == 0, do: 1, else: request.page
-    page_size = if request.pageSize == 0, do: 100, else: request.pageSize
+    page_size = if request.page_size == 0, do: 100, else: request.page_size
 
     paginated_results = ER.Subscriptions.list_subscriptions(page: page, page_size: page_size)
 
@@ -288,10 +294,10 @@ defmodule ERWeb.Grpc.EventRelay.Server do
 
     ListSubscriptionsResponse.new(
       subscriptions: subscriptions,
-      totalCount: paginated_results.total_count,
-      nextPage: paginated_results.next_page,
-      previousPage: paginated_results.previous_page,
-      totalPages: paginated_results.total_pages
+      total_count: paginated_results.total_count,
+      next_page: paginated_results.next_page,
+      previous_page: paginated_results.previous_page,
+      total_pages: paginated_results.total_pages
     )
   end
 
@@ -299,11 +305,11 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     Subscription.new(
       id: subscription.id,
       name: subscription.name,
-      topicName: subscription.topic_name,
-      topicIdentifier: subscription.topic_identifier,
+      topic_name: subscription.topic_name,
+      topic_identifier: subscription.topic_identifier,
       push: subscription.push,
       config: subscription.config,
-      subscriptionType: subscription.subscription_type
+      subscription_type: subscription.subscription_type
     )
   end
 
@@ -312,7 +318,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
   @spec create_api_key(CreateApiKeyRequest.t(), GRPC.Server.Stream.t()) ::
           CreateApiKeyResponse.t()
   def create_api_key(request, _stream) do
-    api_key = ER.Accounts.ApiKey.build(request.type, :active)
+    api_key = ER.Accounts.ApiKey.build(from_grpc_enum(request.type), :active)
 
     api_key =
       case ER.Accounts.create_api_key(api_key) do
@@ -350,9 +356,15 @@ defmodule ERWeb.Grpc.EventRelay.Server do
           message: "ApiKey not found"
 
       api_key ->
+        if api_key.status == :revoked do
+          raise GRPC.RPCError,
+            status: GRPC.Status.failed_precondition(),
+            message: "ApiKey is already revoked"
+        end
+
         try do
           case ER.Accounts.update_api_key(api_key, %{status: :revoked}) do
-            {:ok, topic} ->
+            {:ok, api_key} ->
               RevokeApiKeyResponse.new(api_key: build_api_key(api_key))
 
             {:error, %Ecto.Changeset{} = changeset} ->
@@ -375,31 +387,58 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     end
   end
 
-  @spec add_subscription_to_api_key_request(
-          AddSubscriptionToApiKeyRequest.t(),
+  @spec add_subscriptions_to_api_key(
+          AddSubscriptionsToApiKeyRequest.t(),
           GRPC.Server.Stream.t()
         ) ::
-          AddApiKeyToSubscriptionResponse.t()
-  def add_subscription_to_api_key_request(request, _stream) do
+          AddApiKeyToSubscriptionsResponse.t()
+  def add_subscriptions_to_api_key(request, _stream) do
     with {:api_key, api_key} when not is_nil(api_key) <-
-           {:api_key, ER.Accounts.get_api_key(request.apiKeyId)},
-         {:subscription, subscription} when not is_nil(subscription) <-
-           {:subscription, ER.Subscriptions.get_subscription(request.subscriptionId)} do
+           {:api_key, ER.Accounts.get_api_key(request.id)},
+         {:subscriptions, subscriptions} when not is_nil(subscriptions) <-
+           {:subscriptions, ER.Subscriptions.list_subscriptions(ids: request.subscription_ids)} do
+      if api_key.status == :revoked do
+        raise GRPC.RPCError,
+          status: GRPC.Status.failed_precondition(),
+          message: "ApiKey is revoked"
+      end
+
+      if api_key.type in [:admin, :producer] do
+        raise GRPC.RPCError,
+          status: GRPC.Status.failed_precondition(),
+          message: "ApiKey is not of type consumer"
+      end
+
       try do
-        case ER.Accounts.create_api_key_subscription(api_key, subscription) do
-          {:ok, api_key_subscription} ->
-            AddSubscriptionToApiKeyResponse.new(
-              apiKeyId: api_key_subscription.api_key_id,
-              subscriptionId: api_key_subscription.subscription_id
+        Repo.transaction(fn ->
+          Enum.map(subscriptions, fn subscription ->
+            case ER.Accounts.create_api_key_subscription(api_key, subscription) do
+              {:ok, api_key_subscription} ->
+                api_key_subscription.subscription_id
+
+              {:error, %Ecto.Changeset{} = changeset} ->
+                raise GRPC.RPCError,
+                  status: GRPC.Status.invalid_argument(),
+                  message: ER.Ecto.changeset_errors_to_string(changeset)
+
+              {:error, error} ->
+                Logger.error("Failed to create api key subscription: #{inspect(error)}")
+                nil
+            end
+          end)
+          |> Enum.reject(&is_nil/1)
+          |> IO.inspect(label: "api_key_subscriptions")
+        end)
+        |> IO.inspect(label: "transaction")
+        |> case do
+          {:ok, api_key_subscription_ids} ->
+            AddSubscriptionsToApiKeyResponse.new(
+              id: api_key.id,
+              subscription_ids: api_key_subscription_ids
             )
 
-          {:error, %Ecto.Changeset{} = changeset} ->
-            raise GRPC.RPCError,
-              status: GRPC.Status.invalid_argument(),
-              message: ER.Ecto.changeset_errors_to_string(changeset)
-
           {:error, error} ->
-            Logger.error("Failed to create api key subscription: #{inspect(error)}")
+            Logger.error("Failed to add subscriptions to api key: #{inspect(error)}")
 
             raise GRPC.RPCError,
               status: GRPC.Status.unknown(),
@@ -407,8 +446,17 @@ defmodule ERWeb.Grpc.EventRelay.Server do
         end
       rescue
         error ->
-          Logger.error("Failed to create api key subscription: #{inspect(error)}")
-          raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+          case error do
+            %GRPC.RPCError{} ->
+              raise error
+
+            _ ->
+              Logger.error("Failed to add subscriptions to api key: #{inspect(error)}")
+
+              raise GRPC.RPCError,
+                status: GRPC.Status.unknown(),
+                message: "Something went wrong"
+          end
       end
     else
       {:api_key, nil} ->
@@ -416,40 +464,58 @@ defmodule ERWeb.Grpc.EventRelay.Server do
           status: GRPC.Status.not_found(),
           message: "ApiKey not found"
 
-      {:subscription, nil} ->
+      {:subscriptions, []} ->
         raise GRPC.RPCError,
           status: GRPC.Status.not_found(),
-          message: "Subscription not found"
+          message: "Subscriptions not found"
     end
   end
 
-  @spec delete_subscription_from_api_key(
-          DeleteSubscriptionFromApiKeyRequest.t(),
+  @spec delete_subscriptions_from_api_key(
+          DeleteSubscriptionsFromApiKeyRequest.t(),
           GRPC.Server.Stream.t()
         ) ::
-          DeleteSubscriptionFromApiKeyResponse.t()
-  def delete_subscription_from_api_key(request, _stream) do
+          DeleteSubscriptionsFromApiKeyResponse.t()
+  def delete_subscriptions_from_api_key(request, _stream) do
     with {:api_key, api_key} when not is_nil(api_key) <-
-           {:api_key, ER.Accounts.get_api_key(request.apiKeyId)},
-         {:subscription, subscription} when not is_nil(subscription) <-
-           {:subscription, ER.Subscriptions.get_subscription(request.subscriptionId)},
-         {:api_key_subscription, api_key_subscription} when not is_nil(api_key_subscription) <-
-           {:api_key_subscription, ER.Accounts.get_api_key_subscription(api_key, subscription)} do
+           {:api_key, ER.Accounts.get_api_key(request.id)},
+         {:subscriptions, subscriptions} when not is_nil(subscriptions) <-
+           {:subscriptions, ER.Subscriptions.list_subscriptions(ids: request.subscription_ids)} do
       try do
-        case ER.Accounts.delete_api_key_subscription(api_key_subscription) do
-          {:ok, api_key_subscription} ->
-            DeleteSubscriptionFromApiKeyResponse.new(
-              apiKeyId: api_key_subscription.api_key_id,
-              subscriptionId: api_key_subscription.subscription_id
+        Repo.transaction(fn ->
+          Enum.map(subscriptions, fn subscription ->
+            api_key_subscription = ER.Accounts.get_api_key_subscription(api_key, subscription)
+
+            case ER.Accounts.delete_api_key_subscription(api_key_subscription) do
+              {:ok, api_key_subscription} ->
+                api_key_subscription.subscription_id
+
+              {:error, %Ecto.Changeset{} = changeset} ->
+                raise GRPC.RPCError,
+                  status: GRPC.Status.invalid_argument(),
+                  message: ER.Ecto.changeset_errors_to_string(changeset)
+
+              {:error, error} ->
+                Logger.error("Failed to delete api key subscription: #{inspect(error)}")
+
+                raise GRPC.RPCError,
+                  status: GRPC.Status.unknown(),
+                  message: "Something went wrong"
+            end
+          end)
+          |> Enum.reject(&is_nil/1)
+          |> IO.inspect(label: "api_key_subscriptions")
+        end)
+        |> IO.inspect(label: "transaction")
+        |> case do
+          {:ok, api_key_subscription_ids} ->
+            DeleteSubscriptionsFromApiKeyResponse.new(
+              id: api_key.id,
+              subscription_ids: api_key_subscription_ids
             )
 
-          {:error, %Ecto.Changeset{} = changeset} ->
-            raise GRPC.RPCError,
-              status: GRPC.Status.invalid_argument(),
-              message: ER.Ecto.changeset_errors_to_string(changeset)
-
           {:error, error} ->
-            Logger.error("Failed to delete api key subscription: #{inspect(error)}")
+            Logger.error("Failed to delete subscriptions to api key: #{inspect(error)}")
 
             raise GRPC.RPCError,
               status: GRPC.Status.unknown(),
@@ -457,8 +523,91 @@ defmodule ERWeb.Grpc.EventRelay.Server do
         end
       rescue
         error ->
-          Logger.error("Failed to delete api key subscription: #{inspect(error)}")
-          raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+          case error do
+            %GRPC.RPCError{} ->
+              raise error
+
+            _ ->
+              Logger.error("Failed to delete api key subscription: #{inspect(error)}")
+              raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+          end
+      end
+    else
+      {:api_key, nil} ->
+        raise GRPC.RPCError,
+          status: GRPC.Status.not_found(),
+          message: "ApiKey not found"
+    end
+  end
+
+  @spec add_topics_to_api_key(
+          AddTopicsToApiKeyRequest.t(),
+          GRPC.Server.Stream.t()
+        ) ::
+          AddTopicsToApiKeyRequest.t()
+  def add_topics_to_api_key(request, _stream) do
+    with {:api_key, api_key} when not is_nil(api_key) <-
+           {:api_key, ER.Accounts.get_api_key(request.id)},
+         {:topics, topics} when is_list(topics) <-
+           {:topics, ER.Events.list_topics(names: request.topic_names)} do
+      if api_key.status == :revoked do
+        raise GRPC.RPCError,
+          status: GRPC.Status.failed_precondition(),
+          message: "ApiKey is revoked"
+      end
+
+      if api_key.type in [:admin, :consumer] do
+        raise GRPC.RPCError,
+          status: GRPC.Status.failed_precondition(),
+          message: "ApiKey is not of type producer"
+      end
+
+      try do
+        Repo.transaction(fn ->
+          Enum.map(topics, fn topic ->
+            case ER.Accounts.create_api_key_topic(api_key, topic) do
+              {:ok, api_key_topic} ->
+                api_key_topic.topic_name
+
+              {:error, %Ecto.Changeset{} = changeset} ->
+                raise GRPC.RPCError,
+                  status: GRPC.Status.invalid_argument(),
+                  message: ER.Ecto.changeset_errors_to_string(changeset)
+
+              {:error, error} ->
+                Logger.error("Failed to create api key topic: #{inspect(error)}")
+                nil
+            end
+          end)
+          |> Enum.reject(&is_nil/1)
+        end)
+        |> case do
+          {:ok, api_key_topic_names} ->
+            AddTopicsToApiKeyResponse.new(
+              id: api_key.id,
+              topic_names: api_key_topic_names
+            )
+
+          {:error, error} ->
+            Logger.error("Failed to add topics to api key: #{inspect(error)}")
+
+            raise GRPC.RPCError,
+              status: GRPC.Status.unknown(),
+              message: "Something went wrong"
+        end
+      rescue
+        error ->
+          case error do
+            %GRPC.RPCError{} ->
+              raise error
+
+            _ ->
+              Logger.error("Failed to add topics to api key: #{inspect(error)}")
+
+              raise GRPC.RPCError,
+                status: GRPC.Status.unknown(),
+                message: "Something went wrong"
+          end
       end
     else
       {:api_key, nil} ->
@@ -466,15 +615,77 @@ defmodule ERWeb.Grpc.EventRelay.Server do
           status: GRPC.Status.not_found(),
           message: "ApiKey not found"
 
-      {:subscription, nil} ->
+      {:topics, []} ->
         raise GRPC.RPCError,
           status: GRPC.Status.not_found(),
-          message: "Subscription not found"
+          message: "Topics not found"
+    end
+  end
 
-      {:api_key_subscription, nil} ->
+  @spec delete_topics_from_api_key(
+          DeleteTopicsFromApiKeyRequest.t(),
+          GRPC.Server.Stream.t()
+        ) ::
+          DeleteTopicsFromApiKeyResponse.t()
+  def delete_topics_from_api_key(request, _stream) do
+    with {:api_key, api_key} when not is_nil(api_key) <-
+           {:api_key, ER.Accounts.get_api_key(request.id)},
+         {:topics, topics} when is_list(topics) <-
+           {:topics, ER.Events.list_topics(names: request.topic_names)} do
+      try do
+        Repo.transaction(fn ->
+          Enum.map(topics, fn topic ->
+            api_key_topic = ER.Accounts.get_api_key_topic(api_key, topic)
+
+            case ER.Accounts.delete_api_key_topic(api_key_topic) do
+              {:ok, api_key_topic} ->
+                api_key_topic.topic_name
+
+              {:error, %Ecto.Changeset{} = changeset} ->
+                raise GRPC.RPCError,
+                  status: GRPC.Status.invalid_argument(),
+                  message: ER.Ecto.changeset_errors_to_string(changeset)
+
+              {:error, error} ->
+                Logger.error("Failed to delete api key topic: #{inspect(error)}")
+
+                raise GRPC.RPCError,
+                  status: GRPC.Status.unknown(),
+                  message: "Something went wrong"
+            end
+          end)
+          |> Enum.reject(&is_nil/1)
+        end)
+        |> case do
+          {:ok, api_key_topic_names} ->
+            DeleteTopicsFromApiKeyResponse.new(
+              id: api_key.id,
+              topic_names: api_key_topic_names
+            )
+
+          {:error, error} ->
+            Logger.error("Failed to delete topic to api key: #{inspect(error)}")
+
+            raise GRPC.RPCError,
+              status: GRPC.Status.unknown(),
+              message: "Something went wrong"
+        end
+      rescue
+        error ->
+          case error do
+            %GRPC.RPCError{} ->
+              raise error
+
+            _ ->
+              Logger.error("Failed to delete api key topic: #{inspect(error)}")
+              raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+          end
+      end
+    else
+      {:api_key, nil} ->
         raise GRPC.RPCError,
           status: GRPC.Status.not_found(),
-          message: "ApiKeySubscription not found"
+          message: "ApiKey not found"
     end
   end
 
@@ -483,8 +694,8 @@ defmodule ERWeb.Grpc.EventRelay.Server do
       id: api_key.id,
       key: api_key.key,
       secret: api_key.secret,
-      type: api_key.type,
-      status: api_key.status
+      type: to_grpc_enum(api_key.type),
+      status: to_grpc_enum(api_key.status)
     )
   end
 end

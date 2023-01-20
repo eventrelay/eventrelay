@@ -6,6 +6,8 @@ defmodule ER.Accounts.ApiKey do
   import Ecto.Changeset
   alias ER.Accounts.ApiKeySubscription
   alias ER.Subscriptions.Subscription
+  alias ER.Accounts.ApiKeyTopic
+  alias ER.Events.Topic
   alias __MODULE__
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -15,11 +17,15 @@ defmodule ER.Accounts.ApiKey do
     field(:secret, :string)
     field(:status, Ecto.Enum, values: [:active, :revoked])
     field(:type, Ecto.Enum, values: [:admin, :producer, :consumer])
-    has_many(:api_key_subscriptions, ApiKeySubscription)
+    has_many(:api_key_subscriptions, ApiKeySubscription, on_delete: :delete_all)
 
-    many_to_many(:subscriptions, Subscription,
-      join_through: ApiKeySubscription,
-      on_delete: :delete_all
+    many_to_many(:subscriptions, Subscription, join_through: ApiKeySubscription)
+
+    has_many(:api_key_topics, ApiKeyTopic, on_delete: :delete_all)
+
+    many_to_many(:topics, Topic,
+      join_through: ApiKeyTopic,
+      join_keys: [api_key_id: :id, topic_name: :name]
     )
 
     timestamps(type: :utc_datetime)

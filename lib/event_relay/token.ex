@@ -12,13 +12,14 @@ defmodule ER.JWT.Token do
   """
   use Joken.Config
   alias ER.Repo
+  alias ER.Accounts.ApiKey
   @behaviour ER.JWT.TokenAdapter
 
   @impl true
   def build(api_key, claims \\ %{}) do
     claims =
       claims
-      |> Map.merge(%{api_key_id: api_key.id, subscriptions: []})
+      |> merge_api_key_claims(api_key)
       |> ensure_exp()
 
     case encode_and_sign(
@@ -32,6 +33,24 @@ defmodule ER.JWT.Token do
         Logger.error("Error building token: #{inspect(reason)}")
         {:error, reason}
     end
+  end
+
+  def merge_api_key_claims(claims, %ApiKey{type: :consumer} = api_key) do
+    subscription_ids = Repo.preload(api_key, :subscriptions).subscriptions |> Enum.map(& &1.id)
+    Map.merge(claims, %{sub_ids: subscription_ids}) |> merge_default_api_key_claims(api_key)
+  end
+
+  def merge_api_key_claims(claims, %ApiKey{type: :producer} = api_key) do
+    topic_names = Repo.preload(api_key, :topics).topics |> Enum.map(& &1.name)
+    Map.merge(claims, %{topic_names: topic_names}) |> merge_default_api_key_claims(api_key)
+  end
+
+  def merge_api_key_claims(claims, %ApiKey{type: :admin} = api_key) do
+    Map.merge(claims, %{api_key_id: api_key.id}) |> merge_default_api_key_claims(api_key)
+  end
+
+  def merge_default_api_key_claims(claims, %ApiKey{id: id, type: type}) do
+    Map.merge(claims, %{api_key_id: id, api_key_type: type})
   end
 
   defp ensure_exp(%{exp: exp} = claims) when is_nil(exp) do

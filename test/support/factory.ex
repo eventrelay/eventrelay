@@ -59,4 +59,18 @@ defmodule ER.Factory do
       type: "consumer"
     }
   end
+
+  def api_key_subscription_factory do
+    %ER.Accounts.ApiKeySubscription{
+      api_key: build(:api_key),
+      subscription: build(:subscription)
+    }
+  end
+
+  def api_key_topic_factory do
+    %ER.Accounts.ApiKeyTopic{
+      api_key: build(:api_key),
+      topic: build(:topic)
+    }
+  end
 end

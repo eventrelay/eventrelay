@@ -31,12 +31,12 @@ defmodule ER do
     Float.to_string(value)
   end
 
-  def to_string(value) when is_atom(value) do
-    Atom.to_string(value)
-  end
-
   def to_string(value) when is_nil(value) do
     ""
+  end
+
+  def to_string(value) do
+    Kernel.to_string(value)
   end
 
   def to_integer(value) when is_binary(value) do
@@ -72,6 +72,14 @@ defmodule ER do
 
   def unwrap_ok!(value) do
     raise ArgumentError, message: "#{inspect(value)} is not an :ok tuple"
+  end
+
+  def unwrap_ok_or_nil({:ok, value}) do
+    value
+  end
+
+  def unwrap_ok_or_nil(_) do
+    nil
   end
 
   def unwrap({:ok, value}), do: value

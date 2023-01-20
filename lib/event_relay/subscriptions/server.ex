@@ -40,6 +40,7 @@ defmodule ER.Subscriptions.Server do
         ER.Subscriptions.Delivery.Websocket.push(subscription, event)
 
       push_to_webhook?(subscription) ->
+        # TODO implement a queue and rate limiting
         ER.Subscriptions.Delivery.Webhook.push(subscription, event)
 
       true ->
@@ -51,11 +52,13 @@ defmodule ER.Subscriptions.Server do
 
   def broadcast_to_websocket?(subscription) do
     subscription.push && subscription.subscription_type == "websocket" &&
-      ER.Events.ChannelCache.any_sockets?(subscription.id)
+      subscription.paused != true &&
+      ER.Container.channel_cache().any_sockets?(subscription.id)
   end
 
   def push_to_webhook?(subscription) do
-    subscription.push && subscription.subscription_type == "webhook"
+    subscription.push && subscription.subscription_type == "webhook" &&
+      subscription.paused != true
   end
 
   def handle_info(:tick, state) do

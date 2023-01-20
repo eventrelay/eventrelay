@@ -43,6 +43,28 @@ defmodule ER.Events do
     ER.BatchedResults.new(query, %{"offset" => offset, "batch_size" => batch_size})
   end
 
+  def list_events_for_topic(
+        topic_name: topic_name,
+        topic_identifier: topic_identifier
+      ) do
+    query =
+      from_events_for_topic(topic_name: topic_name)
+      |> where(as(:events).topic_name == ^topic_name)
+
+    query =
+      unless ER.empty?(topic_identifier) do
+        query |> where(as(:events).topic_identifier == ^topic_identifier)
+      else
+        query
+      end
+
+    Repo.all(query)
+  end
+
+  def list_events_for_topic(topic_name: topic_name) do
+    list_events_for_topic(topic_name: topic_name, topic_identifier: nil)
+  end
+
   def list_events do
     from_events() |> Repo.all()
   end
@@ -212,17 +234,20 @@ defmodule ER.Events do
 
   alias ER.Events.Topic
 
+  def from_topics() do
+    from(t in Topic, as: :topics)
+  end
+
   @doc """
   Returns the list of topics.
-
-  ## Examples
-
-      iex> list_topics()
-      [%Topic{}, ...]
-
   """
+
+  def list_topics(names: names) do
+    from_topics() |> where(as(:topics).name in ^names) |> Repo.all()
+  end
+
   def list_topics do
-    Repo.all(Topic)
+    from_topics() |> Repo.all()
   end
 
   @doc """

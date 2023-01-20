@@ -1,3 +1,6 @@
+/**
+ * EventRelay is a simple easy to implement event streaming system.
+ */
 syntax = "proto3";
 
 option java_multiple_files = true;
@@ -18,20 +21,31 @@ service EventRelay {
   rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse) {}
   rpc CreateApiKey(CreateApiKeyRequest) returns (CreateApiKeyResponse) {}
   rpc RevokeApiKey(RevokeApiKeyRequest) returns (RevokeApiKeyResponse) {}
-  rpc AddSubscriptionToApiKey(AddSubscriptionToApiKeyRequest) returns (AddSubscriptionToApiKeyResponse) {}
-  rpc DeleteSubscriptionFromApiKey(DeleteSubscriptionFromApiKeyRequest) returns (DeleteSubscriptionFromApiKeyResponse) {}
+  rpc AddSubscriptionsToApiKey(AddSubscriptionsToApiKeyRequest) returns (AddSubscriptionsToApiKeyResponse) {}
+  rpc DeleteSubscriptionsFromApiKey(DeleteSubscriptionsFromApiKeyRequest) returns (DeleteSubscriptionsFromApiKeyResponse) {}
+  rpc AddTopicsToApiKey(AddTopicsToApiKeyRequest) returns (AddTopicsToApiKeyResponse) {}
+  rpc DeleteTopicsFromApiKey(DeleteTopicsFromApiKeyRequest) returns (DeleteTopicsFromApiKeyResponse) {}
   rpc CreateJWT(CreateJWTRequest) returns (CreateJWTResponse) {}
 }
 
+/**
+ * A topic is a means of grouping events together.  They can be used to segment and route events to the right places.
+ */
 message Topic {
   string id = 1;
   string name = 2;
 }
 
+/**
+ * Get a list of topics
+ */
 message ListTopicsRequest {
   int32 page = 1;
 }
 
+/**
+ * The list of topics
+ */
 message ListTopicsResponse {
   repeated Topic topics = 1;
 }
@@ -54,36 +68,36 @@ message DeleteTopicResponse {
 
 message NewSubscription {
   string name = 1;
-  string topicName = 2;
-  string topicIdentifier = 3;
+  string topic_name = 2;
+  string topic_identifier = 3;
   bool push = 4;
   map<string, string> config = 6;
   bool paused = 7;
-  string subscriptionType = 8;
+  string subscription_type = 8;
 }
 
 message Subscription {
   string id = 1;
   string name = 2;
-  string topicName = 3;
-  string topicIdentifier = 4;
+  string topic_name = 3;
+  string topic_identifier = 4;
   bool push = 5;
   map<string, string> config = 7;
   bool paused = 8;
-  string subscriptionType = 9;
+  string subscription_type = 9;
 }
 
 message ListSubscriptionsRequest {
   int32 page = 1;
-  int32 pageSize = 2;
+  int32 page_size = 2;
 }
 
 message ListSubscriptionsResponse {
   repeated Subscription subscriptions = 1;
-  int32 totalCount = 2;
-  int32 nextPage = 3;
-  int32 previousPage = 4;
-  int32 totalPages = 5;
+  int32 total_count = 2;
+  int32 next_page = 3;
+  int32 previous_page = 4;
+  int32 total_pages = 5;
 }
 
 message GetSubscriptionRequest {
@@ -114,9 +128,9 @@ message NewEvent {
   string name = 1;
   string data = 2; // stringified JSON
   string source = 3;
-  string userId = 4;
-  string anonymousId = 5;
-  string occurredAt = 6;
+  string user_id = 4;
+  string anonymous_id = 5;
+  string occurred_at = 6;
   map<string, string> context = 7; // single level key-value pairs
 }
 
@@ -126,9 +140,9 @@ message Event {
   string topic = 3;
   string data = 4; // stringified JSON
   string source = 5;
-  string userId = 6;
-  string anonymousId = 7;
-  string occurredAt = 8;
+  string user_id = 6;
+  string anonymous_id = 7;
+  string occurred_at = 8;
   map<string, string> context = 9; // single level key-value pairs
   int32 offset = 10;
   repeated string errors = 11; // list of strings representing errors
@@ -142,17 +156,17 @@ message PublishEventsRequest {
 
 message PublishEventsResponse {
    repeated Event events = 1;
-    int32 totalCount = 2;
-    int32 nextOffset = 3;
-    int32 previousOffset = 4;
-    int32 totalBatches = 5;
+    int32 total_count = 2;
+    int32 next_offset = 3;
+    int32 previous_offset = 4;
+    int32 total_batches = 5;
 }
 
 message PullEventsRequest {
   // ex. "users" or "users:123"
   string topic = 1;
   // max batchSize is 1000, if not specified, defaults to 100
-  int32 batchSize = 2;
+  int32 batch_size = 2;
   int32 offset = 3;
 }
 
@@ -160,21 +174,30 @@ message PullEventsResponse {
   repeated Event events = 1;
 }
 
+enum ApiKeyType {
+  PRODUCER = 0;
+  CONSUMER = 1;
+}
+
+enum ApiKeyStatus {
+  ACTIVE = 0;
+  REVOKED = 1;
+}
 
 message ApiKey {
   string id = 1;
   string key = 2;
   string secret = 3;
-  string status = 4;
-  string type = 5;
+  ApiKeyStatus status = 4;
+  ApiKeyType type = 5;
 }
 
 message CreateApiKeyRequest {
-  string type = 4;
+  ApiKeyType type = 4;
 }
 
 message CreateApiKeyResponse {
-  ApiKey apiKey = 1;
+  ApiKey api_key = 1;
 }
 
 message RevokeApiKeyRequest {
@@ -182,31 +205,55 @@ message RevokeApiKeyRequest {
 }
 
 message RevokeApiKeyResponse {
-  ApiKey apiKey = 1;
+  ApiKey api_key = 1;
 }
 
-message AddSubscriptionToApiKeyRequest {
-  string apiKeyId = 1;
-  string subscriptionId = 2;
+message AddSubscriptionsToApiKeyRequest {
+  string id = 1;
+  repeated string subscription_ids = 2;
 }
 
-message AddSubscriptionToApiKeyResponse {
-  string apiKeyId = 1;
-  string subscriptionId = 2;
+message AddSubscriptionsToApiKeyResponse {
+  string id = 1;
+  // list of subscription ids that were added
+  repeated string subscription_ids = 2;
 }
  
-message DeleteSubscriptionFromApiKeyRequest {
-  string apiKeyId = 1;
-  string subscriptionId = 2;
+message DeleteSubscriptionsFromApiKeyRequest {
+  string id = 1;
+  repeated string subscription_ids = 2;
 }
- message DeleteSubscriptionFromApiKeyResponse {
-  string apiKeyId = 1;
-  string subscriptionId = 2;
+
+ message DeleteSubscriptionsFromApiKeyResponse {
+  string id = 1;
+  // list of subscription ids that were deleted
+  repeated string subscription_ids = 2;
+}
+
+message AddTopicsToApiKeyRequest {
+  string id = 1;
+  repeated string topic_names = 2;
+}
+
+message AddTopicsToApiKeyResponse {
+  string id = 1;
+  // list of topics that were added
+  repeated string topic_names = 2;
+}
+ 
+message DeleteTopicsFromApiKeyRequest {
+  string id = 1;
+  repeated string topic_names = 2;
+}
+ message DeleteTopicsFromApiKeyResponse {
+  string id = 1;
+  // list of topics that were deleted
+  repeated string topic_names = 2;
 }
 
 message CreateJWTRequest {
   // unix timestamp in seconds
-  int32 expiration = 1;
+  int64 expiration = 1;
 }
 
 message CreateJWTResponse {

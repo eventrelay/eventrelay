@@ -7,6 +7,7 @@ defmodule ER.Subscriptions.Delivery.Server do
   use ER.Server
   import ER, only: [unwrap: 1]
   alias ER.Events.Event
+  alias ER.Subscriptions.Delivery.Webhook
 
   def handle_continue(
         :load_state,
@@ -19,14 +20,6 @@ defmodule ER.Subscriptions.Delivery.Server do
     # Check Redis cache to see if we have a delivery in progress
     # if we do, then we need to load the delivery and then
     # if not then we need to initialize normally
-
-    # delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: topic_name)
-    IO.inspect(delivery, label: "delivery")
-
-    #     event =
-    #       ER.Events.get_event_for_topic!(delivery.event_id,
-    #         topic_name: delivery.subscription.topic_name
-    #       )
 
     state =
       state
@@ -64,13 +57,14 @@ defmodule ER.Subscriptions.Delivery.Server do
     )
 
     response =
-      HTTPoison.post(webhook_url, Jason.encode!(event), [
-        {"Content-Type", "application/json"},
-        {"X-Event-Relay-Subscription-Id", subscription_id},
-        {"X-Event-Relay-Subscription-Topic-Name", subscription_topic_name},
-        {"X-Event-Relay-Subscription-Topic-Identifier", subscription_topic_identifier}
-      ])
-      |> handle_response()
+      Webhook.request(
+        webhook_url,
+        event,
+        subscription_id,
+        subscription_topic_name,
+        subscription_topic_identifier
+      )
+      |> Webhook.handle_response()
 
     delivery_attempts = [
       %{"response" => unwrap(response), "attempted_at" => DateTime.utc_now()} | delivery_attempts
@@ -113,8 +107,6 @@ defmodule ER.Subscriptions.Delivery.Server do
       success: true
     })
 
-    # delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: subscription_topic_name)
-    # ER.Subscriptions.update_delivery(delivery, %{success: true, attempts: delivery_attempts})
     {:stop, :shutdown, state}
   end
 
@@ -136,8 +128,6 @@ defmodule ER.Subscriptions.Delivery.Server do
       success: false
     })
 
-    # delivery = ER.Subscriptions.get_delivery_for_topic!(id, topic_name: subscription_topic_name)
-    # ER.Subscriptions.update_delivery(delivery, %{success: false, attempts: delivery_attempts})
     {:stop, :shutdown, state}
   end
 
@@ -184,40 +174,6 @@ defmodule ER.Subscriptions.Delivery.Server do
     Logger.debug(
       "Not creating delivery for non-durable event #{inspect(event)} and delivery #{inspect(delivery)}"
     )
-  end
-
-  # TODO Move this to a helper module
-  def response_to_map(response) do
-    %{status_code: response.status_code, headers: response_headers_to_map(response.headers)}
-  end
-
-  def response_headers_to_map(headers) do
-    headers
-    |> Enum.map(fn {k, v} -> {String.upcase(k), v} end)
-    |> Enum.into(%{})
-  end
-
-  def error_response_to_map(%HTTPoison.Error{reason: reason}) do
-    %{error_reason: reason}
-  end
-
-  def handle_response({:ok, %HTTPoison.Response{status_code: status_code, body: body} = response}) do
-    Logger.debug(
-      "Webhook response: status_code=#{inspect(status_code)} and body=#{inspect(body)}"
-    )
-
-    # TODO handle redirects better
-    if status_code in 200..299 do
-      {:ok, response_to_map(response)}
-    else
-      {:error, response_to_map(response)}
-    end
-  end
-
-  def handle_response({:error, error}) do
-    Logger.error("Webhook error: #{inspect(error)}")
-
-    {:error, error_response_to_map(error)}
   end
 
   @spec name(binary()) :: binary()

@@ -31,22 +31,26 @@ ER.Events.Event.create_table!(topic)
 ER.Subscriptions.Delivery.create_table!(topic)
 uuid = Faker.UUID.v4()
 
-%ER.Subscriptions.Subscription{
-  name: "app1_websocket",
-  subscription_type: "websocket",
-  push: true,
-  topic_name: "users"
-}
-|> Repo.insert!()
+websocket_subscription =
+  %ER.Subscriptions.Subscription{
+    name: "app1_websocket",
+    subscription_type: "websocket",
+    push: true,
+    topic_name: "users"
+  }
+  |> Repo.insert!()
 
-%ER.Subscriptions.Subscription{
-  name: "app1_webhook",
-  subscription_type: "webhook",
-  push: true,
-  topic_name: "users",
-  config: %{"endpoint_url" => "http://localhost:5006/api/webhook"}
-}
-|> Repo.insert!()
+webhook_subscription =
+  %ER.Subscriptions.Subscription{
+    name: "app1_webhook",
+    subscription_type: "webhook",
+    push: true,
+    topic_name: "users",
+    config: %{"endpoint_url" => "http://localhost:5006/api/webhook"}
+  }
+  |> Repo.insert!()
+
+subscriptions = [websocket_subscription, webhook_subscription]
 
 [:admin, :producer, :consumer]
 |> Enum.each(fn type ->
@@ -56,6 +60,22 @@ uuid = Faker.UUID.v4()
 
   ApiKey.encode_key_and_secret(api_key)
   |> IO.puts()
+
+  IO.puts("------------- #{inspect(type)} API Key JWT -------------")
+  ER.JWT.Token.build(api_key, %{exp: 2_999_171_638}) |> ER.unwrap_ok!() |> IO.puts()
+
+  case type do
+    :producer ->
+      ER.Accounts.create_api_key_topic(api_key, topic)
+
+    :consumer ->
+      Enum.each(subscriptions, fn subscription ->
+        ER.Accounts.create_api_key_subscription(api_key, subscription)
+      end)
+
+    _ ->
+      nil
+  end
 end)
 
 # events =

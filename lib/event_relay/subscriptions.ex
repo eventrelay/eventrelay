@@ -10,7 +10,7 @@ defmodule ER.Subscriptions do
   alias ER.Subscriptions.Subscription
 
   def from_subscriptions() do
-    from(s in Subscription)
+    from(s in Subscription, as: :subscriptions)
   end
 
   @doc """
@@ -18,6 +18,11 @@ defmodule ER.Subscriptions do
   """
   def list_subscriptions() do
     from_subscriptions() |> Repo.all()
+  end
+
+  def list_subscriptions(ids: ids) when is_list(ids) do
+    ids = Enum.map(ids, &Ecto.UUID.dump!/1)
+    from_subscriptions() |> where(as(:subscriptions).id in ^ids) |> Repo.all()
   end
 
   def list_subscriptions(page: page, page_size: page_size) do
