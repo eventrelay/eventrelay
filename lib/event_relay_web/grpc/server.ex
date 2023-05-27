@@ -73,6 +73,9 @@ defmodule ERWeb.Grpc.EventRelay.Server do
         case ER.Events.produce_event_for_topic(%{
                name: Map.get(event, :name),
                source: Map.get(event, :source),
+               group_key: Map.get(event, :group_key),
+               reference_key: Map.get(event, :reference_key),
+               trace_key: Map.get(event, :trace_key),
                data_json: Map.get(event, :data),
                context: Map.get(event, :context),
                occurred_at: Map.get(event, :occurred_at),
@@ -108,7 +111,8 @@ defmodule ERWeb.Grpc.EventRelay.Server do
         offset: offset,
         batch_size: batch_size,
         topic_name: topic_name,
-        topic_identifier: topic_identifier
+        topic_identifier: topic_identifier,
+        filters: request.filters
       )
 
     events = Enum.map(batched_results.results, &build_event(&1, topic))
@@ -123,14 +127,24 @@ defmodule ERWeb.Grpc.EventRelay.Server do
   end
 
   defp build_event(event, topic) do
+    occurred_at =
+      if ER.empty?(event.occurred_at) do
+        ""
+      else
+        DateTime.to_iso8601(event.occurred_at)
+      end
+
     GrpcEvent.new(
       id: event.id,
       name: event.name,
       topic: topic,
       source: event.source,
-      data: event.data_json,
+      group_key: event.group_key,
+      reference_key: event.reference_key,
+      trace_key: event.trace_key,
+      data: Event.data_json(event),
       context: event.context,
-      occurred_at: event.occurred_at,
+      occurred_at: occurred_at,
       offset: event.offset,
       user_id: event.user_id,
       anonymous_id: event.anonymous_id,
@@ -140,6 +154,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
 
   @spec list_topics(ListTopicsRequest.t(), GRPC.Server.Stream.t()) :: ListTopicsResponse.t()
   def list_topics(_request, _stream) do
+    # TODO: Add pagination
     topics =
       ER.Events.list_topics()
       |> Enum.map(fn topic ->
@@ -427,9 +442,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
             end
           end)
           |> Enum.reject(&is_nil/1)
-          |> IO.inspect(label: "api_key_subscriptions")
         end)
-        |> IO.inspect(label: "transaction")
         |> case do
           {:ok, api_key_subscription_ids} ->
             AddSubscriptionsToApiKeyResponse.new(

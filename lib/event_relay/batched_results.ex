@@ -13,31 +13,21 @@ defmodule ER.BatchedResults do
   alias __MODULE__
   alias ER.Repo
 
-  # For Absinthe
-  # defmacro paginated_object(payload_name, result_object_name) do
-  #   quote location: :keep do
-  #     object unquote(payload_name) do
-  #       field(:pagination, non_null(:pagination), description: "Pagination information")
-
-  #       field(:results, list_of(unquote(result_object_name)),
-  #         description: "Object being paginated"
-  #       )
-  #     end
-  #   end
-  # end
-
   def new(query, %{"offset" => offset, "batch_size" => batch_size}, result_transformer \\ nil) do
     offset = ER.to_integer(offset)
     batch_size = ER.to_integer(batch_size)
     total_count = total_count(query)
     total_batches = total_batches(total_count, batch_size)
+    next_offset = next_offset(offset, batch_size, total_batches)
+    previous_offset = previous_offset(offset, batch_size)
+    results = results(query, offset, batch_size, result_transformer)
 
     %BatchedResults{
-      results: results(query, offset, batch_size, result_transformer),
+      results: results,
       offset: offset,
       batch_size: batch_size,
-      next_offset: next_offset(offset, batch_size, total_batches),
-      previous_offset: previous_offset(offset, batch_size),
+      next_offset: next_offset,
+      previous_offset: previous_offset,
       total_count: total_count,
       total_batches: total_batches
     }

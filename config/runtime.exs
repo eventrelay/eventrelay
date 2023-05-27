@@ -116,7 +116,7 @@ if config_env() == :prod do
   config :event_relay, :jwt_secret, System.get_env("ER_JWT_SECRET")
 end
 
-if System.get_env("ER_GRPC_SERVER") do
+unless Code.ensure_loaded?(IEx) and IEx.started?() do
   config :grpc, start_server: true
 end
 

@@ -57,6 +57,16 @@ defmodule ER.Events.Event do
     field :occurred_at, :utc_datetime
     field :offset, :integer, read_after_writes: true
     field :source, :string
+
+    # This can be used to segment events. For instance, it can store a tenant, account, or organization id
+    field :group_key, :string
+
+    # This can be used to hold an id to reference some external resource. It provides another way to segment events. For instance, all events associated to shipment, order, etc.
+    field :reference_key, :string
+
+    # This can be used for debugging scenarios. For instance, it can store a request id, etc
+    field :trace_key, :string
+
     field :durable, :boolean, default: true, virtual: true
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
@@ -70,6 +80,9 @@ defmodule ER.Events.Event do
       :name,
       :offset,
       :source,
+      :group_key,
+      :reference_key,
+      :trace_key,
       :occurred_at,
       :context,
       :context_json,
@@ -94,8 +107,15 @@ defmodule ER.Events.Event do
   end
 
   def decode_context(%Ecto.Changeset{changes: %{context_json: context}} = changeset) do
-    changeset
-    |> put_change(:context, Jason.decode!(context))
+    case Jason.decode(context) do
+      {:ok, decoded} ->
+        changeset
+        |> put_change(:context, decoded)
+
+      {:error, _} ->
+        changeset
+        |> add_error(:context, "is invalid JSON")
+    end
   end
 
   def decode_context(changeset) do
@@ -120,18 +140,7 @@ defmodule ER.Events.Event do
 
   def decode_occurred_at(%Ecto.Changeset{changes: %{occurred_at: occurred_at}} = changeset) do
     # handle the default GRPC value for a string
-    cond do
-      occurred_at == "" ->
-        changeset
-
-      occurred_at == nil ->
-        changeset
-
-      true ->
-        changeset
-    end
-
-    if occurred_at == "" do
+    if occurred_at in ["", nil] do
       changeset
       |> put_change(:occurred_at, nil)
     else

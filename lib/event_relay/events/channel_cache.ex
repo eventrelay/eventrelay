@@ -1,8 +1,8 @@
 defmodule ER.Events.ChannelCacheBehavior do
-  @callback register_socket(pid(), integer()) :: integer()
-  @callback deregister_socket(integer()) :: integer()
-  @callback get_socket_count(integer()) :: integer()
-  @callback any_sockets?(integer()) :: boolean()
+  @callback register_socket(pid(), binary()) :: integer()
+  @callback deregister_socket(binary()) :: integer()
+  @callback get_socket_count(binary()) :: integer()
+  @callback any_sockets?(binary()) :: boolean()
 end
 
 defmodule ER.Events.ChannelCache do

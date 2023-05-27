@@ -26,12 +26,14 @@ defmodule ER.Events do
         offset: offset,
         batch_size: batch_size,
         topic_name: topic_name,
-        topic_identifier: topic_identifier
+        topic_identifier: topic_identifier,
+        filters: filters
       ) do
     query =
       from_events_for_topic(topic_name: topic_name)
       |> where(as(:events).topic_name == ^topic_name)
-      |> order_by(as(:events).offset)
+      |> apply_ordering(filters)
+      |> where(not is_nil(as(:events).occurred_at))
 
     query =
       unless ER.empty?(topic_identifier) do
@@ -39,6 +41,11 @@ defmodule ER.Events do
       else
         query
       end
+
+    query =
+      Enum.reduce(filters, query, fn filter, query ->
+        append_filter(query, filter)
+      end)
 
     ER.BatchedResults.new(query, %{"offset" => offset, "batch_size" => batch_size})
   end
@@ -67,6 +74,116 @@ defmodule ER.Events do
 
   def list_events do
     from_events() |> Repo.all()
+  end
+
+  def apply_ordering(query, filters) do
+    if has_date_filtering?(filters) do
+      query
+      |> order_by(asc: as(:events).occurred_at)
+    else
+      query
+      |> order_by(as(:events).offset)
+    end
+  end
+
+  def has_date_filtering?(filters) do
+    Enum.any?(
+      filters,
+      fn
+        filter when filter.field in ["start_date", "end_date"] -> true
+        _filter -> false
+      end
+    )
+  end
+
+  defp maybe_parse_and_apply_datetime(query, value, func) do
+    case DateTime.from_iso8601(value) do
+      {:ok, datetime, _} ->
+        func.(query, datetime)
+
+      _ ->
+        query
+    end
+  end
+
+  def append_filter(query, %{field: "start_date", value: value, comparison: ">="}) do
+    maybe_parse_and_apply_datetime(query, value, fn query, datetime ->
+      query
+      |> where(
+        [events: events],
+        events.occurred_at >= ^datetime
+      )
+    end)
+  end
+
+  def append_filter(query, %{field: "start_date", value: value, comparison: ">"}) do
+    maybe_parse_and_apply_datetime(query, value, fn query, datetime ->
+      query
+      |> where(
+        [events: events],
+        events.occurred_at > ^datetime
+      )
+    end)
+  end
+
+  def append_filter(query, %{field: "end_date", value: value, comparison: "<="}) do
+    maybe_parse_and_apply_datetime(query, value, fn query, datetime ->
+      query
+      |> where(
+        [events: events],
+        events.occurred_at <= ^datetime
+      )
+    end)
+  end
+
+  def append_filter(query, %{field: "end_date", value: value, comparison: "<"}) do
+    maybe_parse_and_apply_datetime(query, value, fn query, datetime ->
+      query
+      |> where([events: events], events.occurred_at < ^datetime)
+    end)
+  end
+
+  def append_filter(query, %{field: field, value: value, comparison: "="}) do
+    field = String.to_atom(field)
+
+    query
+    |> where([events: events], field(events, ^field) == ^value)
+  end
+
+  def append_filter(query, %{field: field, value: value, comparison: "like"}) do
+    field = String.to_atom(field)
+
+    query
+    |> where([events: events], like(field(events, ^field), ^value))
+  end
+
+  def append_filter(query, %{field: field, value: value, comparison: "ilike"}) do
+    field = String.to_atom(field)
+
+    query
+    |> where([events: events], ilike(field(events, ^field), ^value))
+  end
+
+  # def append_filter(query, %{field: field, value: value, comparison: ">"}) do
+  #   field = String.to_atom(field)
+  #
+  #   query
+  #   |> where([events: events], field(events, ^field) > ^value)
+  # end
+  #
+  # def append_filter(query, %{field: field, value: value, comparison: "<"}) do
+  #   field = String.to_atom(field)
+  #
+  #   query
+  #   |> where([events: events], field(events, ^field) < ^value)
+  # end
+
+  @doc """
+  Fallback
+  """
+  def append_filter(query, _filter) do
+    # TODO: Noop for now...
+    query
   end
 
   @doc """
@@ -123,6 +240,25 @@ defmodule ER.Events do
 
   @spec create_event_for_topic(map()) :: {:ok, Event.t()} | {:error, Ecto.Changeset.t()}
   def create_event_for_topic(attrs \\ %{}) do
+    occurred_at = attrs[:occurred_at]
+
+    attrs =
+      if ER.empty?(occurred_at) do
+        Map.put(attrs, :occurred_at, DateTime.now!("Etc/UTC"))
+      else
+        case DateTime.from_iso8601(occurred_at) do
+          {:ok, datetime, _} ->
+            Map.put(attrs, :occurred_at, datetime)
+
+          _ ->
+            Logger.error(
+              "create_event_for_topic failed to parse occurred_at value=#{inspect(occurred_at)}"
+            )
+
+            Map.put(attrs, :occurred_at, nil)
+        end
+      end
+
     try do
       # First attempt to insert it in the proper topic events table
       event =

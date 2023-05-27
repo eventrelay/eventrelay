@@ -128,10 +128,13 @@ message NewEvent {
   string name = 1;
   string data = 2; // stringified JSON
   string source = 3;
-  string user_id = 4;
-  string anonymous_id = 5;
-  string occurred_at = 6;
-  map<string, string> context = 7; // single level key-value pairs
+  string group_key = 4;
+  string reference_key = 5;
+  string trace_key = 6;
+  string user_id = 7;
+  string anonymous_id = 8;
+  string occurred_at = 9;
+  map<string, string> context = 10; // single level key-value pairs
 }
 
 message Event {
@@ -140,12 +143,15 @@ message Event {
   string topic = 3;
   string data = 4; // stringified JSON
   string source = 5;
-  string user_id = 6;
-  string anonymous_id = 7;
-  string occurred_at = 8;
-  map<string, string> context = 9; // single level key-value pairs
-  int32 offset = 10;
-  repeated string errors = 11; // list of strings representing errors
+  string group_key = 6;
+  string reference_key = 7;
+  string trace_key = 8;
+  string user_id = 9;
+  string anonymous_id = 10;
+  string occurred_at = 11;
+  map<string, string> context = 12; // single level key-value pairs
+  int32 offset = 13;
+  repeated string errors = 14; // list of strings representing errors
 }
 
 message PublishEventsRequest {
@@ -155,11 +161,7 @@ message PublishEventsRequest {
 }
 
 message PublishEventsResponse {
-   repeated Event events = 1;
-    int32 total_count = 2;
-    int32 next_offset = 3;
-    int32 previous_offset = 4;
-    int32 total_batches = 5;
+  repeated Event events = 1;
 }
 
 message PullEventsRequest {
@@ -168,10 +170,21 @@ message PullEventsRequest {
   // max batchSize is 1000, if not specified, defaults to 100
   int32 batch_size = 2;
   int32 offset = 3;
+  repeated PullEventsFilter filters = 4; // single level key-value pairs
+}
+
+message PullEventsFilter {
+  string field = 1;
+  string comparison = 2;
+  string value = 3;
 }
 
 message PullEventsResponse {
   repeated Event events = 1;
+  int32 total_count = 2;
+  int32 next_offset = 3;
+  int32 previous_offset = 4;
+  int32 total_batches = 5;
 }
 
 enum ApiKeyType {

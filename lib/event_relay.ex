@@ -113,8 +113,9 @@ defmodule ER do
   def empty?(0), do: true
   def empty?(integer) when is_integer(integer), do: false
   def empty?(str) when is_binary(str), do: String.trim(str) == ""
-  def empty?(map) when is_map(map), do: map == %{}
-  def empty?(list) when is_list(list), do: list == []
+  def empty?([]), do: true
+  def empty?(map) when map == %{}, do: true
+  def empty?(%DateTime{}), do: false
 
   def boolean?(value) when is_boolean(value), do: true
   def boolean?(value) when not is_boolean(value), do: false
