@@ -244,11 +244,11 @@ defmodule ER.Events do
 
     attrs =
       if ER.empty?(occurred_at) do
-        Map.put(attrs, :occurred_at, DateTime.now!("Etc/UTC"))
+        Map.put(attrs, :occurred_at, DateTime.truncate(DateTime.now!("Etc/UTC"), :second))
       else
         case DateTime.from_iso8601(occurred_at) do
           {:ok, datetime, _} ->
-            Map.put(attrs, :occurred_at, datetime)
+            Map.put(attrs, :occurred_at, DateTime.truncate(datetime, :second))
 
           _ ->
             Logger.error(
@@ -271,6 +271,7 @@ defmodule ER.Events do
     rescue
       e in Ecto.InvalidChangesetError ->
         Logger.error("Invalid changeset for event: #{inspect(e)}")
+        Logger.error(Exception.format(:error, e, __STACKTRACE__))
 
         insert_dead_letter_event(
           struct!(Event, e.changeset.changes),
@@ -279,10 +280,12 @@ defmodule ER.Events do
 
       e in Postgrex.Error ->
         Logger.error("Postgrex error for event: #{inspect(e)}")
+        Logger.error(Exception.format(:error, e, __STACKTRACE__))
         insert_dead_letter_event(struct!(Event, attrs), [e.postgres.message])
 
       e ->
         Logger.error("Unknown error for event: #{inspect(e)}")
+        Logger.error(Exception.format(:error, e, __STACKTRACE__))
         insert_dead_letter_event(struct!(Event, attrs), [e.message])
     end
   end

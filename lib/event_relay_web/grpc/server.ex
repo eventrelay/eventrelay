@@ -94,6 +94,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
             nil
         end
       end)
+      |> Enum.reject(&is_nil/1)
 
     PublishEventsResponse.new(events: events)
   end

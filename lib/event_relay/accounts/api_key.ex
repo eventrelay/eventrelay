@@ -17,10 +17,12 @@ defmodule ER.Accounts.ApiKey do
     field(:secret, :string)
     field(:status, Ecto.Enum, values: [:active, :revoked])
     field(:type, Ecto.Enum, values: [:admin, :producer, :consumer])
-    has_many(:api_key_subscriptions, ApiKeySubscription, on_delete: :delete_all)
 
+    # handles authorization for consumers
+    has_many(:api_key_subscriptions, ApiKeySubscription, on_delete: :delete_all)
     many_to_many(:subscriptions, Subscription, join_through: ApiKeySubscription)
 
+    # handles authorization for producers
     has_many(:api_key_topics, ApiKeyTopic, on_delete: :delete_all)
 
     many_to_many(:topics, Topic,

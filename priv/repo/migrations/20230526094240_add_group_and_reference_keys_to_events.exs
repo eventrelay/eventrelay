@@ -7,5 +7,11 @@ defmodule ER.Repo.Migrations.AddGroupAndReferenceKeysToEvents do
       add(:reference_key, :string)
       add(:trace_key, :string)
     end
+
+    alter table(:dead_letter_events, primary_key: false) do
+      add(:group_key, :string)
+      add(:reference_key, :string)
+      add(:trace_key, :string)
+    end
   end
 end
