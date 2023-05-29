@@ -17,5 +17,4 @@ defmodule ERWeb.EventLive.Show do
   end
 
   defp page_title(:show), do: "Show Event"
-  defp page_title(:edit), do: "Edit Event"
 end

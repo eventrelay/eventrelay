@@ -13,7 +13,6 @@
     <div class="sr-only">
       <.link navigate={~p"/topics/#{topic}"}>Show</.link>
     </div>
-    <.link patch={~p"/topics/#{topic}/edit"}>Edit</.link>
   </:action>
   <:action :let={topic}>
     <.link phx-click={JS.push("delete", value: %{id: topic.id})} data-confirm="Are you sure?">
@@ -23,7 +22,7 @@
 </.table>
 
 <.modal
-  :if={@live_action in [:new, :edit]}
+  :if={@live_action in [:new]}
   id="topic-modal"
   show
   on_cancel={JS.navigate(~p"/topics")}

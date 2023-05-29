@@ -178,16 +178,15 @@ it will pause sending events for that topic/destination to preserve the order.
 - [x] non-durable events
 - [x] figure out producer topic authorization
 - [x] test not passing topic when publishing events
+- [x] UI to manage topics
 - [ ] Test various scenarios of creating and droping topics
 - [ ] make sure subscription and delivery servers restart properly
 - [ ] switch to Nebulex redis adapter
 - [ ] UI to tail events
 - [ ] UI to manage view events
-- [ ] UI to manage users
 - [ ] UI to API Keys
-- [ ] UI to manage topics
 - [ ] UI to manage subscriptions
-- [ ] UI to manage view deliveries
+- [ ] UI to view deliveries
 - [ ] index event table properly
 - [ ] add documentation to event_relay.proto file
 - [ ] generate HTML docs from event_relay.proto file
@@ -198,4 +197,5 @@ it will pause sending events for that topic/destination to preserve the order.
 - [ ] Implement json logger
 - [ ] add rate limiting for webhooks
 - [ ] GRPC streaming implementation
+- [ ] UI to manage users
 - [ ] Write tests!!!!

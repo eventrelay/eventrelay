@@ -17,5 +17,4 @@ defmodule ERWeb.TopicLive.Show do
   end
 
   defp page_title(:show), do: "Show Topic"
-  defp page_title(:edit), do: "Edit Topic"
 end

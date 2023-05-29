@@ -53,19 +53,6 @@ defmodule ERWeb.TopicLive.FormComponent do
     save_topic(socket, socket.assigns.action, topic_params)
   end
 
-  defp save_topic(socket, :edit, topic_params) do
-    case Events.update_topic(socket.assigns.topic, topic_params) do
-      {:ok, _topic} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Topic updated successfully")
-         |> push_navigate(to: socket.assigns.navigate)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
-    end
-  end
-
   defp save_topic(socket, :new, topic_params) do
     case Events.create_topic(topic_params) do
       {:ok, _topic} ->
