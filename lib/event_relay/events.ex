@@ -26,6 +26,21 @@ defmodule ER.Events do
         offset: offset,
         batch_size: batch_size,
         topic_name: topic_name,
+        topic_identifier: topic_identifier
+      ) do
+    list_events_for_topic(
+      offset: offset,
+      batch_size: batch_size,
+      topic_name: topic_name,
+      topic_identifier: topic_identifier,
+      filters: []
+    )
+  end
+
+  def list_events_for_topic(
+        offset: offset,
+        batch_size: batch_size,
+        topic_name: topic_name,
         topic_identifier: topic_identifier,
         filters: filters
       ) do

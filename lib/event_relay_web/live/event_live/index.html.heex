@@ -26,12 +26,7 @@
   </:action>
 </.table>
 
-<.modal
-  :if={@live_action in [:new]}
-  id="event-modal"
-  show
-  on_cancel={JS.navigate(~p"/events")}
->
+<.modal :if={@live_action in [:new]} id="event-modal" show on_cancel={JS.navigate(~p"/events")}>
   <.live_component
     module={ERWeb.EventLive.FormComponent}
     id={@event.id || :new}

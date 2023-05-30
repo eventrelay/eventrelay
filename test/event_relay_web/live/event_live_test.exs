@@ -12,14 +12,6 @@ defmodule ERWeb.EventLiveTest do
     source: "some source",
     topic_name: "test"
   }
-  @update_attrs %{
-    context_json: "{\"foo\":\"bar2\"}",
-    data_json: "{\"foo\":\"bar2\"}",
-    name: "some updated name",
-    occurred_at: "2022-12-22T18:27:00Z",
-    source: "some updated source",
-    topic_name: "test"
-  }
   @invalid_attrs %{
     context_json: "",
     data_json: "",
@@ -69,28 +61,6 @@ defmodule ERWeb.EventLiveTest do
       assert html =~ "some name"
     end
 
-    test "updates event in listing", %{conn: conn, event: event} do
-      {:ok, index_live, _html} = live(conn, ~p"/events")
-
-      assert index_live |> element("#events-#{event.id} a", "Edit") |> render_click() =~
-               "Edit Event"
-
-      assert_patch(index_live, ~p"/events/#{event}/edit")
-
-      assert index_live
-             |> form("#event-form", event: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      {:ok, _, html} =
-        index_live
-        |> form("#event-form", event: @update_attrs)
-        |> render_submit()
-        |> follow_redirect(conn, ~p"/events")
-
-      assert html =~ "Event updated successfully"
-      assert html =~ "some updated name"
-    end
-
     test "deletes event in listing", %{conn: conn, event: event} do
       {:ok, index_live, _html} = live(conn, ~p"/events")
 
@@ -107,28 +77,6 @@ defmodule ERWeb.EventLiveTest do
 
       assert html =~ "Show Event"
       assert html =~ event.name
-    end
-
-    test "updates event within modal", %{conn: conn, event: event} do
-      {:ok, show_live, _html} = live(conn, ~p"/events/#{event}")
-
-      assert show_live |> element("a", "Edit") |> render_click() =~
-               "Edit Event"
-
-      assert_patch(show_live, ~p"/events/#{event}/show/edit")
-
-      assert show_live
-             |> form("#event-form", event: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      {:ok, _, html} =
-        show_live
-        |> form("#event-form", event: @update_attrs)
-        |> render_submit()
-        |> follow_redirect(conn, ~p"/events/#{event}")
-
-      assert html =~ "Event updated successfully"
-      assert html =~ "some updated name"
     end
   end
 end

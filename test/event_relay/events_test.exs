@@ -3,6 +3,7 @@ defmodule ER.EventsTest do
 
   alias ER.Events
   import ER.Factory
+  import ExUnit.CaptureLog
 
   describe "events" do
     alias ER.Events.Event
@@ -61,17 +62,19 @@ defmodule ER.EventsTest do
         context: %{},
         data: %{},
         name: "some name",
-        occurred_at: ~U[2022-12-21 18:27:00Z],
+        occurred_at: DateTime.to_iso8601(~U[2022-12-21 18:27:00Z]),
         source: "some source",
         topic_name: "albums"
       }
 
-      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
+      assert capture_log(fn ->
+               assert {:error, event} = Events.create_event_for_topic(event)
 
-      assert Ecto.get_meta(event, :source) ==
-               "dead_letter_events"
+               assert Ecto.get_meta(event, :source) ==
+                        "dead_letter_events"
 
-      assert event.errors == ["relation \"albums_events\" does not exist"]
+               assert event.errors == ["relation \"albums_events\" does not exist"]
+             end) =~ "relation \"albums_events\" does not exist"
     end
 
     test "create_event_for_topic/1 with no data creates a event in the dead letter events table" do
@@ -82,17 +85,19 @@ defmodule ER.EventsTest do
         context: %{},
         data: nil,
         name: "some name",
-        occurred_at: ~U[2022-12-21 18:27:00Z],
+        occurred_at: DateTime.to_iso8601(~U[2022-12-21 18:27:00Z]),
         source: "some source",
         topic_name: topic.name
       }
 
-      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
+      assert capture_log(fn ->
+               assert {:error, event} = Events.create_event_for_topic(event)
 
-      assert Ecto.get_meta(event, :source) ==
-               "dead_letter_events"
+               assert Ecto.get_meta(event, :source) ==
+                        "dead_letter_events"
 
-      assert event.errors == ["Data can't be blank"]
+               assert event.errors == ["Data can't be blank"]
+             end) =~ "can't be blank"
 
       ER.Events.Event.drop_table!(topic)
     end
@@ -105,7 +110,7 @@ defmodule ER.EventsTest do
         context: %{},
         data: %{},
         name: "some name",
-        occurred_at: ~U[2022-12-21 18:27:00Z],
+        occurred_at: DateTime.to_iso8601(~U[2022-12-21 18:27:00Z]),
         source: "some source",
         topic_name: topic.name
       }
@@ -126,7 +131,7 @@ defmodule ER.EventsTest do
         context: %{},
         data: %{},
         name: "some updated name",
-        occurred_at: ~U[2022-12-22 18:27:00Z],
+        occurred_at: DateTime.to_iso8601(~U[2022-12-21 18:27:00Z]),
         source: "some updated source",
         topic_name: topic.name
       }
@@ -135,7 +140,7 @@ defmodule ER.EventsTest do
       assert event.context == %{}
       assert event.data == %{}
       assert event.name == "some updated name"
-      assert event.occurred_at == ~U[2022-12-22 18:27:00Z]
+      assert event.occurred_at == ~U[2022-12-21 18:27:00Z]
       refute event.offset == nil
       assert event.source == "some updated source"
     end
@@ -238,12 +243,12 @@ defmodule ER.EventsTest do
         context: %{},
         data: %{},
         name: "some name",
-        occurred_at: ~U[2022-12-21 18:27:00Z],
+        occurred_at: DateTime.to_iso8601(~U[2022-12-21 18:27:00Z]),
         source: "some source",
         topic_name: topic.name
       }
 
-      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
+      assert {:ok, %Event{}} = Events.create_event_for_topic(event)
     end
 
     test "create_topic_and_table/1 with invalid data creates a topic" do

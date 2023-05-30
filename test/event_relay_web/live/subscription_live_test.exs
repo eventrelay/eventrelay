@@ -48,7 +48,7 @@ defmodule ERWeb.SubscriptionLiveTest do
       assert html =~ subscription.name
     end
 
-    test "saves new subscription", %{conn: conn, topic: topic} do
+    test "saves new subscription", %{conn: conn} do
       {:ok, index_live, _html} = live(conn, ~p"/subscriptions")
 
       assert index_live |> element("a", "New Subscription") |> render_click() =~
