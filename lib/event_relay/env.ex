@@ -4,6 +4,6 @@ defmodule ER.Env do
   end
 
   def grpc_port do
-    ER.to_integer(System.get_env("ER_GRPC_PORT") || "50051")
+    Application.get_env(:event_relay, :grpc_port, 50051)
   end
 end

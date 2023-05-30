@@ -95,3 +95,5 @@ config :hammer,
        expiry_ms: 60_000 * 60 * 2,
        redix_config: [host: "localhost", port: 6379]
      ]}
+
+config :event_relay, :grpc_port, 50051

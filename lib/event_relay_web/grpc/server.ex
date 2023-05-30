@@ -68,35 +68,41 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
     durable = unless ER.boolean?(request.durable), do: false, else: request.durable
 
-    events =
-      Enum.map(events, fn event ->
-        case ER.Events.produce_event_for_topic(%{
-               name: Map.get(event, :name),
-               source: Map.get(event, :source),
-               group_key: Map.get(event, :group_key),
-               reference_key: Map.get(event, :reference_key),
-               trace_key: Map.get(event, :trace_key),
-               data_json: Map.get(event, :data),
-               context: Map.get(event, :context),
-               occurred_at: Map.get(event, :occurred_at),
-               user_id: Map.get(event, :user_id),
-               anonymous_id: Map.get(event, :anonymous_id),
-               durable: durable,
-               topic_name: topic_name,
-               topic_identifier: topic_identifier
-             }) do
-          {:ok, %Event{} = event} ->
-            build_event(event, topic)
+    if topic_name do
+      events =
+        Enum.map(events, fn event ->
+          case ER.Events.produce_event_for_topic(%{
+                 name: Map.get(event, :name),
+                 source: Map.get(event, :source),
+                 group_key: Map.get(event, :group_key),
+                 reference_key: Map.get(event, :reference_key),
+                 trace_key: Map.get(event, :trace_key),
+                 data_json: Map.get(event, :data),
+                 context: Map.get(event, :context),
+                 occurred_at: Map.get(event, :occurred_at),
+                 user_id: Map.get(event, :user_id),
+                 anonymous_id: Map.get(event, :anonymous_id),
+                 durable: durable,
+                 topic_name: topic_name,
+                 topic_identifier: topic_identifier
+               }) do
+            {:ok, %Event{} = event} ->
+              build_event(event, topic)
 
-          {:error, error} ->
-            # TODO: provide a better error message
-            Logger.error("Error creating event: #{inspect(error)}")
-            nil
-        end
-      end)
-      |> Enum.reject(&is_nil/1)
+            {:error, error} ->
+              # TODO: provide a better error message
+              Logger.error("Error creating event: #{inspect(error)}")
+              nil
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
 
-    PublishEventsResponse.new(events: events)
+      PublishEventsResponse.new(events: events)
+    else
+      raise GRPC.RPCError,
+        status: GRPC.Status.invalid_argument(),
+        message: "A topic must be provided to publish_events"
+    end
   end
 
   @spec pull_events(PullEventsRequest.t(), GRPC.Server.Stream.t()) :: PullEventsResponse.t()
