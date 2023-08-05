@@ -6,6 +6,7 @@ defmodule ER.Subscriptions.Server do
   use GenServer
   use ER.Server
   alias Phoenix.PubSub
+  alias ER.Subscriptions.Subscription
 
   def handle_continue(:load_state, %{"id" => id} = state) do
     subscription = ER.Subscriptions.get_subscription!(id)
@@ -36,29 +37,21 @@ defmodule ER.Subscriptions.Server do
     )
 
     cond do
-      broadcast_to_websocket?(subscription) ->
+      Subscription.push_to_websocket?(subscription) ->
         ER.Subscriptions.Delivery.Websocket.push(subscription, event)
 
-      push_to_webhook?(subscription) ->
+      Subscription.push_to_webhook?(subscription) ->
         # TODO implement a queue and rate limiting
         ER.Subscriptions.Delivery.Webhook.push(subscription, event)
 
+      Subscription.push_to_s3?(subscription) ->
+        ER.Subscriptions.Delivery.S3.push(subscription, event)
+
       true ->
-        Logger.debug("Not pushing event=#{inspect(event)}")
+        Logger.debug("Not pushing event=#{inspect(event)} subscription=#{inspect(subscription)}")
     end
 
     {:noreply, state}
-  end
-
-  def broadcast_to_websocket?(subscription) do
-    subscription.push && subscription.subscription_type == "websocket" &&
-      subscription.paused != true &&
-      ER.Container.channel_cache().any_sockets?(subscription.id)
-  end
-
-  def push_to_webhook?(subscription) do
-    subscription.push && subscription.subscription_type == "webhook" &&
-      subscription.paused != true
   end
 
   def handle_info(:tick, state) do

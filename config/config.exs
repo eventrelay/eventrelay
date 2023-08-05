@@ -64,7 +64,4 @@ config :phoenix, :json_library, Jason
 # of this file so it overrides the configuration defined above.
 #
 
-# Dependencies
-config :event_relay, :channel_cache, ER.Events.ChannelCache
-
 import_config "#{config_env()}.exs"

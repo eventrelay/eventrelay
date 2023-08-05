@@ -2,11 +2,10 @@ defmodule ER.Subscriptions do
   @moduledoc """
   The Subscriptions context.
   """
+  require Logger
   alias Phoenix.PubSub, as: PubSub
-  import Logger
   import Ecto.Query, warn: false
   alias ER.Repo
-  alias ER.Events.Event
   alias ER.Subscriptions.Subscription
 
   def from_subscriptions() do
@@ -120,6 +119,36 @@ defmodule ER.Subscriptions do
     from(e in {table_name, Delivery}, as: :deliveries)
   end
 
+  def list_deliveries_for_subscription(topic_name, subscription_id, opts \\ []) do
+    subscription_uuid = Ecto.UUID.dump!(subscription_id)
+
+    query =
+      from_deliveries_for_topic(topic_name: topic_name)
+      |> where(as(:deliveries).subscription_id == ^subscription_uuid)
+
+    query =
+      if status = Keyword.get(opts, :status, nil) do
+        where(query, as(:deliveries).status == ^to_string(status))
+      else
+        query
+      end
+
+    Repo.all(query)
+  end
+
+  def list_events_for_deliveries(topic_name, deliveries) do
+    batched_results =
+      ER.Events.list_events_for_topic(
+        offset: 0,
+        batch_size: 100_000,
+        topic_name: topic_name,
+        topic_identifier: nil,
+        filters: [%{field: "id", value: Enum.map(deliveries, & &1.event_id), comparison: "in"}]
+      )
+
+    batched_results.results
+  end
+
   @doc """
   Returns the list of deliveries.
 
@@ -131,6 +160,11 @@ defmodule ER.Subscriptions do
   """
   def list_deliveries do
     Repo.all(Delivery)
+  end
+
+  def list_deliveries_for_topic(topic_name: topic_name) do
+    from_deliveries_for_topic(topic_name: topic_name)
+    |> Repo.all()
   end
 
   @doc """
@@ -223,6 +257,17 @@ defmodule ER.Subscriptions do
     delivery
     |> Delivery.changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Will update all deliveries with the given updates. It assumes that all deliveries have the same Ecto source.
+  """
+  def update_all_deliveries(topic_name, deliveries, updates) do
+    delivery_ids = Enum.map(deliveries, fn d -> Ecto.UUID.dump!(d.id) end)
+
+    from_deliveries_for_topic(topic_name: topic_name)
+    |> where(as(:deliveries).id in ^delivery_ids)
+    |> Repo.update_all(updates)
   end
 
   @doc """

@@ -67,7 +67,7 @@ defmodule ERWeb.SubscriptionLiveTest do
         |> follow_redirect(conn, ~p"/subscriptions")
 
       assert html =~ "Subscription created successfully"
-      assert html =~ "some name"
+      assert html =~ "some_name"
     end
 
     test "updates subscription in listing", %{conn: conn, subscription: subscription} do

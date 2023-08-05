@@ -4,15 +4,15 @@ defmodule ERWeb.Grpc.EventRelay.Interceptors.RateLimiter do
 
   require Logger
 
-  @behaviour GRPC.Server.Interceptor
-
-  @impl GRPC.Server.Interceptor
+  # @behaviour GRPC.Server.Interceptor
+  #
+  # @impl GRPC.Server.Interceptor
   def init(opts) do
     opts
   end
 
-  @impl GRPC.Server.Interceptor
-  def call(req, stream, next, opts) do
+  # @impl GRPC.Server.Interceptor
+  def call(req, stream, next, _opts) do
     rpc_method = stream.rpc |> elem(0) |> to_string()
     context = get_context(req)
 

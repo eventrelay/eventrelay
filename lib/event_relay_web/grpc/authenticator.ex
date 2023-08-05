@@ -6,16 +6,16 @@ defmodule ERWeb.Grpc.EventRelay.Interceptors.Authenticator do
   alias ER.Accounts
   alias ER.Accounts.ApiKey
 
-  @behaviour GRPC.Server.Interceptor
-
-  @impl GRPC.Server.Interceptor
+  # @behaviour GRPC.Server.Interceptor
+  #
+  # @impl GRPC.Server.Interceptor
   def init(opts) do
     Logger.debug("ERWeb.Grpc.EventRelay.Interceptors.Auth.init(#{inspect(opts)})")
     opts
   end
 
-  @impl GRPC.Server.Interceptor
-  def call(req, stream, next, opts) do
+  # @impl GRPC.Server.Interceptor
+  def call(req, stream, next, _opts) do
     if ER.Env.skip_grpc_auth?() do
       Logger.debug("Skipping GRPC auth--------------------------")
       next.(req, stream)

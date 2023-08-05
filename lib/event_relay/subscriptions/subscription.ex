@@ -53,4 +53,30 @@ defmodule ER.Subscriptions.Subscription do
     |> assoc_constraint(:topic)
     |> validate_inclusion(:subscription_type, ["s3", "webhook", "websocket"])
   end
+
+  def websocket?(subscription) do
+    subscription.push && subscription.subscription_type == "websocket"
+  end
+
+  def push_to_websocket?(subscription) do
+    websocket?(subscription) &&
+      subscription.paused != true && ER.Container.channel_cache().any_sockets?(subscription.id)
+  end
+
+  def webhook?(subscription) do
+    subscription.push && subscription.subscription_type == "webhook"
+  end
+
+  def push_to_webhook?(subscription) do
+    webhook?(subscription) && subscription.paused != true
+  end
+
+  def s3?(subscription) do
+    subscription.push && subscription.subscription_type == "s3"
+  end
+
+  def push_to_s3?(subscription) do
+    s3?(subscription) &&
+      subscription.paused != true
+  end
 end

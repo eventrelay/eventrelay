@@ -1,4 +1,4 @@
-defmodule ER.Subscriptions.Delivery.Server do
+defmodule ER.Subscriptions.Webhook.Delivery.Server do
   @moduledoc """
   Manages the delivery of a webhook
   """
@@ -104,7 +104,7 @@ defmodule ER.Subscriptions.Delivery.Server do
       event_id: event.id,
       subscription_id: subscription_id,
       attempts: delivery_attempts,
-      success: true
+      status: :success
     })
 
     {:stop, :shutdown, state}
@@ -125,7 +125,7 @@ defmodule ER.Subscriptions.Delivery.Server do
       event_id: event.id,
       subscription_id: subscription_id,
       attempts: delivery_attempts,
-      success: false
+      status: :failure
     })
 
     {:stop, :shutdown, state}

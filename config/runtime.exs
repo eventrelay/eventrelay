@@ -20,6 +20,11 @@ if System.get_env("PHX_SERVER") do
   config :event_relay, ERWeb.Endpoint, server: true
 end
 
+config :ex_aws, :s3,
+  scheme: System.get_env("ER_S3_SCHEME", "http://"),
+  host: System.get_env("ER_S3_HOST", "localhost"),
+  port: System.get_env("ER_S3_PORT", "9000")
+
 if config_env() == :prod do
   config :event_relay, :grpc_port, ER.to_integer(System.get_env("ER_GRPC_PORT") || "50051")
 

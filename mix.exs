@@ -10,7 +10,14 @@ defmodule ER.MixProject do
       start_permanent: Mix.env() == :prod,
       consolidate_protocols: Mix.env() != :test,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
@@ -68,6 +75,7 @@ defmodule ER.MixProject do
       {:faker, "~> 0.17"},
       {:ex_machina, "~> 2.7.0", only: :test},
       {:hammox, "~> 0.7", only: :test},
+      {:excoveralls, "~> 0.10", only: :test},
       # Distributed Elixir
       {:horde, "~> 0.8.2"},
       {:libcluster, "~> 3.2"},
@@ -77,7 +85,12 @@ defmodule ER.MixProject do
       {:redix, "~> 1.2"},
       # Cache
       {:nebulex, "~> 2.4"},
-      {:nebulex_adapters_horde, "~> 1.0.0"}
+      {:nebulex_adapters_horde, "~> 1.0.0"},
+      {:ex_aws, "~> 2.0"},
+      {:ex_aws_s3, "~> 2.0"},
+      {:poison, "~> 3.0"},
+      {:hackney, "~> 1.9"},
+      {:sweet_xml, "~> 0.6.6"}
     ]
   end
 

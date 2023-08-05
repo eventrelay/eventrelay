@@ -10,6 +10,7 @@ defmodule ER.JWT.Token do
   @moduledoc """
   JWT tokens 
   """
+  require Logger
   use Joken.Config
   alias ER.Repo
   alias ER.Accounts.ApiKey

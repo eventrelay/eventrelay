@@ -22,7 +22,7 @@ defmodule ER.Factory do
 
   def subscription_factory do
     %ER.Subscriptions.Subscription{
-      name: "some name",
+      name: Faker.Lorem.word(),
       offset: 42,
       ordered: false,
       push: true,
@@ -37,7 +37,8 @@ defmodule ER.Factory do
   def delivery_factory do
     %ER.Subscriptions.Delivery{
       attempts: [],
-      subscription: build(:subscription)
+      subscription: build(:subscription),
+      status: :pending
     }
   end
 

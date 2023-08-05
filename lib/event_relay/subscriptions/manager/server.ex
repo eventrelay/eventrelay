@@ -5,6 +5,7 @@ defmodule ER.Subscriptions.Manager.Server do
   use GenServer
   require Logger
   alias Phoenix.PubSub
+  alias ER.Subscriptions.Subscription
 
   def child_spec(opts) do
     name = Keyword.get(opts, :name, __MODULE__)
@@ -46,6 +47,13 @@ defmodule ER.Subscriptions.Manager.Server do
 
     Enum.each(subscriptions, fn subscription ->
       ER.Subscriptions.Server.factory(subscription.id)
+
+      if Subscription.s3?(subscription) do
+        # if we are an S3 subscription spin up the server that syncs batches of deliveries to S3
+        ER.Subscriptions.Delivery.S3.Server.factory(subscription.id, %{
+          "subscription" => subscription
+        })
+      end
     end)
 
     {:noreply, state}

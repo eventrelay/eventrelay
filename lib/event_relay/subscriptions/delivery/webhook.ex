@@ -10,7 +10,7 @@ defmodule ER.Subscriptions.Delivery.Webhook do
     delivery = ER.Subscriptions.build_delivery_for_topic(topic_name)
     Logger.debug("Created delivery #{inspect(delivery)}")
 
-    ER.Subscriptions.Delivery.Server.factory(delivery.id, %{
+    ER.Subscriptions.Webhook.Delivery.Server.factory(delivery.id, %{
       "topic_name" => topic_name,
       "delivery" => delivery,
       "subscription" => subscription,

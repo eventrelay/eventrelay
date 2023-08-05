@@ -179,6 +179,13 @@ defmodule ER.Events do
     |> where([events: events], ilike(field(events, ^field), ^value))
   end
 
+  def append_filter(query, %{field: field, value: value, comparison: "in"}) do
+    field = String.to_atom(field)
+
+    query
+    |> where([events: events], field(events, ^field) in ^value)
+  end
+
   # def append_filter(query, %{field: field, value: value, comparison: ">"}) do
   #   field = String.to_atom(field)
   #
@@ -319,7 +326,6 @@ defmodule ER.Events do
   def publish_event(
         {:ok, %Event{topic_name: topic_name, topic_identifier: topic_identifier} = event}
       ) do
-    # TODO rewrite so that dead letter is taken into consideration and support for ephemeral
     PubSub.broadcast(ER.PubSub, topic_name, {:event_created, event})
     full_topic = ER.Events.Topic.build_topic(topic_name, topic_identifier)
 

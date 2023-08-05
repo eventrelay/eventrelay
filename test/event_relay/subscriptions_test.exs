@@ -3,6 +3,7 @@ defmodule ER.SubscriptionsTest do
 
   alias ER.Subscriptions
 
+  import ER.Test.Setups
   import ER.Factory
 
   describe "subscriptions" do
@@ -112,7 +113,13 @@ defmodule ER.SubscriptionsTest do
     test "create_delivery/1 with valid data creates a delivery" do
       subscription = insert(:subscription)
       event = insert(:event)
-      valid_attrs = %{attempts: [], event_id: event.id, subscription_id: subscription.id}
+
+      valid_attrs = %{
+        attempts: [],
+        event_id: event.id,
+        subscription_id: subscription.id,
+        status: :success
+      }
 
       assert {:ok, %Delivery{} = delivery} = Subscriptions.create_delivery(valid_attrs)
       assert delivery.attempts == []
@@ -126,12 +133,13 @@ defmodule ER.SubscriptionsTest do
       subscription = insert(:subscription)
       topic_name = subscription.topic_name
 
-      event = %{
-        subscription_id: subscription.id
+      attrs = %{
+        subscription_id: subscription.id,
+        status: :success
       }
 
       assert {:error, %Ecto.Changeset{} = changeset} =
-               Subscriptions.create_delivery_for_topic(topic_name, event)
+               Subscriptions.create_delivery_for_topic(topic_name, attrs)
 
       assert [event_id: {"can't be blank", [validation: :required]}] = changeset.errors
     end
@@ -144,7 +152,8 @@ defmodule ER.SubscriptionsTest do
 
       attrs = %{
         event_id: event.id,
-        subscription_id: subscription.id
+        subscription_id: subscription.id,
+        status: :success
       }
 
       assert {:ok, %Delivery{} = delivery} =
@@ -163,7 +172,8 @@ defmodule ER.SubscriptionsTest do
 
       attrs = %{
         event_id: event.id,
-        subscription_id: subscription.id
+        subscription_id: subscription.id,
+        status: :success
       }
 
       assert {:error, reason} = Subscriptions.create_delivery_for_topic(topic.name, attrs)
@@ -199,6 +209,67 @@ defmodule ER.SubscriptionsTest do
     test "change_delivery/1 returns a delivery changeset" do
       delivery = insert(:delivery)
       assert %Ecto.Changeset{} = Subscriptions.change_delivery(delivery)
+    end
+  end
+
+  describe "list_deliveries_for_subscription/2" do
+    setup [:setup_topic, :setup_deliveries]
+
+    test "list_deliveries_for_subscription/2 returns all pending deliveries for a subscription",
+         %{
+           topic: topic,
+           subscription: subscription,
+           pending_delivery: pending_delivery,
+           pending_delivery_2: pending_delivery_2,
+           successful_delivery: successful_delivery
+         } do
+      pending_delivery_ids =
+        Enum.map(
+          Subscriptions.list_deliveries_for_subscription(
+            topic.name,
+            subscription.id,
+            status: :pending
+          ),
+          & &1.id
+        )
+
+      assert pending_delivery_ids == [pending_delivery.id, pending_delivery_2.id]
+      refute successful_delivery.id in pending_delivery_ids
+    end
+  end
+
+  describe "update_all_deliveries/2" do
+    setup [:setup_topic, :setup_deliveries]
+
+    test "updates status of deliveries",
+         %{
+           topic: topic,
+           subscription: subscription,
+           pending_delivery: pending_delivery,
+           pending_delivery_2: pending_delivery_2
+         } do
+      deliveries =
+        Subscriptions.list_deliveries_for_subscription(
+          topic.name,
+          subscription.id,
+          status: :pending
+        )
+
+      Subscriptions.update_all_deliveries(topic.name, deliveries, set: [status: "success"])
+
+      deliveries =
+        Subscriptions.list_deliveries_for_subscription(
+          topic.name,
+          subscription.id,
+          status: :success
+        )
+
+      successful_delivery_ids = Enum.map(deliveries, & &1.id)
+
+      assert pending_delivery.id in successful_delivery_ids
+      assert pending_delivery_2.id in successful_delivery_ids
+
+      assert Enum.all?(deliveries, &(&1.status == :success))
     end
   end
 end

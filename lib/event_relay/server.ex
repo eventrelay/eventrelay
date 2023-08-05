@@ -55,7 +55,7 @@ defmodule ER.Server do
 
       @spec tick_interval() :: integer()
       def tick_interval do
-        String.to_integer(System.get_env("ER_SUBSCRIPTION_SERVER_TICK_INTERVAL") || "5000")
+        ER.to_integer(System.get_env("ER_SUBSCRIPTION_SERVER_TICK_INTERVAL") || "5000")
       end
 
       def stop(id) do

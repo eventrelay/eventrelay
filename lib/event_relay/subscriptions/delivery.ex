@@ -14,8 +14,19 @@ defmodule ER.Subscriptions.Delivery do
   @foreign_key_type :binary_id
   schema "deliveries" do
     field :attempts, {:array, :map}, default: []
-    field :success, :boolean, default: false
-    field :event_id, :binary_id
+
+    field(:status, Ecto.Enum,
+      values: [
+        :pending,
+        :success,
+        :failure
+      ]
+    )
+
+    belongs_to :event, ER.Events.Event,
+      foreign_key: :event_id,
+      references: :id,
+      type: :binary_id
 
     belongs_to :subscription, ER.Subscriptions.Subscription,
       foreign_key: :subscription_id,
@@ -28,8 +39,8 @@ defmodule ER.Subscriptions.Delivery do
   @doc false
   def changeset(delivery, attrs) do
     delivery
-    |> cast(attrs, [:attempts, :event_id, :subscription_id])
-    |> validate_required([:event_id, :subscription_id])
+    |> cast(attrs, [:attempts, :event_id, :subscription_id, :status])
+    |> validate_required([:event_id, :subscription_id, :status])
     |> unique_constraint([:event_id, :subscription_id])
   end
 
