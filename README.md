@@ -158,8 +158,8 @@ attempt to deliver the event but if there are network issue or a client is not c
 For webhooks any 2xx HTTP response status will be accepted as acknowledgement of receiving the event. Any other HTTP
 status will be considered a failure to acknowledge receiving the event and the event will be retried according
 to the webhook retry configuration. By default up to 20 attempts will be made before it is marked as undeliverable.
-Webhooks are also processed in order per topic per destination so if EventRelay gets something other than a 2xx response
-it will pause sending events for that topic/destination to preserve the order.
+~~Webhooks are also processed in order per topic per destination so if EventRelay gets something other than a 2xx response
+it will pause sending events for that topic/destination to preserve the order.~~
 
 ## Todos
 
