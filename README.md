@@ -57,7 +57,7 @@ grpcurl -plaintext -proto event_relay.proto -d '{"topic": "users", "events": [{"
 Load test the publish event:
 
 ```
-ghz --rps 200 --total 20000 --insecure --proto event_relay.proto --call eventrelay.EventRelay.PublishEvents -d '{"topic": "users", "events": [{"name": "user.created", "data": "{\"first_name\": \"Thomas\"}", "source": "grpc", "context": {"ip_address": "127.0.0.1"}}]}'  localhost:50051
+ghz --rps 10000 --total 20000 --insecure --proto event_relay.proto --call eventrelay.EventRelay.PublishEvents -d '{"topic": "users", "events": [{"name": "user.created", "data": "{\"first_name\": \"Thomas\"}", "source": "grpc", "context": {"ip_address": "127.0.0.1"}}]}'  localhost:50051
 ```
 
 Publish an event without a topic to trigger dead letter:
@@ -179,23 +179,28 @@ it will pause sending events for that topic/destination to preserve the order.
 - [x] figure out producer topic authorization
 - [x] test not passing topic when publishing events
 - [x] UI to manage topics
-- [ ] Test various scenarios of creating and droping topics
 - [ ] make sure subscription and delivery servers restart properly
-- [ ] switch to Nebulex redis adapter
+- [ ] Write Google PubSub ingestor
+- [-] Write S3 subscription
+- [ ] Write S3 ingestor
+- [ ] Write tests!!!!
 - [ ] UI to tail events
 - [ ] UI to manage view events
 - [ ] UI to API Keys
 - [ ] UI to manage subscriptions
 - [ ] UI to view deliveries
+- [ ] Aggregations
+- [ ] Transformations
+- [ ] add subscription/delivery server crash state reloading from redis
+- [ ] switch to Nebulex redis adapter
 - [ ] index event table properly
 - [ ] add documentation to event_relay.proto file
 - [ ] generate HTML docs from event_relay.proto file
 - [ ] add pagination to list topics
 - [ ] test all the authorization policies
-- [ ] add subscription/delivery server crash state reloading from redis
 - [ ] Standardize logging formatting
 - [ ] Implement json logger
 - [ ] add rate limiting for webhooks
 - [ ] GRPC streaming implementation
 - [ ] UI to manage users
-- [ ] Write tests!!!!
+- [ ] Test various scenarios of creating and droping topics
