@@ -179,20 +179,21 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [x] figure out producer topic authorization
 - [x] test not passing topic when publishing events
 - [x] UI to manage topics
-- [ ] make sure subscription and delivery servers restart properly
+- [x] UI to view events
+- [ ] UI to API Keys
 - [ ] Write Google PubSub ingestor
-- [-] Write S3 subscription
-- [ ] Write S3 ingestor
+- [ ] Ability to apply lua scripts to ingested events
+- [ ] make sure subscription and delivery servers restart properly
 - [ ] Write tests!!!!
 - [ ] UI to tail events
-- [ ] UI to manage view events
-- [ ] UI to API Keys
 - [ ] UI to manage subscriptions
 - [ ] UI to view deliveries
 - [ ] Aggregations
-- [ ] Transformations
+- [ ] Ability to forward an event to another topic and transform the event with a lua script
 - [ ] add subscription/delivery server crash state reloading from redis
 - [ ] switch to Nebulex redis adapter
+- [ ] Write S3 subscription
+- [ ] Write S3 ingestor
 - [ ] index event table properly
 - [ ] add documentation to event_relay.proto file
 - [ ] generate HTML docs from event_relay.proto file

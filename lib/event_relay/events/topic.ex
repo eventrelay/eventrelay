@@ -2,6 +2,7 @@ defmodule ER.Events.Topic do
   use Ecto.Schema
   import Ecto.Changeset
   alias ER.Events.Event
+  alias __MODULE__
 
   @typedoc """
   The name for the topic.
@@ -49,11 +50,15 @@ defmodule ER.Events.Topic do
 
   """
   @spec parse_topic(String.t()) :: {String.t(), String.t()}
-  def parse_topic(topic) do
+  def parse_topic(topic) when is_binary(topic) do
     topic_parts = String.split(topic, ":", trim: true)
     topic_name = List.first(topic_parts)
     {topic_identifier, _} = List.pop_at(topic_parts, 1)
     {topic_name, topic_identifier}
+  end
+
+  def parse_topic(%Topic{} = topic) do
+    parse_topic(topic.name)
   end
 
   @spec build_topic(String.t(), String.t()) :: String.t()

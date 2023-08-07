@@ -15,6 +15,12 @@
     </div>
   </:action>
   <:action :let={topic}>
+    <div>
+      <.link navigate={~p"/topics/#{topic}/events"}>Events</.link>
+    </div>
+  </:action>
+
+  <:action :let={topic}>
     <.link phx-click={JS.push("delete", value: %{id: topic.id})} data-confirm="Are you sure?">
       Delete
     </.link>

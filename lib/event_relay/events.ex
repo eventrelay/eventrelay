@@ -407,7 +407,7 @@ defmodule ER.Events do
   end
 
   def list_topics do
-    from_topics() |> Repo.all()
+    from_topics() |> where(as(:topics).name != ^"default") |> Repo.all()
   end
 
   @doc """

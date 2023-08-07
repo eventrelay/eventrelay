@@ -52,7 +52,7 @@ defmodule ERWeb.Router do
 
     live_session :redirect_if_user_is_authenticated,
       on_mount: [{ERWeb.UserAuth, :redirect_if_user_is_authenticated}] do
-      live "/users/register", UserRegistrationLive, :new
+      # live "/users/register", UserRegistrationLive, :new
       live "/users/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
       live "/users/reset_password/:token", UserResetPasswordLive, :edit
@@ -69,15 +69,14 @@ defmodule ERWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
-      live "/events", EventLive.Index, :index
-      live "/events/new", EventLive.Index, :new
-
-      live "/events/:id", EventLive.Show, :show
-
       live "/topics", TopicLive.Index, :index
       live "/topics/new", TopicLive.Index, :new
 
       live "/topics/:id", TopicLive.Show, :show
+      live "/topics/:topic_id/events", EventLive.Index, :index
+      live "/topics/:topic_id/events/new", EventLive.Index, :new
+
+      live "/topics/:topic_id/events/:id", EventLive.Show, :show
 
       live "/subscriptions", SubscriptionLive.Index, :index
       live "/subscriptions/new", SubscriptionLive.Index, :new
