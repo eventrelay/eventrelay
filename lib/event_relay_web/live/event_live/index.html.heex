@@ -1,13 +1,13 @@
 <.header>
   Listing Events
   <:actions>
-    <.link patch={~p"/events/new"}>
+    <.link patch={~p"/topics/#{@topic}/events/new"}>
       <.button>New Event</.button>
     </.link>
   </:actions>
 </.header>
 
-<.table id="events" rows={@events} row_click={&JS.navigate(~p"/events/#{&1}")}>
+<.table id="events" rows={@events} row_click={&JS.navigate(~p"/topics/#{@topic}/events/#{&1}")}>
   <:col :let={event} label="Name"><%= event.name %></:col>
   <:col :let={event} label="Offset"><%= event.offset %></:col>
   <:col :let={event} label="Source"><%= event.source %></:col>
@@ -16,7 +16,7 @@
   <:col :let={event} label="Data"><%= inspect(event.data) %></:col>
   <:action :let={event}>
     <div class="sr-only">
-      <.link navigate={~p"/events/#{event}"}>Show</.link>
+      <.link navigate={~p"/topics/#{@topic}/events/#{event}"}>Show</.link>
     </div>
   </:action>
   <:action :let={event}>
@@ -26,13 +26,18 @@
   </:action>
 </.table>
 
-<.modal :if={@live_action in [:new]} id="event-modal" show on_cancel={JS.navigate(~p"/events")}>
+<.modal
+  :if={@live_action in [:new]}
+  id="event-modal"
+  show
+  on_cancel={JS.navigate(~p"/topics/#{@topic}/events")}
+>
   <.live_component
     module={ERWeb.EventLive.FormComponent}
     id={@event.id || :new}
     title={@page_title}
     action={@live_action}
     event={@event}
-    navigate={~p"/events"}
+    navigate={~p"/topics/#{@topic}/events"}
   />
 </.modal>

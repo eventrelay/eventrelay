@@ -374,6 +374,32 @@ defmodule ER.Events do
     Repo.delete(event)
   end
 
+  @doc """
+  Deletes a event in a topic table
+
+  ## Examples
+
+      iex> delete_event(event, topic_name: topic_name)
+      {:ok, %Event{}}
+
+      iex> delete_event(event, topic_name: topic_name)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_event(%Event{} = event, topic_name: topic_name) do
+    uuid = Ecto.UUID.dump!(event.id)
+
+    case from_events_for_topic(topic_name: topic_name)
+         |> where(as(:events).id == ^uuid)
+         |> Repo.delete_all() do
+      {1, _} ->
+        {:ok, event}
+
+      _ ->
+        {:error}
+    end
+  end
+
   def delete_events_for_topic!(%Topic{} = topic) do
     from_events_for_topic(topic_name: topic.name)
     |> Repo.delete_all()

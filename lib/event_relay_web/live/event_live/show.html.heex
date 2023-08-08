@@ -1,6 +1,6 @@
 <.header>
   Event <%= @event.id %>
-  <:subtitle>This is a event record from your database.</:subtitle>
+  <:subtitle></:subtitle>
 </.header>
 
 <.list>
@@ -12,4 +12,4 @@
   <:item title="Data"><%= inspect(@event.data) %></:item>
 </.list>
 
-<.back navigate={~p"/events"}>Back to events</.back>
+<.back navigate={~p"/topics/#{@topic}/events"}>Back to events</.back>

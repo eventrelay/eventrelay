@@ -15,8 +15,6 @@ defmodule ERWeb.UserConfirmationInstructionsLive do
     </.simple_form>
 
     <p>
-      <.link href={~p"/users/register"}>Register</.link>
-      |
       <.link href={~p"/users/log_in"}>Log in</.link>
     </p>
     """

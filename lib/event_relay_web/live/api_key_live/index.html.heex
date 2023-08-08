@@ -1,0 +1,42 @@
+<.header>
+  Listing Api keys
+  <:actions>
+    <.link patch={~p"/api_keys/new"}>
+      <.button>New API key</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="api_keys" rows={@api_keys} row_click={&JS.navigate(~p"/api_keys/#{&1}")}>
+  <:col :let={api_key} label="Key"><%= api_key.key %></:col>
+  <:col :let={api_key} label="Secret"><%= api_key.secret %></:col>
+  <:col :let={api_key} label="Status"><%= api_key.status %></:col>
+  <:col :let={api_key} label="Type"><%= api_key.type %></:col>
+  <:action :let={api_key}>
+    <div class="sr-only">
+      <.link navigate={~p"/api_keys/#{api_key}"}>Show</.link>
+    </div>
+    <.link patch={~p"/api_keys/#{api_key}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={api_key}>
+    <.link phx-click={JS.push("delete", value: %{id: api_key.id})} data-confirm="Are you sure?">
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="api_key-modal"
+  show
+  on_cancel={JS.navigate(~p"/api_keys")}
+>
+  <.live_component
+    module={ERWeb.ApiKeyLive.FormComponent}
+    id={@api_key.id || :new}
+    title={@page_title}
+    action={@live_action}
+    api_key={@api_key}
+    navigate={~p"/api_keys"}
+  />
+</.modal>

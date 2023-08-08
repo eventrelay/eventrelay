@@ -9,7 +9,6 @@ defmodule ERWeb.UserLoginLiveTest do
       {:ok, _lv, html} = live(conn, ~p"/users/log_in")
 
       assert html =~ "Log in"
-      assert html =~ "Register"
       assert html =~ "Forgot your password?"
     end
 
@@ -18,7 +17,7 @@ defmodule ERWeb.UserLoginLiveTest do
         conn
         |> log_in_user(user_fixture())
         |> live(~p"/users/log_in")
-        |> follow_redirect(conn, "/")
+        |> follow_redirect(conn, "/topics")
 
       assert {:ok, _conn} = result
     end
@@ -36,7 +35,7 @@ defmodule ERWeb.UserLoginLiveTest do
 
       conn = submit_form(form, conn)
 
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/topics"
     end
 
     test "redirects to login page with a flash error if there are no valid credentials", %{
@@ -58,18 +57,6 @@ defmodule ERWeb.UserLoginLiveTest do
   end
 
   describe "login navigation" do
-    test "redirects to registration page when the Register button is clicked", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/users/log_in")
-
-      {:ok, _login_live, login_html} =
-        lv
-        |> element(~s|a:fl-contains("Sign up")|)
-        |> render_click()
-        |> follow_redirect(conn, ~p"/users/register")
-
-      assert login_html =~ "Register"
-    end
-
     test "redirects to forgot password page when the Forgot Password button is clicked", %{
       conn: conn
     } do

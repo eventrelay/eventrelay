@@ -520,4 +520,22 @@ defmodule ER.Accounts do
   def delete_api_key_topic(api_key_topic) do
     Repo.delete(api_key_topic)
   end
+
+  alias ER.Accounts.ApiKey
+
+  @doc """
+  Gets a single api_key.
+
+  Raises `Ecto.NoResultsError` if the Api key does not exist.
+
+  ## Examples
+
+      iex> get_api_key!(123)
+      %ApiKey{}
+
+      iex> get_api_key!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_api_key!(id), do: Repo.get!(ApiKey, id)
 end

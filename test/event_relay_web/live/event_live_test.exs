@@ -22,8 +22,14 @@ defmodule ERWeb.EventLiveTest do
   }
 
   defp create_event_and_topic(_) do
-    event = insert(:event)
     topic = insert(:topic, name: "test")
+    ER.Events.Event.create_table!(topic)
+    {:ok, event} = ER.Events.create_event_for_topic(params_for(:event, topic: topic))
+
+    on_exit(fn ->
+      ER.Events.Event.drop_table!(topic)
+    end)
+
     %{event: event, topic: topic}
   end
 
@@ -32,20 +38,20 @@ defmodule ERWeb.EventLiveTest do
   describe "Index" do
     setup [:create_event_and_topic]
 
-    test "lists all events", %{conn: conn, event: event} do
-      {:ok, _index_live, html} = live(conn, ~p"/events")
+    test "lists all events", %{conn: conn, event: event, topic: topic} do
+      {:ok, _index_live, html} = live(conn, ~p"/topics/#{topic}/events")
 
       assert html =~ "Listing Events"
       assert html =~ event.name
     end
 
-    test "saves new event", %{conn: conn} do
-      {:ok, index_live, _html} = live(conn, ~p"/events")
+    test "saves new event", %{conn: conn, topic: topic} do
+      {:ok, index_live, _html} = live(conn, ~p"/topics/#{topic}/events")
 
       assert index_live |> element("a", "New Event") |> render_click() =~
                "New Event"
 
-      assert_patch(index_live, ~p"/events/new")
+      assert_patch(index_live, ~p"/topics/#{topic}/events/new")
 
       assert index_live
              |> form("#event-form", event: @invalid_attrs)
@@ -55,14 +61,14 @@ defmodule ERWeb.EventLiveTest do
         index_live
         |> form("#event-form", event: @create_attrs)
         |> render_submit()
-        |> follow_redirect(conn, ~p"/events")
+        |> follow_redirect(conn, ~p"/topics/#{topic}/events")
 
       assert html =~ "Event created successfully"
       assert html =~ "some name"
     end
 
-    test "deletes event in listing", %{conn: conn, event: event} do
-      {:ok, index_live, _html} = live(conn, ~p"/events")
+    test "deletes event in listing", %{conn: conn, event: event, topic: topic} do
+      {:ok, index_live, _html} = live(conn, ~p"/topics/#{topic}/events")
 
       assert index_live |> element("#events-#{event.id} a", "Delete") |> render_click()
       refute has_element?(index_live, "#event-#{event.id}")
@@ -72,8 +78,8 @@ defmodule ERWeb.EventLiveTest do
   describe "Show" do
     setup [:create_event_and_topic]
 
-    test "displays event", %{conn: conn, event: event} do
-      {:ok, _show_live, html} = live(conn, ~p"/events/#{event}")
+    test "displays event", %{conn: conn, event: event, topic: topic} do
+      {:ok, _show_live, html} = live(conn, ~p"/topics/#{topic}/events/#{event}")
 
       assert html =~ "Show Event"
       assert html =~ event.name

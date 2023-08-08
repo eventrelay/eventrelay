@@ -84,6 +84,13 @@ defmodule ERWeb.Router do
 
       live "/subscriptions/:id", SubscriptionLive.Show, :show
       live "/subscriptions/:id/show/edit", SubscriptionLive.Show, :edit
+
+      live "/api_keys", ApiKeyLive.Index, :index
+      live "/api_keys/new", ApiKeyLive.Index, :new
+      live "/api_keys/:id/edit", ApiKeyLive.Index, :edit
+
+      live "/api_keys/:id", ApiKeyLive.Show, :show
+      live "/api_keys/:id/show/edit", ApiKeyLive.Show, :edit
     end
   end
 

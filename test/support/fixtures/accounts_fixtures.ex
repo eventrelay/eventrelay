@@ -28,4 +28,21 @@ defmodule ER.AccountsFixtures do
     [_, token | _] = String.split(captured_email.text_body, "[TOKEN]")
     token
   end
+
+  @doc """
+  Generate a api_key.
+  """
+  def api_key_fixture(attrs \\ %{}) do
+    {:ok, api_key} =
+      attrs
+      |> Enum.into(%{
+        key: "some key",
+        secret: "some secret",
+        status: :active,
+        type: :admin
+      })
+      |> ER.Accounts.create_api_key()
+
+    api_key
+  end
 end
