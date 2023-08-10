@@ -74,4 +74,20 @@ defmodule ER.Factory do
       topic: build(:topic)
     }
   end
+
+  def transformer_factory do
+    %ER.Transformers.Transformer{
+      script: "return { event = 2}",
+      ingestor: build(:ingestor)
+    }
+  end
+
+  def ingestor_factory do
+    %ER.Ingestors.Ingestor{
+      config: %{"subscription" => "test"},
+      type: :google_pubsub,
+      source: "GooglePubSub",
+      topic: build(:topic)
+    }
+  end
 end

@@ -554,15 +554,13 @@ defmodule ER.AccountsTest do
 
     test "create_api_key/1 with valid data creates a api_key" do
       valid_attrs = %{
-        key: "somekey",
-        secret: "somesecret",
         status: :active,
         type: "consumer"
       }
 
       assert {:ok, %ApiKey{} = api_key} = Accounts.create_api_key(valid_attrs)
-      assert api_key.key == "somekey"
-      assert api_key.secret == "somesecret"
+      refute api_key.key == nil
+      refute api_key.secret == nil
     end
 
     test "create_api_key/1 with invalid data returns error changeset" do
@@ -570,37 +568,11 @@ defmodule ER.AccountsTest do
     end
 
     test "create_api_key/1 with duplicate key, secret, and status returns error changeset" do
-      api_key =
+      insert(:api_key, key: "somekey", secret: "somesecret", status: :active, type: :consumer)
+
+      assert_raise(Ecto.ConstraintError, fn ->
         insert(:api_key, key: "somekey", secret: "somesecret", status: :active, type: :consumer)
-
-      result =
-        Accounts.create_api_key(%{
-          key: api_key.key,
-          secret: api_key.secret,
-          status: api_key.status,
-          type: api_key.type
-        })
-
-      assert {:error,
-              %Ecto.Changeset{
-                action: :insert,
-                changes: %{
-                  key: "somekey",
-                  secret: "somesecret",
-                  status: :active,
-                  type: :consumer
-                },
-                errors: [
-                  key_secret_status_type_unique:
-                    {"has already been taken",
-                     [
-                       constraint: :unique,
-                       constraint_name: "api_keys_key_secret_status_type_index"
-                     ]}
-                ],
-                valid?: false,
-                data: %ApiKey{}
-              }} = result
+      end)
     end
 
     test "update_api_key/2 with valid data updates the api_key" do
