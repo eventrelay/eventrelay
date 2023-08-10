@@ -180,17 +180,19 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [x] test not passing topic when publishing events
 - [x] UI to manage topics
 - [x] UI to view events
-- [ ] UI to API Keys
-- [ ] Write Google PubSub ingestor
-- [ ] Ability to apply lua scripts to ingested events
-- [ ] make sure subscription and delivery servers restart properly
+- [x] UI to API Keys
+- [x] Write Google PubSub ingestor
+- [x] Ability to apply lua scripts to ingested events
 - [ ] Write tests!!!!
+- [ ] Aggregations
+- [ ] make sure subscription and delivery servers restart properly
+- [ ] UI for managing Ingestors/Transformers
 - [ ] UI to tail events
 - [ ] UI to manage subscriptions
 - [ ] UI to view deliveries
-- [ ] Aggregations
 - [ ] Ability to forward an event to another topic and transform the event with a lua script
 - [ ] add subscription/delivery server crash state reloading from redis
+- [ ] Improve docs about Google PubSub ingestor
 - [ ] switch to Nebulex redis adapter
 - [ ] Write S3 subscription
 - [ ] Write S3 ingestor

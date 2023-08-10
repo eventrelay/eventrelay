@@ -20,26 +20,6 @@ defmodule ER do
     Application.get_env(:event_relay, :environment) == :prod
   end
 
-  # def to_string(value) when is_binary(value) do
-  #   value
-  # end
-
-  # def to_string(value) when is_integer(value) do
-  #   Integer.to_string(value)
-  # end
-  #
-  # def to_string(value) when is_float(value) do
-  #   Float.to_string(value)
-  # end
-
-  # def to_string(value) when is_nil(value) do
-  #   ""
-  # end
-  #
-  # def to_string(value) do
-  #   Kernel.to_string(value)
-  # end
-
   def to_integer(value) when is_binary(value) do
     String.to_integer(value)
   end
