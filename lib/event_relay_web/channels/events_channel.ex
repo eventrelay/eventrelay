@@ -75,13 +75,13 @@ defmodule ERWeb.EventsChannel do
   defp authorized?(payload) do
     producer_claims =
       payload["producer_token"]
-      |> ER.to_string()
+      |> to_string()
       |> ER.JWT.Token.get_claims()
       |> ER.unwrap_ok_or_nil()
 
     consumer_claims =
       payload["consumer_token"]
-      |> ER.to_string()
+      |> to_string()
       |> ER.JWT.Token.get_claims()
       |> ER.unwrap_ok_or_nil()
 

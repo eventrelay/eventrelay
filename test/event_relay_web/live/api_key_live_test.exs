@@ -5,18 +5,14 @@ defmodule ERWeb.ApiKeyLiveTest do
   import ER.AccountsFixtures
 
   @create_attrs %{
-    key: "some key",
-    secret: "some secret",
     status: :active,
     type: :admin
   }
   @update_attrs %{
-    key: "some updated key",
-    secret: "some updated secret",
     status: :active,
     type: :admin
   }
-  @invalid_attrs %{key: nil, secret: nil, status: nil, type: nil}
+  @invalid_attrs %{status: nil, type: nil}
 
   defp create_api_key(_) do
     api_key = api_key_fixture()
@@ -47,18 +43,15 @@ defmodule ERWeb.ApiKeyLiveTest do
              |> form("#api_key-form", api_key: @invalid_attrs)
              |> render_change() =~ "can&#39;t be blank"
 
-      api_key = ER.Accounts.ApiKey.build(:admin)
-
       {:ok, _, html} =
         index_live
         |> form("#api_key-form",
-          api_key: Map.merge(@create_attrs, %{secret: api_key.secret, key: api_key.key})
+          api_key: @create_attrs
         )
         |> render_submit()
         |> follow_redirect(conn, ~p"/api_keys")
 
       assert html =~ "API key created successfully"
-      assert html =~ "some key"
     end
 
     test "updates api_key in listing", %{conn: conn, api_key: api_key} do
@@ -80,7 +73,6 @@ defmodule ERWeb.ApiKeyLiveTest do
         |> follow_redirect(conn, ~p"/api_keys")
 
       assert html =~ "API key updated successfully"
-      assert html =~ "some updated key"
     end
 
     test "deletes api_key in listing", %{conn: conn, api_key: api_key} do
@@ -120,7 +112,6 @@ defmodule ERWeb.ApiKeyLiveTest do
         |> follow_redirect(conn, ~p"/api_keys/#{api_key}")
 
       assert html =~ "API key updated successfully"
-      assert html =~ "some updated key"
     end
   end
 end

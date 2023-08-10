@@ -6,4 +6,12 @@ defmodule ER.Env do
   def grpc_port do
     Application.get_env(:event_relay, :grpc_port, 50051)
   end
+
+  def google_pubsub_subscription do
+    Application.get_env(:event_relay, :google_pubsub_subscription, nil)
+  end
+
+  def debug_transformers do
+    Application.get_env(:event_relay, :debug_transformers, false)
+  end
 end

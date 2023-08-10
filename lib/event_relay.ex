@@ -6,6 +6,7 @@ defmodule ER do
   Contexts are also responsible for managing your data, regardless
   if it comes from the database, an external API or others.
   """
+  require Logger
 
   def test?() do
     Application.get_env(:event_relay, :environment) == :test
@@ -19,25 +20,25 @@ defmodule ER do
     Application.get_env(:event_relay, :environment) == :prod
   end
 
-  def to_string(value) when is_binary(value) do
-    value
-  end
+  # def to_string(value) when is_binary(value) do
+  #   value
+  # end
 
-  def to_string(value) when is_integer(value) do
-    Integer.to_string(value)
-  end
+  # def to_string(value) when is_integer(value) do
+  #   Integer.to_string(value)
+  # end
+  #
+  # def to_string(value) when is_float(value) do
+  #   Float.to_string(value)
+  # end
 
-  def to_string(value) when is_float(value) do
-    Float.to_string(value)
-  end
-
-  def to_string(value) when is_nil(value) do
-    ""
-  end
-
-  def to_string(value) do
-    Kernel.to_string(value)
-  end
+  # def to_string(value) when is_nil(value) do
+  #   ""
+  # end
+  #
+  # def to_string(value) do
+  #   Kernel.to_string(value)
+  # end
 
   def to_integer(value) when is_binary(value) do
     String.to_integer(value)
@@ -119,4 +120,116 @@ defmodule ER do
 
   def boolean?(value) when is_boolean(value), do: true
   def boolean?(value) when not is_boolean(value), do: false
+
+  @doc """
+  Converts the top level keys in a map from atoms to strings
+
+  ## Examples
+
+      iex> Blockit.stringify_map(%{a: 1, b: 2})
+      %{"a" => 1, "b" => 2}
+
+      iex> Blockit.stringify_map(%{"a" => 1, "b" => 2})
+      %{"a" => 1, "b" => 2}
+
+
+  """
+  def stringify_map(value) when is_map(value) do
+    value
+    |> Map.new(fn
+      {k, v} when is_atom(k) -> {Atom.to_string(k), v}
+      {k, v} when is_binary(k) -> {k, v}
+    end)
+  end
+
+  @doc """
+  Converts the top level keys in a map from string to atoms
+
+  ## Examples
+
+      iex> Blockit.stringify_map(%{a: 1, b: 2})
+      %{"a" => 1, "b" => 2}
+
+      iex> Blockit.stringify_map(%{"a" => 1, "b" => 2})
+      %{"a" => 1, "b" => 2}
+
+
+  """
+  def atomize_map(value) when is_map(value) do
+    value
+    |> Map.new(fn
+      {k, v} when is_atom(k) -> {k, v}
+      {k, v} when is_binary(k) -> {String.to_existing_atom(k), v}
+    end)
+  end
+
+  @doc """
+  Allows you to access a value "safely"
+  """
+  @spec safely_get(map() | struct(), function() | atom()) :: any()
+  def safely_get(var, func) do
+    safely_get(var, func, "")
+  end
+
+  @spec safely_get(map() | struct(), function() | atom(), any()) :: any()
+  def safely_get(var, func, default) when is_function(default) do
+    try do
+      safely_get(var, func, default.(var))
+    rescue
+      e in KeyError ->
+        Logger.error(Exception.format(:error, e, __STACKTRACE__))
+        nil
+
+      e in RuntimeError ->
+        Logger.error(Exception.format(:error, e, __STACKTRACE__))
+        nil
+    end
+  end
+
+  def safely_get(var, field, default) when is_atom(field) or is_binary(field) do
+    try do
+      if var do
+        indifferent_get(var, field, default)
+      else
+        default
+      end
+    rescue
+      e in BadMapError ->
+        Logger.error(Exception.format(:error, e, __STACKTRACE__))
+        default
+
+      e in RuntimeError ->
+        Logger.error(Exception.format(:error, e, __STACKTRACE__))
+        default
+    end
+  end
+
+  def safely_get(var, func, default) when is_function(func) do
+    try do
+      if var do
+        func.(var)
+      else
+        default
+      end
+    rescue
+      e in KeyError ->
+        Logger.error(Exception.format(:error, e, __STACKTRACE__))
+        default
+
+      e in RuntimeError ->
+        Logger.error(Exception.format(:error, e, __STACKTRACE__))
+        default
+    end
+  end
+
+  @spec indifferent_get(map(), atom() | binary(), any()) :: any()
+  def indifferent_get(map, key, default \\ nil)
+
+  def indifferent_get(map, key, default) when is_atom(key) do
+    Map.get(map, key, Map.get(map, to_string(key), default))
+  end
+
+  def indifferent_get(map, key, default) when is_binary(key) do
+    Map.get(map, key, Map.get(map, String.to_existing_atom(key), default))
+  end
 end

@@ -25,6 +25,12 @@ defmodule ER.BootServer do
         ER.Horde.Supervisor,
         {ER.Subscriptions.Manager.Server, [name: "subscriptions_manager"]}
       )
+
+      # TODO: improve supervision
+      ER.Ingestors.list_ingestors()
+      |> Enum.each(fn ingestor ->
+        ER.Ingestors.Ingestor.start_ingestor(ingestor)
+      end)
     end
 
     # TODO: needs to load all the deliveries that care still in progress

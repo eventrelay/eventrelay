@@ -9,6 +9,7 @@ defmodule ER.Accounts.ApiKey do
   alias ER.Accounts.ApiKeyTopic
   alias ER.Events.Topic
   alias __MODULE__
+  import ER
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -34,6 +35,19 @@ defmodule ER.Accounts.ApiKey do
   end
 
   @doc false
+  def create_changeset(api_token, attrs) do
+    api_key = ApiKey.build(indifferent_get(attrs, :type), indifferent_get(attrs, :status))
+
+    api_token
+    |> cast(attrs, [:key, :secret, :status, :type])
+    |> put_key(api_key)
+    |> put_secret(api_key)
+    |> validate_required([:key, :secret, :status, :type])
+    |> unique_constraint(:key_secret_status_type_unique,
+      name: :api_keys_key_secret_status_type_index
+    )
+  end
+
   def changeset(api_token, attrs) do
     api_token
     |> cast(attrs, [:key, :secret, :status, :type])
@@ -41,6 +55,17 @@ defmodule ER.Accounts.ApiKey do
     |> unique_constraint(:key_secret_status_type_unique,
       name: :api_keys_key_secret_status_type_index
     )
+  end
+
+  def put_key(
+        cs,
+        api_key
+      ) do
+    put_change(cs, :key, api_key.key)
+  end
+
+  def put_secret(cs, api_key) do
+    put_change(cs, :secret, api_key.secret)
   end
 
   def encode_key_and_secret(%ApiKey{key: key, secret: secret} = _api_key) do

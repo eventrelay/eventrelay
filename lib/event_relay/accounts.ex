@@ -430,13 +430,13 @@ defmodule ER.Accounts do
 
   def create_api_key(api_key) when is_struct(api_key) do
     api_key
-    |> ApiKey.changeset(%{})
+    |> ApiKey.create_changeset(%{})
     |> Repo.insert()
   end
 
   def create_api_key(attrs) do
     %ApiKey{}
-    |> ApiKey.changeset(attrs)
+    |> ApiKey.create_changeset(attrs)
     |> Repo.insert()
   end
 
