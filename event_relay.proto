@@ -170,10 +170,10 @@ message PullEventsRequest {
   // max batchSize is 1000, if not specified, defaults to 100
   int32 batch_size = 2;
   int32 offset = 3;
-  repeated PullEventsFilter filters = 4; // single level key-value pairs
+  repeated EventFilter filters = 4; 
 }
 
-message PullEventsFilter {
+message EventFilter {
   string field = 1;
   string comparison = 2;
   string value = 3;
@@ -185,6 +185,23 @@ message PullEventsResponse {
   int32 next_offset = 3;
   int32 previous_offset = 4;
   int32 total_batches = 5;
+}
+
+enum AggregationType {
+  SUM = 0;
+  AVG = 1;
+  MIN = 2;
+  MAX = 3;
+  COUNT = 4;
+}
+
+message AggregationRequest {
+  // ex. "users" or "users:123"
+  string topic = 1;
+  // A path to the value using dot syntax ex. "cart.total" => 10.00 for {"cart": {"total": 10.00}}
+  string data_path = 2;
+  AggregationType type = 3;
+  repeated EventFilter filters = 4; 
 }
 
 enum ApiKeyType {
