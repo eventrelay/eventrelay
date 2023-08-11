@@ -88,6 +88,8 @@ defmodule ERWeb do
       import ERWeb.CoreComponents
       import ERWeb.Gettext
 
+      import ERWeb.LiveViewHelpers
+
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
 

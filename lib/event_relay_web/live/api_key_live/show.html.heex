@@ -15,20 +15,48 @@
   <:item title="Type"><%= @api_key.type %></:item>
 </.list>
 
-<.table id="topics" rows={@topics}>
-  <:col :let={topic} label="Name"><%= topic.name %></:col>
-  <:action :let={topic}>
-    <.link phx-click={JS.push("add_topic", value: %{id: topic.id})}>
-      Add
-    </.link>
-    <.link
-      phx-click={JS.push("remove_topic", value: %{id: topic.id})}
-      data-confirm="Are you sure?"
-    >
-      Remove
-    </.link>
-  </:action>
-</.table>
+<div :if={@api_key.type == :producer} class="mt-8">
+  <h3>Topics</h3>
+  <.table id="topics" rows={@topics}>
+    <:col :let={topic} label="Name"><%= topic.name %></:col>
+    <:action :let={topic}>
+      <.link
+        :if={!api_key_has_topic?(@api_key, topic)}
+        phx-click={JS.push("add_topic", value: %{topic_id: topic.id})}
+      >
+        Add
+      </.link>
+      <.link
+        :if={api_key_has_topic?(@api_key, topic)}
+        phx-click={JS.push("remove_topic", value: %{topic_id: topic.id})}
+        data-confirm="Are you sure?"
+      >
+        Remove
+      </.link>
+    </:action>
+  </.table>
+</div>
+<div :if={@api_key.type == :consumer} class="mt-8">
+  <h3>Subscriptions</h3>
+  <.table id="subscriptions" rows={@subscriptions}>
+    <:col :let={subscription} label="Name"><%= subscription.name %></:col>
+    <:action :let={subscription}>
+      <.link
+        :if={!api_key_has_subscription?(@api_key, subscription)}
+        phx-click={JS.push("add_subscription", value: %{subscription_id: subscription.id})}
+      >
+        Add
+      </.link>
+      <.link
+        :if={api_key_has_subscription?(@api_key, subscription)}
+        phx-click={JS.push("remove_subscription", value: %{subscription_id: subscription.id})}
+        data-confirm="Are you sure?"
+      >
+        Remove
+      </.link>
+    </:action>
+  </.table>
+</div>
 
 <.back navigate={~p"/api_keys"}>Back to API Keys</.back>
 
