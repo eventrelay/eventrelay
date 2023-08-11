@@ -99,9 +99,5 @@ config :hammer,
 config :event_relay, :grpc_port, 50051
 
 config :event_relay,
-       :google_pubsub_subscription,
-       "projects/eventrelay/subscriptions/test-subscription"
-
-config :event_relay,
        :debug_transformers,
        true
