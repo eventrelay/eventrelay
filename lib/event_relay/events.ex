@@ -121,6 +121,26 @@ defmodule ER.Events do
     end
   end
 
+  def append_filter(query, %{field: "data", value: value, comparison: "like"}) do
+    query
+    |> where(
+      [events: events],
+      fragment("data::text LIKE ?", ^"%#{value}%")
+    )
+  end
+
+  def append_filter(query, %{field: "data", value: value, comparison: "ilike"}) do
+    query
+    |> where(
+      [events: events],
+      fragment("data::text ILIKE ?", ^"%#{value}%")
+    )
+  end
+
+  def append_filter(query, %{field: "data"}) do
+    query
+  end
+
   def append_filter(query, %{field: "start_date", value: value, comparison: ">="}) do
     maybe_parse_and_apply_datetime(query, value, fn query, datetime ->
       query
@@ -165,6 +185,13 @@ defmodule ER.Events do
     |> where([events: events], field(events, ^field) == ^value)
   end
 
+  def append_filter(query, %{field: field, value: value, comparison: "!="}) do
+    field = String.to_atom(field)
+
+    query
+    |> where([events: events], field(events, ^field) != ^value)
+  end
+
   def append_filter(query, %{field: field, value: value, comparison: "like"}) do
     field = String.to_atom(field)
 
@@ -206,6 +233,19 @@ defmodule ER.Events do
   def append_filter(query, _filter) do
     # TODO: Noop for now...
     query
+  end
+
+  def translate_comparison(comparison) do
+    case comparison do
+      "equal" ->
+        "="
+
+      "not_equal" ->
+        "!="
+
+      c ->
+        c
+    end
   end
 
   @doc """
@@ -544,6 +584,7 @@ defmodule ER.Events do
       %Ecto.Changeset{data: %Topic{}}
 
   """
+
   def change_topic(%Topic{} = topic, attrs \\ %{}) do
     Topic.changeset(topic, attrs)
   end

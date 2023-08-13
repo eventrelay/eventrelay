@@ -18,7 +18,7 @@ defmodule ER.BatchedResults do
     batch_size = ER.to_integer(batch_size)
     total_count = total_count(query)
     total_batches = total_batches(total_count, batch_size)
-    next_offset = next_offset(offset, batch_size, total_batches)
+    next_offset = next_offset(offset, batch_size, total_count)
     previous_offset = previous_offset(offset, batch_size)
     results = results(query, offset, batch_size, result_transformer)
 
@@ -39,11 +39,11 @@ defmodule ER.BatchedResults do
     %{"offset" => offset, "batch_size" => batch_size}
   end
 
-  defp next_offset(offset, batch_size, total_batches) do
+  defp next_offset(offset, batch_size, total_count) do
     next_offset_number = offset + batch_size
 
     cond do
-      next_offset_number > total_batches ->
+      next_offset_number > total_count ->
         nil
 
       true ->
@@ -55,7 +55,7 @@ defmodule ER.BatchedResults do
     previous_offset_number = offset - batch_size
 
     cond do
-      previous_offset_number <= 0 ->
+      previous_offset_number < 0 ->
         nil
 
       true ->
