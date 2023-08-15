@@ -166,8 +166,6 @@ defmodule ERWeb.EventLive.Index do
         filters: filters
       )
 
-    IO.inspect(batched_result: batched_result)
-
     socket
     |> assign(:events, batched_result.results)
     |> assign(:next_offset, batched_result.next_offset)

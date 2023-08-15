@@ -8,7 +8,7 @@ defmodule ERWeb.UserConfirmationLive do
     <.header>Confirm Account</.header>
 
     <.simple_form :let={f} for={:user} id="confirmation_form" phx-submit="confirm_account">
-      <.input field={{f, :token}} type="hidden" value={@token} />
+      <.input field={f[:token]} type="hidden" value={@token} />
       <:actions>
         <.button phx-disable-with="Confirming...">Confirm my account</.button>
       </:actions>

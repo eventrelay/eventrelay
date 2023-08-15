@@ -12,8 +12,14 @@
     <.inputs_for :let={nf} field={f[:event_filters]}>
       <.input
         type="select"
+        prompt="Select a field"
         options={Ecto.Enum.values(ER.Events.EventFilter, :field)}
         field={nf[:field]}
+      />
+      <.input
+        type="text"
+        field={nf[:field_path]}
+        placeholder="field path ex. data.user.first_name"
       />
       <.input
         type="select"
@@ -51,7 +57,12 @@
   </div>
 </div>
 
-<.table id="events" rows={@events} row_click={&JS.navigate(~p"/topics/#{@topic}/events/#{&1}")}>
+<.table
+  id="events"
+  rows={@events}
+  row_click={&JS.navigate(~p"/topics/#{@topic}/events/#{&1}")}
+  row_id={fn row -> "events-#{row.id}" end}
+>
   <:col :let={event} label="Topic Name"><%= event.topic_name %></:col>
   <:col :let={event} label="Topic Identifier"><%= event.topic_identifier %></:col>
   <:col :let={event} label="Name"><%= event.name %></:col>

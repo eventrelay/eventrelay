@@ -18,5 +18,6 @@ defmodule ER.Events.EventFilter do
 
     field :comparison, Ecto.Enum, values: [:equal, :not_equal, :like, :ilike]
     field :value, :string
+    field :field_path, :string
   end
 end

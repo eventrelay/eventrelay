@@ -7,7 +7,12 @@
   </:actions>
 </.header>
 
-<.table id="api_keys" rows={@api_keys} row_click={&JS.navigate(~p"/api_keys/#{&1}")}>
+<.table
+  id="api_keys"
+  rows={@api_keys}
+  row_click={&JS.navigate(~p"/api_keys/#{&1}")}
+  row_id={fn row -> "api_keys-#{row.id}" end}
+>
   <:col :let={api_key} label="Key"><%= api_key.key %></:col>
   <:col :let={api_key} label="Secret"><%= api_key.secret %></:col>
   <:col :let={api_key} label="Status"><%= api_key.status %></:col>

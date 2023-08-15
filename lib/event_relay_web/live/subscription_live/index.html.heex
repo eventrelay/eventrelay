@@ -11,6 +11,7 @@
   id="subscriptions"
   rows={@subscriptions}
   row_click={&JS.navigate(~p"/subscriptions/#{&1}")}
+  row_id={fn row -> "subscriptions-#{row.id}" end}
 >
   <:col :let={subscription} label="Name"><%= subscription.name %></:col>
   <:col :let={subscription} label="Offset"><%= subscription.offset %></:col>

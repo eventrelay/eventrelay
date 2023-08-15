@@ -18,13 +18,8 @@ defmodule ERWeb.UserResetPasswordLive do
         Oops, something went wrong! Please check the errors below.
       </.error>
 
-      <.input field={{f, :password}} type="password" label="New password" required />
-      <.input
-        field={{f, :password_confirmation}}
-        type="password"
-        label="Confirm new password"
-        required
-      />
+      <.input field={f[:password]} type="password" label="New password" required />
+      <.input field={f[:password_confirmation]} type="password" label="Confirm new password" required />
       <:actions>
         <.button phx-disable-with="Resetting...">Reset Password</.button>
       </:actions>

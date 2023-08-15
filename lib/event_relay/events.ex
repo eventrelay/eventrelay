@@ -121,6 +121,21 @@ defmodule ER.Events do
     end
   end
 
+  def parse_path(path) do
+    String.split(path, ".", trim: true)
+    |> Enum.map(&String.trim/1)
+  end
+
+  def append_filter(query, %{field_path: "data." <> path, value: value, comparison: "="}) do
+    query
+    |> where([events: events], json_extract_path(events.data, ^parse_path(path)) == ^value)
+  end
+
+  def append_filter(query, %{field_path: "context." <> path, value: value, comparison: "="}) do
+    query
+    |> where([events: events], json_extract_path(events.context, ^parse_path(path)) == ^value)
+  end
+
   def append_filter(query, %{field: "data", value: value, comparison: "like"}) do
     query
     |> where(
@@ -137,8 +152,13 @@ defmodule ER.Events do
     )
   end
 
-  def append_filter(query, %{field: "data"}) do
+  def append_filter(query, %{field: "data." <> path, value: value, comparison: "="}) do
+    path =
+      String.split(path, ".", trim: true)
+      |> Enum.map(&String.trim/1)
+
     query
+    |> where([events: events], json_extract_path(events.data, ^path) == ^value)
   end
 
   def append_filter(query, %{field: "start_date", value: value, comparison: ">="}) do

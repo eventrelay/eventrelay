@@ -20,13 +20,13 @@ defmodule ERWeb.EventLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={{f, :name}} type="text" label="name" />
-        <.input field={{f, :topic_name}} type="text" label="topic_name" />
-        <.input field={{f, :topic_id}} type="text" label="topic_id" />
-        <.input field={{f, :source}} type="text" label="source" />
-        <.input field={{f, :occurred_at}} type="datetime-local" label="occurred_at" />
-        <.input field={{f, :context_json}} type="textarea" label="context" />
-        <.input field={{f, :data_json}} type="textarea" label="data" />
+        <.input field={f[:name]} type="text" label="name" />
+        <.input field={f[:topic_name]} type="text" label="topic_name" />
+        <.input field={f[:topic_id]} type="text" label="topic_id" />
+        <.input field={f[:source]} type="text" label="source" />
+        <.input field={f[:occurred_at]} type="datetime-local" label="occurred_at" />
+        <.input field={f[:context_json]} type="textarea" label="context" />
+        <.input field={f[:data_json]} type="textarea" label="data" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Event</.button>
         </:actions>

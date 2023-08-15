@@ -20,7 +20,7 @@ defmodule ERWeb.TopicLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={{f, :name}} type="text" label="name" />
+        <.input field={f[:name]} type="text" label="name" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Topic</.button>
         </:actions>

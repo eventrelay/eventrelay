@@ -12,7 +12,7 @@ defmodule ERWeb.UserForgotPasswordLive do
       </.header>
 
       <.simple_form :let={f} id="reset_password_form" for={:user} phx-submit="send_email">
-        <.input field={{f, :email}} type="email" placeholder="Email" required />
+        <.input field={f[:email]} type="email" placeholder="Email" required />
         <:actions>
           <.button phx-disable-with="Sending..." class="w-full">
             Send password reset instructions

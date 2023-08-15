@@ -18,10 +18,10 @@ defmodule ERWeb.UserSettingsLive do
         Oops, something went wrong! Please check the errors below.
       </.error>
 
-      <.input field={{f, :email}} type="email" label="Email" required />
+      <.input field={f[:email]} type="email" label="Email" required />
 
       <.input
-        field={{f, :current_password}}
+        field={f[:current_password]}
         name="current_password"
         id="current_password_for_email"
         type="password"
@@ -50,12 +50,12 @@ defmodule ERWeb.UserSettingsLive do
         Oops, something went wrong! Please check the errors below.
       </.error>
 
-      <.input field={{f, :email}} type="hidden" value={@current_email} />
+      <.input field={f[:email]} type="hidden" value={@current_email} />
 
-      <.input field={{f, :password}} type="password" label="New password" required />
-      <.input field={{f, :password_confirmation}} type="password" label="Confirm new password" />
+      <.input field={f[:password]} type="password" label="New password" required />
+      <.input field={f[:password_confirmation]} type="password" label="Confirm new password" />
       <.input
-        field={{f, :current_password}}
+        field={f[:current_password]}
         name="current_password"
         type="password"
         label="Current password"

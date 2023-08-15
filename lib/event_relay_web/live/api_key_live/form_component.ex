@@ -20,8 +20,8 @@ defmodule ERWeb.ApiKeyLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={{f, :status}} type="text" label="status" />
-        <.input field={{f, :type}} type="text" label="type" />
+        <.input field={f[:status]} type="text" label="status" />
+        <.input field={f[:type]} type="text" label="type" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Api key</.button>
         </:actions>
