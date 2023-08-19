@@ -1,3 +1,13 @@
+defmodule ERWeb.Grpc.Eventrelay.MetricType do
+  use Protobuf, enum: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :SUM, 0
+  field :AVG, 1
+  field :MIN, 2
+  field :MAX, 3
+  field :COUNT, 4
+end
+
 defmodule ERWeb.Grpc.Eventrelay.ApiKeyType do
   use Protobuf, enum: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
@@ -225,15 +235,16 @@ defmodule ERWeb.Grpc.Eventrelay.PullEventsRequest do
   field :topic, 1, type: :string
   field :batch_size, 2, type: :int32, json_name: "batchSize"
   field :offset, 3, type: :int32
-  field :filters, 4, repeated: true, type: ERWeb.Grpc.Eventrelay.PullEventsFilter
+  field :filters, 4, repeated: true, type: ERWeb.Grpc.Eventrelay.EventFilter
 end
 
-defmodule ERWeb.Grpc.Eventrelay.PullEventsFilter do
+defmodule ERWeb.Grpc.Eventrelay.EventFilter do
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
   field :field, 1, type: :string
   field :comparison, 2, type: :string
   field :value, 3, type: :string
+  field :field_path, 4, type: :string, json_name: "fieldPath"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PullEventsResponse do
@@ -244,6 +255,77 @@ defmodule ERWeb.Grpc.Eventrelay.PullEventsResponse do
   field :next_offset, 3, type: :int32, json_name: "nextOffset"
   field :previous_offset, 4, type: :int32, json_name: "previousOffset"
   field :total_batches, 5, type: :int32, json_name: "totalBatches"
+end
+
+defmodule ERWeb.Grpc.Eventrelay.NewMetric do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :name, 1, type: :string
+  field :topic_name, 2, type: :string, json_name: "topicName"
+  field :topic_identifier, 3, type: :string, json_name: "topicIdentifier"
+  field :field_path, 4, type: :string, json_name: "fieldPath"
+  field :type, 5, type: ERWeb.Grpc.Eventrelay.MetricType, enum: true
+  field :filters, 6, repeated: true, type: ERWeb.Grpc.Eventrelay.EventFilter
+end
+
+defmodule ERWeb.Grpc.Eventrelay.Metric do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :id, 1, type: :string
+  field :name, 2, type: :string
+  field :topic_name, 3, type: :string, json_name: "topicName"
+  field :topic_identifier, 4, type: :string, json_name: "topicIdentifier"
+  field :field_path, 5, type: :string, json_name: "fieldPath"
+  field :type, 6, type: ERWeb.Grpc.Eventrelay.MetricType, enum: true
+  field :filters, 7, repeated: true, type: ERWeb.Grpc.Eventrelay.EventFilter
+end
+
+defmodule ERWeb.Grpc.Eventrelay.GetMetricValueRequest do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :id, 1, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.GetMetricValueResponse do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :value, 1, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.GetMetricRequest do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :id, 1, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.GetMetricResponse do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :metric, 1, type: ERWeb.Grpc.Eventrelay.Metric
+end
+
+defmodule ERWeb.Grpc.Eventrelay.CreateMetricRequest do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :metric, 1, type: ERWeb.Grpc.Eventrelay.NewMetric
+end
+
+defmodule ERWeb.Grpc.Eventrelay.CreateMetricResponse do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :metric, 1, type: ERWeb.Grpc.Eventrelay.Metric
+end
+
+defmodule ERWeb.Grpc.Eventrelay.DeleteMetricRequest do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :id, 1, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.DeleteMetricResponse do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :metric, 1, type: ERWeb.Grpc.Eventrelay.Metric
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ApiKey do
@@ -361,6 +443,26 @@ defmodule ERWeb.Grpc.Eventrelay.EventRelay.Service do
     :PullEvents,
     ERWeb.Grpc.Eventrelay.PullEventsRequest,
     ERWeb.Grpc.Eventrelay.PullEventsResponse
+  )
+
+  rpc(:GetMetric, ERWeb.Grpc.Eventrelay.GetMetricRequest, ERWeb.Grpc.Eventrelay.GetMetricResponse)
+
+  rpc(
+    :CreateMetric,
+    ERWeb.Grpc.Eventrelay.CreateMetricRequest,
+    ERWeb.Grpc.Eventrelay.CreateMetricResponse
+  )
+
+  rpc(
+    :DeleteMetric,
+    ERWeb.Grpc.Eventrelay.DeleteMetricRequest,
+    ERWeb.Grpc.Eventrelay.DeleteMetricResponse
+  )
+
+  rpc(
+    :GetMetricValue,
+    ERWeb.Grpc.Eventrelay.GetMetricValueRequest,
+    ERWeb.Grpc.Eventrelay.GetMetricValueResponse
   )
 
   rpc(

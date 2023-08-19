@@ -90,4 +90,12 @@ defmodule ER.Factory do
       topic: build(:topic)
     }
   end
+
+  def metric_factory do
+    %ER.Metrics.Metric{
+      name: Faker.Lorem.word(),
+      type: :count,
+      field_path: "data.cart.total"
+    }
+  end
 end

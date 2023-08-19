@@ -12,6 +12,10 @@ package eventrelay;
 service EventRelay {
   rpc PublishEvents(PublishEventsRequest) returns (PublishEventsResponse) {}
   rpc PullEvents(PullEventsRequest) returns (PullEventsResponse) {}
+  rpc GetMetric(GetMetricRequest) returns (GetMetricResponse) {}
+  rpc CreateMetric(CreateMetricRequest) returns (CreateMetricResponse) {}
+  rpc DeleteMetric(DeleteMetricRequest) returns (DeleteMetricResponse) {}
+  rpc GetMetricValue(GetMetricValueRequest) returns (GetMetricValueResponse) {}
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse) {}
   rpc CreateTopic(CreateTopicRequest) returns (CreateTopicResponse) {}
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {}
@@ -177,6 +181,7 @@ message EventFilter {
   string field = 1;
   string comparison = 2;
   string value = 3;
+  string field_path = 4;
 }
 
 message PullEventsResponse {
@@ -187,7 +192,7 @@ message PullEventsResponse {
   int32 total_batches = 5;
 }
 
-enum AggregationType {
+enum MetricType {
   SUM = 0;
   AVG = 1;
   MIN = 2;
@@ -195,14 +200,60 @@ enum AggregationType {
   COUNT = 4;
 }
 
-message AggregationRequest {
-  // ex. "users" or "users:123"
-  string topic = 1;
-  // A path to the value using dot syntax ex. "cart.total" => 10.00 for {"cart": {"total": 10.00}}
-  string data_path = 2;
-  AggregationType type = 3;
-  repeated EventFilter filters = 4; 
+
+message NewMetric {
+  string name = 1;
+  string topic_name = 2;
+  string topic_identifier = 3;
+  // A path to the value using dot syntax ex. "data.cart.total" => 10.00 for {"cart": {"total": 10.00}}
+  string field_path = 4;
+  MetricType type = 5;
+  repeated EventFilter filters = 6; 
 }
+
+message Metric {
+  string id = 1;
+  string name = 2;
+  string topic_name = 3;
+  string topic_identifier = 4;
+  // A path to the value using dot syntax ex. "data.cart.total" => 10.00 for {"cart": {"total": 10.00}}
+  string field_path = 5;
+  MetricType type = 6;
+  repeated EventFilter filters = 7; 
+}
+
+message GetMetricValueRequest {
+  string id = 1;
+}
+
+message GetMetricValueResponse {
+  string value = 1; 
+}
+
+message GetMetricRequest {
+  string id = 1;
+}
+
+message GetMetricResponse {
+  Metric metric = 1; 
+}
+
+message CreateMetricRequest {
+  NewMetric metric = 1;
+}
+
+message CreateMetricResponse {
+  Metric metric = 1;
+}
+
+message DeleteMetricRequest {
+  string id = 1;
+}
+
+message DeleteMetricResponse {
+  Metric metric = 1;
+}
+
 
 enum ApiKeyType {
   PRODUCER = 0;

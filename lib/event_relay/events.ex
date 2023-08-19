@@ -4,6 +4,7 @@ defmodule ER.Events do
   """
   require Logger
   import Ecto.Query, warn: false
+  import ER
   alias ER.Repo
   alias Phoenix.PubSub
 
@@ -17,6 +18,147 @@ defmodule ER.Events do
   def from_events_for_topic(topic_name: topic_name) do
     table_name = ER.Events.Event.table_name(topic_name)
     from(e in {table_name, Event}, as: :events)
+  end
+
+  def get_translated_filters(filters) do
+    filters
+    |> Enum.reduce([], fn filter, acc ->
+      transformed_filter =
+        filter
+        |> Map.from_struct()
+        |> Map.update!(:comparison, &translate_comparison/1)
+        |> atomize_map()
+
+      [transformed_filter | acc]
+    end)
+  end
+
+  def prepare_calcuate_query(
+        topic_name: topic_name,
+        topic_identifier: topic_identifier,
+        field_path: field_path,
+        filters: filters
+      ) do
+    query =
+      from_events_for_topic(topic_name: topic_name)
+      |> where(as(:events).topic_name == ^topic_name)
+
+    query =
+      unless ER.empty?(topic_identifier) do
+        query |> where(as(:events).topic_identifier == ^topic_identifier)
+      else
+        query
+      end
+
+    query =
+      Enum.reduce(filters, query, fn filter, query ->
+        append_filter(query, filter)
+      end)
+
+    path = parse_path(field_path)
+
+    {query, path}
+  end
+
+  def apply_calculation_to_query({query, path}, :sum) do
+    case path do
+      ["data" | path_tail] ->
+        select(
+          query,
+          [events: events],
+          sum(type(json_extract_path(events.data, ^path_tail), :decimal))
+        )
+
+      ["context" | path_tail] ->
+        select(
+          query,
+          [events: events],
+          sum(type(json_extract_path(events.data, ^path_tail), :decimal))
+        )
+
+      _ ->
+        query
+    end
+  end
+
+  def apply_calculation_to_query({query, path}, :max) do
+    case path do
+      ["data" | path_tail] ->
+        select(
+          query,
+          [events: events],
+          max(type(json_extract_path(events.data, ^path_tail), :float))
+        )
+
+      ["context" | path_tail] ->
+        select(
+          query,
+          [events: events],
+          max(type(json_extract_path(events.data, ^path_tail), :float))
+        )
+
+      _ ->
+        query
+    end
+  end
+
+  def apply_calculation_to_query({query, path}, :min) do
+    case path do
+      ["data" | path_tail] ->
+        select(
+          query,
+          [events: events],
+          min(type(json_extract_path(events.data, ^path_tail), :float))
+        )
+
+      ["context" | path_tail] ->
+        select(
+          query,
+          [events: events],
+          min(type(json_extract_path(events.data, ^path_tail), :float))
+        )
+
+      _ ->
+        query
+    end
+  end
+
+  def apply_calculation_to_query({query, path}, :avg) do
+    case path do
+      ["data" | path_tail] ->
+        select(
+          query,
+          [events: events],
+          avg(type(json_extract_path(events.data, ^path_tail), :float))
+        )
+
+      ["context" | path_tail] ->
+        select(
+          query,
+          [events: events],
+          avg(type(json_extract_path(events.data, ^path_tail), :float))
+        )
+
+      _ ->
+        query
+    end
+  end
+
+  def calculate_metric(
+        topic_name: topic_name,
+        topic_identifier: topic_identifier,
+        field_path: field_path,
+        type: type,
+        filters: filters
+      ) do
+    prepare_calcuate_query(
+      topic_name: topic_name,
+      topic_identifier: topic_identifier,
+      field_path: field_path,
+      filters: filters
+    )
+    |> apply_calculation_to_query(type)
+    |> Repo.one()
   end
 
   @doc """
@@ -256,7 +398,7 @@ defmodule ER.Events do
   end
 
   def translate_comparison(comparison) do
-    case comparison do
+    case to_string(comparison) do
       "equal" ->
         "="
 

@@ -17,6 +17,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     ListSubscriptionsRequest,
     PullEventsRequest,
     PullEventsResponse,
+    EventFilter,
     CreateApiKeyRequest,
     CreateApiKeyResponse,
     ApiKey,
@@ -31,7 +32,14 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     DeleteTopicsFromApiKeyRequest,
     DeleteTopicsFromApiKeyResponse,
     CreateJWTRequest,
-    CreateJWTResponse
+    CreateJWTResponse,
+    GetMetricValueRequest,
+    GetMetricValueResponse,
+    CreateMetricResponse,
+    CreateMetricRequest,
+    Metric,
+    DeleteMetricRequest,
+    DeleteMetricResponse
   }
 
   alias ERWeb.Grpc.Eventrelay.Event, as: GrpcEvent
@@ -706,6 +714,117 @@ defmodule ERWeb.Grpc.EventRelay.Server do
         raise GRPC.RPCError,
           status: GRPC.Status.not_found(),
           message: "ApiKey not found"
+    end
+  end
+
+  @spec get_metric_value(
+          GetMetricValueRequest.t(),
+          GRPC.Server.Stream.t()
+        ) ::
+          GetMetricValueResponse.t()
+  def get_metric_value(request, _stream) do
+    case ER.Metrics.get_metric(request.id) do
+      nil ->
+        raise GRPC.RPCError,
+          status: GRPC.Status.not_found(),
+          message: "Metric not found"
+
+      metric ->
+        try do
+          GetMetricValueResponse.new(value: ER.Metrics.get_value_for_metric(metric))
+        rescue
+          error ->
+            Logger.error("Failed to delete topic: #{inspect(error)}")
+            raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+        end
+    end
+  end
+
+  defp build_metric(metric) do
+    Metric.new(
+      id: metric.id,
+      name: metric.name,
+      field_path: metric.field_path,
+      topic_name: metric.topic_name,
+      topic_identifier: metric.topic_identifier,
+      type: metric.type,
+      filters: Enum.map(metric.filters, &build_event_filter/1)
+    )
+  end
+
+  defp build_event_filter(filter) do
+    EventFilter.new(
+      field: filter.field,
+      field_path: filter.field_path,
+      comparison: filter.comparison,
+      value: filter.value
+    )
+  end
+
+  @spec create_metric(CreateMetricRequest.t(), GRPC.Server.Stream.t()) ::
+          CreateMetricResponse.t()
+  def create_metric(request, _stream) do
+    attrs = %{
+      name: request.metric.name,
+      field_path: request.metric.field_path,
+      topic_name: request.metric.topic_name,
+      topic_identifier: request.metric.topic_identifier,
+      type: from_grpc_enum(request.metric.type),
+      filters: Enum.map(request.metric.filters, &Map.from_struct/1)
+    }
+
+    metric =
+      case ER.Metrics.create_metric(attrs) do
+        {:ok, metric} ->
+          build_metric(metric)
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          case changeset.errors do
+            # [name: {"has already been taken", _}] ->
+            #   raise GRPC.RPCError,
+            #     status: GRPC.Status.already_exists(),
+            #     message: "Metric with that name already exists"
+
+            _ ->
+              raise GRPC.RPCError,
+                status: GRPC.Status.invalid_argument(),
+                message: ER.Ecto.changeset_errors_to_string(changeset)
+          end
+
+        {:error, error} ->
+          Logger.error("Failed to create metric: #{inspect(error)}")
+          raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+      end
+
+    CreateMetricResponse.new(metric: metric)
+  end
+
+  @spec delete_metric(DeleteMetricRequest.t(), GRPC.Server.Stream.t()) ::
+          DeleteMetricResponse.t()
+  def delete_metric(request, _stream) do
+    case ER.Metrics.get_metric(request.id) do
+      nil ->
+        raise GRPC.RPCError,
+          status: GRPC.Status.not_found(),
+          message: "Metric not found"
+
+      db_metric ->
+        metric =
+          case ER.Metrics.delete_metric(db_metric) do
+            {:ok, metric} ->
+              build_metric(metric)
+
+            {:error, %Ecto.Changeset{} = changeset} ->
+              raise GRPC.RPCError,
+                status: GRPC.Status.invalid_argument(),
+                message: ER.Ecto.changeset_errors_to_string(changeset)
+
+            {:error, error} ->
+              Logger.error("Failed to delete metric: #{inspect(error)}")
+              raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+          end
+
+        DeleteMetricResponse.new(metric: metric)
     end
   end
 

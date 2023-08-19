@@ -42,7 +42,7 @@ defmodule ERWeb.EventLive.Index do
         socket
       end
 
-    filters = get_transformed_filters(socket.assigns.search_form)
+    filters = Events.get_translated_filters(socket.assigns.search_form.data.event_filters)
 
     socket =
       socket
@@ -118,7 +118,7 @@ defmodule ERWeb.EventLive.Index do
       | data: %{data | event_filters: List.delete_at(data.event_filters, index)}
     }
 
-    transformed_filters = get_transformed_filters(search_form)
+    transformed_filters = Events.get_translated_filters(search_form.data.event_filters)
 
     socket =
       socket
@@ -175,18 +175,5 @@ defmodule ERWeb.EventLive.Index do
 
   defp build_empty_search_form() do
     Ecto.Changeset.change(%ER.Events.SearchForm{event_filters: [%ER.Events.EventFilter{}]}, %{})
-  end
-
-  defp get_transformed_filters(search_form) do
-    search_form.data.event_filters
-    |> Enum.reduce([], fn filter, acc ->
-      transformed_filter =
-        filter
-        |> Map.from_struct()
-        |> Map.update!(:comparison, &Events.translate_comparison/1)
-        |> atomize_map()
-
-      [transformed_filter | acc]
-    end)
   end
 end

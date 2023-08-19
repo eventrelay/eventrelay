@@ -10,8 +10,12 @@ defmodule ER.Ecto do
       |> String.replace("_", " ")
       |> String.capitalize()
 
-    Enum.reduce(messages, [], fn message, acc ->
-      [human_field_name <> " " <> message | acc]
+    Enum.reduce(messages, [], fn
+      message, acc when is_map(message) ->
+        acc ++ Enum.flat_map(message, &prettify/1)
+
+      message, acc ->
+        [human_field_name <> " " <> message | acc]
     end)
   end
 
