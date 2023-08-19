@@ -36,6 +36,31 @@ defmodule ER do
     0
   end
 
+  def to_float(value) when is_float(value) do
+    value
+  end
+
+  def to_float(value) when is_integer(value) do
+    value
+    |> Integer.to_string()
+    |> Float.parse()
+    |> case do
+      {value, _} ->
+        value
+
+      _ ->
+        0.0
+    end
+  end
+
+  def to_float(%Decimal{} = value) do
+    Decimal.to_float(value)
+  end
+
+  def to_float(value) when is_nil(value) do
+    0
+  end
+
   @doc """
   Takes an {:ok, value} tuple and returns the value
 
@@ -97,6 +122,7 @@ defmodule ER do
   def empty?([]), do: true
   def empty?(map) when map == %{}, do: true
   def empty?(%DateTime{}), do: false
+  def empty?(_), do: false
 
   def boolean?(value) when is_boolean(value), do: true
   def boolean?(value) when not is_boolean(value), do: false

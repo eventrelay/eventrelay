@@ -82,6 +82,12 @@ grpcurl -plaintext -proto event_relay.proto -d '{"subscription": {"name": "event
 grpcurl -plaintext -proto event_relay.proto -d '{"subscription": {"name": "events4life", "topic_name": "users", "config": {}, "push": true, "subscription_type": "websocket"}}' localhost:50051 eventrelay.EventRelay.CreateSubscription
 ```
 
+List Subscriptions (w/ auth):
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"page": 1, "pageSize": 100}' --rpc-header "Authorization: Bearer VWgwZFVZVVZDUnp4RjE1TDZqV21DWlQyMl9wVnBmZkZkb190ckotXzhWOjY4RmdvV2R3WGRqY3NPRnNWTGw2LUgtZzlUaW45SVRuejNVdWVlWXRtOVp0QVBZN3picVhETWE4NFUxWlVsQkg=" localhost:50051 eventrelay.EventRelay.ListSubscriptions
+```
+
 Create webhook subscription:
 
 ```
@@ -184,13 +190,14 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [x] Write Google PubSub ingestor
 - [x] Ability to apply lua scripts to ingested events
 - [ ] Write tests!!!!
-- [ ] Aggregations
+- [ ] Metrics
+- [ ] Broadcast metrics updates via subscriptions and internal pubsub
+- [ ] Ability to forward an event to another topic and transform the event with a lua script
 - [ ] make sure subscription and delivery servers restart properly
 - [ ] UI for managing Ingestors/Transformers
 - [ ] UI to tail events
 - [ ] UI to manage subscriptions
 - [ ] UI to view deliveries
-- [ ] Ability to forward an event to another topic and transform the event with a lua script
 - [ ] add subscription/delivery server crash state reloading from redis
 - [ ] Improve docs about Google PubSub ingestor
 - [ ] switch to Nebulex redis adapter
