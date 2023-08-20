@@ -4,7 +4,6 @@ defmodule ER.Events do
   """
   require Logger
   import Ecto.Query, warn: false
-  import ER
   alias ER.Repo
   alias Phoenix.PubSub
 
@@ -18,19 +17,6 @@ defmodule ER.Events do
   def from_events_for_topic(topic_name: topic_name) do
     table_name = ER.Events.Event.table_name(topic_name)
     from(e in {table_name, Event}, as: :events)
-  end
-
-  def get_translated_filters(filters) do
-    filters
-    |> Enum.reduce([], fn filter, acc ->
-      transformed_filter =
-        filter
-        |> Map.from_struct()
-        |> Map.update!(:comparison, &translate_comparison/1)
-        |> atomize_map()
-
-      [transformed_filter | acc]
-    end)
   end
 
   def prepare_calcuate_query(
@@ -395,19 +381,6 @@ defmodule ER.Events do
   def append_filter(query, _filter) do
     # TODO: Noop for now...
     query
-  end
-
-  def translate_comparison(comparison) do
-    case to_string(comparison) do
-      "equal" ->
-        "="
-
-      "not_equal" ->
-        "!="
-
-      c ->
-        c
-    end
   end
 
   @doc """

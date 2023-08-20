@@ -1,7 +1,6 @@
 defmodule ER.Metrics do
   alias ER.Repo
   alias ER.Metrics.Metric
-  alias ER.Events
   import Ecto.Query
   alias Phoenix.PubSub
 
@@ -52,7 +51,7 @@ defmodule ER.Metrics do
         filters: filters
       })
       when type == :count do
-    translated_filters = Events.get_translated_filters(filters)
+    translated_filters = ER.Filter.translate(filters)
 
     result =
       ER.Events.list_events_for_topic(
@@ -74,7 +73,7 @@ defmodule ER.Metrics do
         filters: filters
       })
       when type in [:max, :min, :sum, :avg] do
-    translated_filters = Events.get_translated_filters(filters)
+    translated_filters = ER.Filter.translate(filters)
 
     ER.Events.calculate_metric(
       topic_name: topic_name,
@@ -106,6 +105,32 @@ defmodule ER.Metrics do
     Repo.all(Metric)
   end
 
+  def list_metrics(
+        topic_name: topic_name,
+        topic_identifier: topic_identifier,
+        filters: filters,
+        page: page,
+        page_size: page_size
+      ) do
+    query =
+      from_metrics()
+      |> where(as(:metrics).topic_name == ^topic_name)
+
+    query =
+      unless ER.empty?(topic_identifier) do
+        query |> where(as(:metrics).topic_identifier == ^topic_identifier)
+      else
+        query
+      end
+
+    query =
+      Enum.reduce(ER.Filter.translate(filters), query, fn filter, query ->
+        append_filter(query, filter)
+      end)
+
+    ER.PaginatedResults.new(query, %{"page" => page, "page_size" => page_size})
+  end
+
   def list_metrics_for_topic(topic_name, topic_identifier, where: where) do
     query =
       from_metrics()
@@ -124,6 +149,45 @@ defmodule ER.Metrics do
       end)
 
     Repo.all(query)
+  end
+
+  def append_filter(query, %{field: field, value: value, comparison: "="}) do
+    field = String.to_atom(field)
+
+    query
+    |> where([metrics: metrics], field(metrics, ^field) == ^value)
+  end
+
+  def append_filter(query, %{field: field, value: value, comparison: "!="}) do
+    field = String.to_atom(field)
+
+    query
+    |> where([metrics: metrics], field(metrics, ^field) != ^value)
+  end
+
+  def append_filter(query, %{field: field, value: value, comparison: "like"}) do
+    field = String.to_atom(field)
+
+    query
+    |> where([metrics: metrics], like(field(metrics, ^field), ^value))
+  end
+
+  def append_filter(query, %{field: field, value: value, comparison: "ilike"}) do
+    field = String.to_atom(field)
+
+    query
+    |> where([metrics: metrics], ilike(field(metrics, ^field), ^value))
+  end
+
+  def append_filter(query, %{field: field, value: value, comparison: "in"}) do
+    field = String.to_atom(field)
+
+    query
+    |> where([metrics: metrics], field(metrics, ^field) in ^value)
+  end
+
+  def append_filter(query, _filter) do
+    query
   end
 
   @doc """

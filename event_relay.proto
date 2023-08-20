@@ -12,6 +12,7 @@ package eventrelay;
 service EventRelay {
   rpc PublishEvents(PublishEventsRequest) returns (PublishEventsResponse) {}
   rpc PullEvents(PullEventsRequest) returns (PullEventsResponse) {}
+  rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {}
   rpc GetMetric(GetMetricRequest) returns (GetMetricResponse) {}
   rpc CreateMetric(CreateMetricRequest) returns (CreateMetricResponse) {}
   rpc DeleteMetric(DeleteMetricRequest) returns (DeleteMetricResponse) {}
@@ -174,10 +175,10 @@ message PullEventsRequest {
   // max batchSize is 1000, if not specified, defaults to 100
   int32 batch_size = 2;
   int32 offset = 3;
-  repeated EventFilter filters = 4; 
+  repeated Filter filters = 4; 
 }
 
-message EventFilter {
+message Filter {
   string field = 1;
   string comparison = 2;
   string value = 3;
@@ -208,7 +209,7 @@ message NewMetric {
   // A path to the value using dot syntax ex. "data.cart.total" => 10.00 for {"cart": {"total": 10.00}}
   string field_path = 4;
   MetricType type = 5;
-  repeated EventFilter filters = 6; 
+  repeated Filter filters = 6; 
 }
 
 message Metric {
@@ -219,7 +220,7 @@ message Metric {
   // A path to the value using dot syntax ex. "data.cart.total" => 10.00 for {"cart": {"total": 10.00}}
   string field_path = 5;
   MetricType type = 6;
-  repeated EventFilter filters = 7; 
+  repeated Filter filters = 7; 
 }
 
 message GetMetricValueRequest {
@@ -228,6 +229,22 @@ message GetMetricValueRequest {
 
 message GetMetricValueResponse {
   string value = 1; 
+}
+
+message ListMetricsRequest {
+  // ex. "users" or "users:123"
+  string topic = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+  repeated Filter filters = 4; 
+}
+
+message ListMetricsResponse {
+  repeated Metric metrics = 1; 
+  int32 total_count = 2;
+  int32 next_page = 3;
+  int32 previous_page = 4;
+  int32 total_pages = 5;
 }
 
 message GetMetricRequest {

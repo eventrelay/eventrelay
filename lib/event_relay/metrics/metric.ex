@@ -2,7 +2,7 @@ defmodule ER.Metrics.Metric do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias ER.Events.{EventFilter, Topic}
+  alias ER.Events.Topic
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -13,7 +13,7 @@ defmodule ER.Metrics.Metric do
     field :type, Ecto.Enum, values: [:sum, :avg, :min, :max, :count]
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
     field :topic_identifier, :string
-    embeds_many :filters, EventFilter
+    embeds_many :filters, ER.Filter
 
     timestamps()
   end

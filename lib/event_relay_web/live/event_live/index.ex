@@ -42,7 +42,7 @@ defmodule ERWeb.EventLive.Index do
         socket
       end
 
-    filters = Events.get_translated_filters(socket.assigns.search_form.data.event_filters)
+    filters = ER.Filter.translate(socket.assigns.search_form.data.event_filters)
 
     socket =
       socket
@@ -72,7 +72,7 @@ defmodule ERWeb.EventLive.Index do
       Map.values(event_filters)
       |> Enum.reduce([[], []], fn filter, [transformed, untransformed] ->
         transformed_filter =
-          Map.update!(filter, "comparison", &Events.translate_comparison/1)
+          Map.update!(filter, "comparison", &ER.Filter.translate_comparison/1)
           |> atomize_map()
 
         [[transformed_filter | transformed], [filter | untransformed]]
@@ -118,7 +118,7 @@ defmodule ERWeb.EventLive.Index do
       | data: %{data | event_filters: List.delete_at(data.event_filters, index)}
     }
 
-    transformed_filters = Events.get_translated_filters(search_form.data.event_filters)
+    transformed_filters = ER.Filter.translate(search_form.data.event_filters)
 
     socket =
       socket

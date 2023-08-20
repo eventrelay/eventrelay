@@ -235,10 +235,10 @@ defmodule ERWeb.Grpc.Eventrelay.PullEventsRequest do
   field :topic, 1, type: :string
   field :batch_size, 2, type: :int32, json_name: "batchSize"
   field :offset, 3, type: :int32
-  field :filters, 4, repeated: true, type: ERWeb.Grpc.Eventrelay.EventFilter
+  field :filters, 4, repeated: true, type: ERWeb.Grpc.Eventrelay.Filter
 end
 
-defmodule ERWeb.Grpc.Eventrelay.EventFilter do
+defmodule ERWeb.Grpc.Eventrelay.Filter do
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
   field :field, 1, type: :string
@@ -265,7 +265,7 @@ defmodule ERWeb.Grpc.Eventrelay.NewMetric do
   field :topic_identifier, 3, type: :string, json_name: "topicIdentifier"
   field :field_path, 4, type: :string, json_name: "fieldPath"
   field :type, 5, type: ERWeb.Grpc.Eventrelay.MetricType, enum: true
-  field :filters, 6, repeated: true, type: ERWeb.Grpc.Eventrelay.EventFilter
+  field :filters, 6, repeated: true, type: ERWeb.Grpc.Eventrelay.Filter
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Metric do
@@ -277,7 +277,7 @@ defmodule ERWeb.Grpc.Eventrelay.Metric do
   field :topic_identifier, 4, type: :string, json_name: "topicIdentifier"
   field :field_path, 5, type: :string, json_name: "fieldPath"
   field :type, 6, type: ERWeb.Grpc.Eventrelay.MetricType, enum: true
-  field :filters, 7, repeated: true, type: ERWeb.Grpc.Eventrelay.EventFilter
+  field :filters, 7, repeated: true, type: ERWeb.Grpc.Eventrelay.Filter
 end
 
 defmodule ERWeb.Grpc.Eventrelay.GetMetricValueRequest do
@@ -290,6 +290,25 @@ defmodule ERWeb.Grpc.Eventrelay.GetMetricValueResponse do
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
   field :value, 1, type: :string
+end
+
+defmodule ERWeb.Grpc.Eventrelay.ListMetricsRequest do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :topic, 1, type: :string
+  field :page, 2, type: :int32
+  field :page_size, 3, type: :int32, json_name: "pageSize"
+  field :filters, 4, repeated: true, type: ERWeb.Grpc.Eventrelay.Filter
+end
+
+defmodule ERWeb.Grpc.Eventrelay.ListMetricsResponse do
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :metrics, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Metric
+  field :total_count, 2, type: :int32, json_name: "totalCount"
+  field :next_page, 3, type: :int32, json_name: "nextPage"
+  field :previous_page, 4, type: :int32, json_name: "previousPage"
+  field :total_pages, 5, type: :int32, json_name: "totalPages"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.GetMetricRequest do
@@ -443,6 +462,12 @@ defmodule ERWeb.Grpc.Eventrelay.EventRelay.Service do
     :PullEvents,
     ERWeb.Grpc.Eventrelay.PullEventsRequest,
     ERWeb.Grpc.Eventrelay.PullEventsResponse
+  )
+
+  rpc(
+    :ListMetrics,
+    ERWeb.Grpc.Eventrelay.ListMetricsRequest,
+    ERWeb.Grpc.Eventrelay.ListMetricsResponse
   )
 
   rpc(:GetMetric, ERWeb.Grpc.Eventrelay.GetMetricRequest, ERWeb.Grpc.Eventrelay.GetMetricResponse)

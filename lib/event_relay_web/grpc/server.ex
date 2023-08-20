@@ -17,7 +17,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     ListSubscriptionsRequest,
     PullEventsRequest,
     PullEventsResponse,
-    EventFilter,
+    Filter,
     CreateApiKeyRequest,
     CreateApiKeyResponse,
     ApiKey,
@@ -39,7 +39,9 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     CreateMetricRequest,
     Metric,
     DeleteMetricRequest,
-    DeleteMetricResponse
+    DeleteMetricResponse,
+    ListMetricsRequest,
+    ListMetricsResponse
   }
 
   alias ERWeb.Grpc.Eventrelay.Event, as: GrpcEvent
@@ -753,11 +755,41 @@ defmodule ERWeb.Grpc.EventRelay.Server do
   end
 
   defp build_event_filter(filter) do
-    EventFilter.new(
+    Filter.new(
       field: filter.field,
       field_path: filter.field_path,
       comparison: filter.comparison,
       value: filter.value
+    )
+  end
+
+  @spec list_metrics(ListMetricsRequest.t(), GRPC.Server.Stream.t()) ::
+          ListMetricsResponse.t()
+  def list_metrics(request, _stream) do
+    topic = request.topic
+    filters = request.filters
+    {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
+
+    page = if request.page == 0, do: 1, else: request.page
+    page_size = if request.page_size == 0, do: 100, else: request.page_size
+
+    paginated_results =
+      ER.Metrics.list_metrics(
+        topic_name: topic_name,
+        topic_identifier: topic_identifier,
+        filters: filters,
+        page: page,
+        page_size: page_size
+      )
+
+    metrics = Enum.map(paginated_results.results, &build_metric/1)
+
+    ListMetricsResponse.new(
+      metrics: metrics,
+      total_count: paginated_results.total_count,
+      next_page: paginated_results.next_page,
+      previous_page: paginated_results.previous_page,
+      total_pages: paginated_results.total_pages
     )
   end
 

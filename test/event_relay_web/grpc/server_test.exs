@@ -10,9 +10,10 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
     NewEvent,
     GetMetricValueRequest,
     CreateMetricRequest,
-    EventFilter,
+    Filter,
     NewMetric,
-    DeleteMetricRequest
+    DeleteMetricRequest,
+    ListMetricsRequest
     # PublishEventsResponse,
     # ListTopicsResponse,
     # Topic,
@@ -43,15 +44,13 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
     # CreateJWTResponse
   }
 
-  alias ER.Events.EventFilter
+  setup do
+    {:ok, topic} = Events.create_topic(%{name: "log"})
+
+    {:ok, topic: topic}
+  end
 
   describe "publish_events/2" do
-    setup do
-      {:ok, topic} = Events.create_topic(%{name: "audit_log"})
-
-      {:ok, topic: topic}
-    end
-
     test "publishes events", %{topic: topic} do
       event_name = "entry.created"
       group_key = "groupkey"
@@ -125,12 +124,6 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
   end
 
   describe "get_metric_value/2" do
-    setup do
-      {:ok, topic} = Events.create_topic(%{name: "log"})
-
-      {:ok, topic: topic}
-    end
-
     test "get a count metric", %{topic: topic} do
       metric =
         insert(:metric, topic_name: topic.name, type: :count, field_path: "data.cart.total")
@@ -211,7 +204,7 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
           type: :avg,
           field_path: "data.cart.total",
           filters: [
-            %EventFilter{field_path: "data.cart.kind", comparison: "equal", value: "completed"}
+            %ER.Filter{field_path: "data.cart.kind", comparison: "equal", value: "completed"}
           ]
         )
 
@@ -238,12 +231,6 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
   end
 
   describe "create_metric/2" do
-    setup do
-      {:ok, topic} = Events.create_topic(%{name: "log"})
-
-      {:ok, topic: topic}
-    end
-
     test "create a new metric", %{topic: topic} do
       request = %CreateMetricRequest{
         metric: %NewMetric{
@@ -251,7 +238,7 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
           field_path: "data.cart.total",
           topic_name: topic.name,
           type: :SUM,
-          filters: [%EventFilter{field: "reference_key", comparison: "equal", value: "test"}]
+          filters: [%Filter{field: "reference_key", comparison: "equal", value: "test"}]
         }
       }
 
@@ -259,7 +246,9 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
 
       refute ER.Metrics.get_metric(result.metric.id) == nil
     end
+  end
 
+  describe "delete_metric/2" do
     test "deletes a metric", %{topic: topic} do
       metric = insert(:metric, topic_name: topic.name, type: :avg, field_path: "data.cart.total")
 
@@ -270,6 +259,22 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
       result = Server.delete_metric(request, nil)
 
       assert ER.Metrics.get_metric(result.metric.id) == nil
+    end
+  end
+
+  describe "list_metrics/2" do
+    test "list metrics", %{topic: topic} do
+      metric = insert(:metric, topic_name: topic.name, type: :avg, field_path: "data.cart.total")
+      insert(:metric, topic_name: topic.name, type: :sum, field_path: "data.cart.total")
+
+      request = %ListMetricsRequest{
+        topic: topic.name,
+        filters: [%Filter{field: "name", comparison: "equal", value: metric.name}]
+      }
+
+      result = Server.list_metrics(request, nil)
+      assert Repo.aggregate(ER.Metrics.Metric, :count) == 2
+      assert result.total_count == 1
     end
   end
 end
