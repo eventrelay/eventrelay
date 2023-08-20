@@ -122,6 +122,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     offset = if request.offset == 0, do: nil, else: request.offset
     batch_size = if request.batch_size == 0, do: 100, else: request.batch_size
     batch_size = if batch_size > 1000, do: 100, else: batch_size
+    # TODO: make max batch_size configurable
 
     batched_results =
       ER.Events.list_events_for_topic(
@@ -772,25 +773,33 @@ defmodule ERWeb.Grpc.EventRelay.Server do
 
     page = if request.page == 0, do: 1, else: request.page
     page_size = if request.page_size == 0, do: 100, else: request.page_size
+    # TODO: add logic for max page size and make it configurable
 
-    paginated_results =
-      ER.Metrics.list_metrics(
-        topic_name: topic_name,
-        topic_identifier: topic_identifier,
-        filters: filters,
-        page: page,
-        page_size: page_size
+    try do
+      paginated_results =
+        ER.Metrics.list_metrics(
+          topic_name: topic_name,
+          topic_identifier: topic_identifier,
+          filters: filters,
+          page: page,
+          page_size: page_size
+        )
+
+      metrics = Enum.map(paginated_results.results, &build_metric/1)
+
+      ListMetricsResponse.new(
+        metrics: metrics,
+        total_count: paginated_results.total_count,
+        next_page: paginated_results.next_page,
+        previous_page: paginated_results.previous_page,
+        total_pages: paginated_results.total_pages
       )
-
-    metrics = Enum.map(paginated_results.results, &build_metric/1)
-
-    ListMetricsResponse.new(
-      metrics: metrics,
-      total_count: paginated_results.total_count,
-      next_page: paginated_results.next_page,
-      previous_page: paginated_results.previous_page,
-      total_pages: paginated_results.total_pages
-    )
+    rescue
+      e in ER.Filter.BadFieldError ->
+        raise GRPC.RPCError,
+          status: GRPC.Status.invalid_argument(),
+          message: e.message
+    end
   end
 
   @spec create_metric(CreateMetricRequest.t(), GRPC.Server.Stream.t()) ::

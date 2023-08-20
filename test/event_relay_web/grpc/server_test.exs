@@ -276,5 +276,19 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
       assert Repo.aggregate(ER.Metrics.Metric, :count) == 2
       assert result.total_count == 1
     end
+
+    test "return error if filter field name is invalid", %{topic: topic} do
+      metric = insert(:metric, topic_name: topic.name, type: :avg, field_path: "data.cart.total")
+      insert(:metric, topic_name: topic.name, type: :sum, field_path: "data.cart.total")
+
+      request = %ListMetricsRequest{
+        topic: topic.name,
+        filters: [%Filter{field: "bad_field", comparison: "equal", value: metric.name}]
+      }
+
+      assert_raise(GRPC.RPCError, "bad_field does not exist", fn ->
+        Server.list_metrics(request, nil)
+      end)
+    end
   end
 end

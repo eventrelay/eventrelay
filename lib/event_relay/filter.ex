@@ -43,4 +43,8 @@ defmodule ER.Filter do
       [transformed_filter | acc]
     end)
   end
+
+  defmodule BadFieldError do
+    defexception message: "field does not exist"
+  end
 end

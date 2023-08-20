@@ -3,6 +3,7 @@ defmodule ER.Metrics do
   alias ER.Metrics.Metric
   import Ecto.Query
   alias Phoenix.PubSub
+  import ER
 
   def publish_metric_updates(updates) do
     Enum.map(updates, fn {value, _event, metric} ->
@@ -123,6 +124,8 @@ defmodule ER.Metrics do
         query
       end
 
+    ensure_filter_fields_exist!(filters)
+
     query =
       Enum.reduce(ER.Filter.translate(filters), query, fn filter, query ->
         append_filter(query, filter)
@@ -149,6 +152,18 @@ defmodule ER.Metrics do
       end)
 
     Repo.all(query)
+  end
+
+  def ensure_filter_fields_exist!(filters) do
+    fields = ER.Metrics.Metric.__schema__(:fields)
+
+    Enum.map(filters, fn filter ->
+      field = indifferent_get(filter, :field) |> String.to_atom()
+
+      unless field in fields do
+        raise ER.Filter.BadFieldError, message: "#{field} does not exist"
+      end
+    end)
   end
 
   def append_filter(query, %{field: field, value: value, comparison: "="}) do
