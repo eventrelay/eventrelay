@@ -4,10 +4,14 @@ defmodule ER.MetricsTest do
   import ER.Factory
   alias ER.Metrics
 
+  setup do
+    {:ok, topic} = ER.Events.create_topic(%{name: "log"})
+
+    {:ok, topic: topic}
+  end
+
   describe "metrics" do
     alias ER.Metrics.Metric
-
-    import ER.MetricsFixtures
 
     @invalid_attrs %{field_path: nil, filters: nil, name: nil, type: :sum}
 
@@ -21,12 +25,13 @@ defmodule ER.MetricsTest do
       assert Metrics.get_metric!(metric.id) == metric
     end
 
-    test "create_metric/1 with valid data creates a metric" do
+    test "create_metric/1 with valid data creates a metric", %{topic: topic} do
       valid_attrs = %{
         field_path: "some field_path",
         filters: [],
         name: "some sum",
-        type: :sum
+        type: :sum,
+        topic_name: topic.name
       }
 
       assert {:ok, %Metric{} = metric} = Metrics.create_metric(valid_attrs)
@@ -40,14 +45,15 @@ defmodule ER.MetricsTest do
       assert {:error, %Ecto.Changeset{}} = Metrics.create_metric(@invalid_attrs)
     end
 
-    test "update_metric/2 with valid data updates the metric" do
+    test "update_metric/2 with valid data updates the metric", %{topic: topic} do
       metric = insert(:metric)
 
       update_attrs = %{
         field_path: "some updated field_path",
         filters: [],
         name: "some updated name",
-        type: :sum
+        type: :sum,
+        topic_name: topic.name
       }
 
       assert {:ok, %Metric{} = metric} = Metrics.update_metric(metric, update_attrs)
@@ -72,6 +78,44 @@ defmodule ER.MetricsTest do
     test "change_metric/1 returns a metric changeset" do
       metric = insert(:metric)
       assert %Ecto.Changeset{} = Metrics.change_metric(metric)
+    end
+  end
+
+  describe "build_events_for_metric_udpate/3" do
+    test "returns list of non-durable events for metric updates", %{topic: topic} do
+      first_metric =
+        insert(:metric, topic_name: topic.name, type: :sum, field_path: "data.cart.total")
+
+      last_metric = insert(:metric, topic_name: topic.name, type: :count)
+
+      totals = [10, 30]
+
+      Enum.each(totals, fn total ->
+        attrs = params_for(:event, topic: topic)
+        attrs = %{attrs | data: %{"cart" => %{"total" => total}}}
+        ER.Events.create_event_for_topic(attrs)
+      end)
+
+      events =
+        ER.Metrics.build_metric_updates(
+          topic_name: topic.name,
+          topic_identifier: nil
+        )
+        |> Enum.map(&elem(&1, 1))
+
+      first_event = List.first(events)
+      assert first_event.data["metric"]["name"] == first_metric.name
+      assert first_event.data["metric"]["type"] == to_string(first_metric.type)
+      assert first_event.source == "event_relay"
+      assert first_event.topic_name == topic.name
+      assert first_event.durable == false
+
+      last_event = List.last(events)
+      assert last_event.data["metric"]["name"] == last_metric.name
+      assert last_event.data["metric"]["type"] == to_string(last_metric.type)
+      assert last_event.source == "event_relay"
+      assert last_event.topic_name == topic.name
+      assert last_event.durable == false
     end
   end
 end

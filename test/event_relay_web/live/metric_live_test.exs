@@ -4,6 +4,8 @@ defmodule ERWeb.MetricLiveTest do
   import Phoenix.LiveViewTest
   import ER.Factory
 
+  alias ER.Repo
+
   @create_attrs %{
     field_path: "some field_path",
     name: "some name",
@@ -12,19 +14,25 @@ defmodule ERWeb.MetricLiveTest do
   @update_attrs %{
     field_path: "some updated field_path",
     name: "some updated name",
-    type: :sum
+    type: :sum,
+    produce_update_event: false
   }
   @invalid_attrs %{field_path: nil, name: nil, type: :sum}
 
-  defp create_metric(_) do
-    metric = insert(:metric)
+  defp create_topic(_) do
+    {:ok, topic} = ER.Events.create_topic(%{name: "log"})
+    %{topic: topic}
+  end
+
+  defp create_metric(%{topic: topic}) do
+    metric = insert(:metric, topic_name: topic.name)
     %{metric: metric}
   end
 
   setup [:register_and_log_in_user]
 
   describe "Index" do
-    setup [:create_metric]
+    setup [:create_topic, :create_metric]
 
     test "lists all metrics", %{conn: conn, metric: metric} do
       {:ok, _index_live, html} = live(conn, ~p"/metrics")
@@ -33,7 +41,9 @@ defmodule ERWeb.MetricLiveTest do
       assert html =~ metric.field_path
     end
 
-    test "saves new metric", %{conn: conn} do
+    test "saves new metric", %{conn: conn, topic: topic} do
+      create_attrs = Map.merge(@create_attrs, %{topic_name: topic.name})
+
       {:ok, index_live, _html} = live(conn, ~p"/metrics")
 
       assert index_live |> element("a", "New Metric") |> render_click() =~
@@ -46,7 +56,7 @@ defmodule ERWeb.MetricLiveTest do
              |> render_change() =~ "can&#39;t be blank"
 
       assert index_live
-             |> form("#metric-form", metric: @create_attrs)
+             |> form("#metric-form", metric: create_attrs)
              |> render_submit()
 
       assert_patch(index_live, ~p"/metrics")
@@ -77,6 +87,9 @@ defmodule ERWeb.MetricLiveTest do
       html = render(index_live)
       assert html =~ "Metric updated successfully"
       assert html =~ "some updated field_path"
+
+      metric = Repo.reload(metric)
+      assert metric.produce_update_event == false
     end
 
     test "deletes metric in listing", %{conn: conn, metric: metric} do
@@ -88,7 +101,7 @@ defmodule ERWeb.MetricLiveTest do
   end
 
   describe "Show" do
-    setup [:create_metric]
+    setup [:create_topic, :create_metric]
 
     test "displays metric", %{conn: conn, metric: metric} do
       {:ok, _show_live, html} = live(conn, ~p"/metrics/#{metric}")

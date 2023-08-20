@@ -36,16 +36,30 @@ defmodule ER.Subscriptions.Server do
       "#{__MODULE__}.handle_info({:event_created, #{inspect(event)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
+    # find metrics for the topic and create events for the metric update
+    topic_name = event.topic_name
+    topic_identifier = event.topic_identifier
+
+    events =
+      ER.Metrics.build_metric_updates(
+        topic_name: topic_name,
+        topic_identifier: topic_identifier
+      )
+      |> ER.Metrics.publish_metric_updates()
+      |> Enum.map(&elem(&1, 1))
+
+    events = [event | events]
+
     cond do
       Subscription.push_to_websocket?(subscription) ->
-        ER.Subscriptions.Delivery.Websocket.push(subscription, event)
+        Enum.map(events, &ER.Subscriptions.Delivery.Websocket.push(subscription, &1))
 
       Subscription.push_to_webhook?(subscription) ->
         # TODO implement a queue and rate limiting
-        ER.Subscriptions.Delivery.Webhook.push(subscription, event)
+        Enum.map(events, &ER.Subscriptions.Delivery.Webhook.push(subscription, &1))
 
       Subscription.push_to_s3?(subscription) ->
-        ER.Subscriptions.Delivery.S3.push(subscription, event)
+        Enum.map(events, &ER.Subscriptions.Delivery.S3.push(subscription, &1))
 
       true ->
         Logger.debug("Not pushing event=#{inspect(event)} subscription=#{inspect(subscription)}")

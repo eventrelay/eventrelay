@@ -66,14 +66,14 @@ defmodule ER.Events do
         select(
           query,
           [events: events],
-          sum(type(json_extract_path(events.data, ^path_tail), :decimal))
+          sum(type(json_extract_path(events.data, ^path_tail), :float))
         )
 
       ["context" | path_tail] ->
         select(
           query,
           [events: events],
-          sum(type(json_extract_path(events.data, ^path_tail), :decimal))
+          sum(type(json_extract_path(events.data, ^path_tail), :float))
         )
 
       _ ->

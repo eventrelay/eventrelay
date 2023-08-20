@@ -189,10 +189,12 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [x] UI to API Keys
 - [x] Write Google PubSub ingestor
 - [x] Ability to apply lua scripts to ingested events
+- [x] Metrics
 - [ ] Write tests!!!!
-- [ ] Metrics
-- [ ] Broadcast metrics updates via subscriptions and internal pubsub
+- [x] Broadcast metrics updates via subscriptions and internal pubsub
+- [ ] Refactor EventFilter to Filter
 - [ ] Ability to forward an event to another topic and transform the event with a lua script
+- [ ] add histogram type metric
 - [ ] make sure subscription and delivery servers restart properly
 - [ ] UI for managing Ingestors/Transformers
 - [ ] UI to tail events

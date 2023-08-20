@@ -9,6 +9,7 @@ defmodule ER.Metrics.Metric do
   schema "metrics" do
     field :field_path, :string
     field :name, :string
+    field :produce_update_event, :boolean, default: true
     field :type, Ecto.Enum, values: [:sum, :avg, :min, :max, :count]
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
     field :topic_identifier, :string
@@ -20,8 +21,15 @@ defmodule ER.Metrics.Metric do
   @doc false
   def changeset(metric, attrs) do
     metric
-    |> cast(attrs, [:name, :field_path, :type])
+    |> cast(attrs, [
+      :name,
+      :field_path,
+      :type,
+      :topic_name,
+      :topic_identifier,
+      :produce_update_event
+    ])
     |> cast_embed(:filters)
-    |> validate_required([:name, :field_path, :type])
+    |> validate_required([:name, :field_path, :type, :topic_name])
   end
 end

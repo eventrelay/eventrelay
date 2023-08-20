@@ -22,7 +22,7 @@ defmodule ERWeb.EventLive.FormComponent do
       >
         <.input field={f[:name]} type="text" label="name" />
         <.input field={f[:topic_name]} type="text" label="topic_name" />
-        <.input field={f[:topic_id]} type="text" label="topic_id" />
+        <.input field={f[:topic_identifier]} type="text" label="topic_identifier" />
         <.input field={f[:source]} type="text" label="source" />
         <.input field={f[:occurred_at]} type="datetime-local" label="occurred_at" />
         <.input field={f[:context_json]} type="textarea" label="context" />

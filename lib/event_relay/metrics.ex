@@ -2,6 +2,48 @@ defmodule ER.Metrics do
   alias ER.Repo
   alias ER.Metrics.Metric
   alias ER.Events
+  import Ecto.Query
+  alias Phoenix.PubSub
+
+  def publish_metric_updates(updates) do
+    Enum.map(updates, fn {value, _event, metric} ->
+      PubSub.broadcast(ER.PubSub, "metric:updated", {:metric_updated, metric, value})
+    end)
+
+    updates
+  end
+
+  def build_metric_updates(
+        topic_name: topic_name,
+        topic_identifier: topic_identifier
+      ) do
+    ER.Metrics.list_metrics_for_topic(
+      topic_name,
+      topic_identifier,
+      where: [produce_update_event: true]
+    )
+    |> Enum.map(fn metric ->
+      value = ER.Metrics.get_value_for_metric(metric)
+
+      {value,
+       %ER.Events.Event{
+         name: "metric.updated",
+         topic_name: topic_name,
+         topic_identifier: topic_identifier,
+         durable: false,
+         data: %{
+           "value" => value,
+           "metric" => %{
+             "type" => to_string(metric.type),
+             "name" => metric.name,
+             "field_path" => metric.field_path,
+             "id" => metric.id
+           }
+         },
+         source: "event_relay"
+       }, metric}
+    end)
+  end
 
   def get_value_for_metric(%Metric{
         topic_name: topic_name,
@@ -47,6 +89,10 @@ defmodule ER.Metrics do
     nil
   end
 
+  def from_metrics() do
+    from(m in Metric, as: :metrics)
+  end
+
   @doc """
   Returns the list of metrics.
 
@@ -58,6 +104,26 @@ defmodule ER.Metrics do
   """
   def list_metrics do
     Repo.all(Metric)
+  end
+
+  def list_metrics_for_topic(topic_name, topic_identifier, where: where) do
+    query =
+      from_metrics()
+      |> where(as(:metrics).topic_name == ^topic_name)
+
+    query =
+      if topic_identifier do
+        where(query, as(:metrics).topic_identifier == ^topic_identifier)
+      else
+        query
+      end
+
+    query =
+      Enum.reduce(where, query, fn {k, v}, query ->
+        where(query, field(as(:metrics), ^k) == ^v)
+      end)
+
+    Repo.all(query)
   end
 
   @doc """
