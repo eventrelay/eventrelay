@@ -192,7 +192,7 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [x] Metrics
 - [ ] Write tests!!!!
 - [x] Broadcast metrics updates via subscriptions and internal pubsub
-- [ ] Refactor EventFilter to Filter
+- [x] Refactor EventFilter to Filter
 - [ ] Ability to forward an event to another topic and transform the event with a lua script
 - [ ] add histogram type metric
 - [ ] make sure subscription and delivery servers restart properly
@@ -200,6 +200,7 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [ ] UI to tail events
 - [ ] UI to manage subscriptions
 - [ ] UI to view deliveries
+- [ ] Refactor comparisions pattern matching to not need ER.Filter.translate function
 - [ ] add subscription/delivery server crash state reloading from redis
 - [ ] Improve docs about Google PubSub ingestor
 - [ ] switch to Nebulex redis adapter

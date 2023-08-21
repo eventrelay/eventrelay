@@ -61,6 +61,14 @@ defmodule ER do
     0
   end
 
+  def to_map(value) when is_struct(value) do
+    Map.from_struct(value)
+  end
+
+  def to_map(value) when is_map(value) do
+    value
+  end
+
   @doc """
   Takes an {:ok, value} tuple and returns the value
 

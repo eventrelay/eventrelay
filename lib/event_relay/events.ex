@@ -4,6 +4,7 @@ defmodule ER.Events do
   """
   require Logger
   import Ecto.Query, warn: false
+  import ER
   alias ER.Repo
   alias Phoenix.PubSub
 
@@ -185,6 +186,8 @@ defmodule ER.Events do
         query
       end
 
+    filters = ER.Filter.translate(filters)
+
     query =
       Enum.reduce(filters, query, fn filter, query ->
         append_filter(query, filter)
@@ -254,14 +257,78 @@ defmodule ER.Events do
     |> Enum.map(&String.trim/1)
   end
 
-  def append_filter(query, %{field_path: "data." <> path, value: value, comparison: "="}) do
-    query
-    |> where([events: events], json_extract_path(events.data, ^parse_path(path)) == ^value)
+  def cast_as(%{cast_as: :integer, value: value}) do
+    to_integer(value)
   end
 
-  def append_filter(query, %{field_path: "context." <> path, value: value, comparison: "="}) do
+  def cast_as(%{value: value}) do
+    value
+  end
+
+  def append_filter(query, %{field_path: "data." <> path, comparison: "="} = filter) do
+    path = parse_path(path)
+    value = cast_as(filter)
+
     query
-    |> where([events: events], json_extract_path(events.context, ^parse_path(path)) == ^value)
+    |> where(
+      [events: events],
+      json_extract_path(events.data, ^path) == ^value
+    )
+  end
+
+  def append_filter(query, %{field_path: "data." <> path, comparison: "<"} = filter) do
+    path = parse_path(path)
+    value = cast_as(filter)
+
+    query
+    |> where(
+      [events: events],
+      json_extract_path(events.data, ^path) < ^value
+    )
+  end
+
+  def append_filter(query, %{field_path: "data." <> path, comparison: ">"} = filter) do
+    path = parse_path(path)
+    value = cast_as(filter)
+
+    query
+    |> where(
+      [events: events],
+      json_extract_path(events.data, ^path) > ^value
+    )
+  end
+
+  def append_filter(
+        query,
+        %{field_path: "context." <> path, comparison: "="} = filter
+      ) do
+    query
+    |> where(
+      [events: events],
+      json_extract_path(events.context, ^parse_path(path)) == ^cast_as(filter)
+    )
+  end
+
+  def append_filter(
+        query,
+        %{field_path: "context." <> path, comparison: ">"} = filter
+      ) do
+    query
+    |> where(
+      [events: events],
+      json_extract_path(events.context, ^parse_path(path)) > ^cast_as(filter)
+    )
+  end
+
+  def append_filter(
+        query,
+        %{field_path: "context." <> path, comparison: "<"} = filter
+      ) do
+    query
+    |> where(
+      [events: events],
+      json_extract_path(events.context, ^parse_path(path)) < ^cast_as(filter)
+    )
   end
 
   def append_filter(query, %{field: "data", value: value, comparison: "like"}) do
@@ -280,14 +347,14 @@ defmodule ER.Events do
     )
   end
 
-  def append_filter(query, %{field: "data." <> path, value: value, comparison: "="}) do
-    path =
-      String.split(path, ".", trim: true)
-      |> Enum.map(&String.trim/1)
-
-    query
-    |> where([events: events], json_extract_path(events.data, ^path) == ^value)
-  end
+  # def append_filter(query, %{field: "data." <> path, value: value, comparison: "="}) do
+  #   path =
+  #     String.split(path, ".", trim: true)
+  #     |> Enum.map(&String.trim/1)
+  #
+  #   query
+  #   |> where([events: events], json_extract_path(events.data, ^path) == ^value)
+  # end
 
   def append_filter(query, %{field: "start_date", value: value, comparison: ">="}) do
     maybe_parse_and_apply_datetime(query, value, fn query, datetime ->
@@ -326,18 +393,18 @@ defmodule ER.Events do
     end)
   end
 
-  def append_filter(query, %{field: field, value: value, comparison: "="}) do
+  def append_filter(query, %{field: field, comparison: "="} = filter) do
     field = String.to_atom(field)
 
     query
-    |> where([events: events], field(events, ^field) == ^value)
+    |> where([events: events], field(events, ^field) == ^cast_as(filter))
   end
 
-  def append_filter(query, %{field: field, value: value, comparison: "!="}) do
+  def append_filter(query, %{field: field, comparison: "!="} = filter) do
     field = String.to_atom(field)
 
     query
-    |> where([events: events], field(events, ^field) != ^value)
+    |> where([events: events], field(events, ^field) != ^cast_as(filter))
   end
 
   def append_filter(query, %{field: field, value: value, comparison: "like"}) do
@@ -354,6 +421,7 @@ defmodule ER.Events do
     |> where([events: events], ilike(field(events, ^field), ^value))
   end
 
+  # TODO: Write a test
   def append_filter(query, %{field: field, value: value, comparison: "in"}) do
     field = String.to_atom(field)
 
@@ -361,19 +429,21 @@ defmodule ER.Events do
     |> where([events: events], field(events, ^field) in ^value)
   end
 
-  # def append_filter(query, %{field: field, value: value, comparison: ">"}) do
-  #   field = String.to_atom(field)
-  #
-  #   query
-  #   |> where([events: events], field(events, ^field) > ^value)
-  # end
-  #
-  # def append_filter(query, %{field: field, value: value, comparison: "<"}) do
-  #   field = String.to_atom(field)
-  #
-  #   query
-  #   |> where([events: events], field(events, ^field) < ^value)
-  # end
+  # TODO: Write a test
+  def append_filter(query, %{field: field, comparison: ">"} = filter) do
+    field = String.to_atom(field)
+
+    query
+    |> where([events: events], field(events, ^field) > ^cast_as(filter))
+  end
+
+  # TODO: Write a test
+  def append_filter(query, %{field: field, comparison: "<"} = filter) do
+    field = String.to_atom(field)
+
+    query
+    |> where([events: events], field(events, ^field) < ^cast_as(filter))
+  end
 
   @doc """
   Fallback

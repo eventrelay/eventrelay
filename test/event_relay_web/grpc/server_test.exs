@@ -13,7 +13,8 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
     Filter,
     NewMetric,
     DeleteMetricRequest,
-    ListMetricsRequest
+    ListMetricsRequest,
+    PullEventsRequest
     # PublishEventsResponse,
     # ListTopicsResponse,
     # Topic,
@@ -120,6 +121,53 @@ defmodule ERWeb.Grpc.EventRelay.ServerTest do
       Server.publish_events(request, nil)
       events = Events.list_events_for_topic(topic_name: topic.name)
       assert Enum.count(events) == 0
+    end
+  end
+
+  describe "pull_events/2" do
+    test "returns events", %{topic: topic} do
+      totals = [10, 30]
+
+      Enum.each(totals, fn total ->
+        attrs = params_for(:event, topic: topic)
+        attrs = %{attrs | data: %{"cart" => %{"total" => total}}}
+        ER.Events.create_event_for_topic(attrs)
+      end)
+
+      request = %PullEventsRequest{
+        topic: topic.name,
+        filters: []
+      }
+
+      result = Server.pull_events(request, nil)
+
+      assert result.total_count == 2
+    end
+
+    test "returns filtered events", %{topic: topic} do
+      totals = [10, 30]
+
+      Enum.each(totals, fn total ->
+        attrs = params_for(:event, topic: topic)
+        attrs = %{attrs | data: %{"cart" => %{"total" => total}}}
+        ER.Events.create_event_for_topic(attrs)
+      end)
+
+      request = %PullEventsRequest{
+        topic: topic.name,
+        filters: [
+          %Filter{
+            field_path: "data.cart.total",
+            comparison: "equal",
+            cast_as: :INTEGER,
+            value: "30"
+          }
+        ]
+      }
+
+      result = Server.pull_events(request, nil)
+
+      assert result.total_count == 1
     end
   end
 

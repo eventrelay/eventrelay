@@ -1,3 +1,13 @@
+defmodule ERWeb.Grpc.Eventrelay.CastAs do
+  use Protobuf, enum: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  field :INTEGER, 0
+  field :FLOAT, 1
+  field :STRING, 2
+  field :DATE, 3
+  field :DATETIME, 4
+end
+
 defmodule ERWeb.Grpc.Eventrelay.MetricType do
   use Protobuf, enum: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
@@ -245,6 +255,7 @@ defmodule ERWeb.Grpc.Eventrelay.Filter do
   field :comparison, 2, type: :string
   field :value, 3, type: :string
   field :field_path, 4, type: :string, json_name: "fieldPath"
+  field :cast_as, 5, type: ERWeb.Grpc.Eventrelay.CastAs, json_name: "castAs", enum: true
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PullEventsResponse do

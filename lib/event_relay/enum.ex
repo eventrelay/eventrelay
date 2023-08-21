@@ -1,4 +1,4 @@
-defmodule ERWeb.Grpc.Enums do
+defmodule ER.Enum do
   def to_grpc_enum(value) do
     value |> to_string() |> String.upcase() |> String.to_atom()
   end

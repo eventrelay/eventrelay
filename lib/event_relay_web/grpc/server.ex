@@ -48,7 +48,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
 
   alias ER.Events.Event
   alias ER.Repo
-  import ERWeb.Grpc.Enums, only: [to_grpc_enum: 1, from_grpc_enum: 1]
+  import ER.Enum
 
   @spec create_jwt(CreateJWTRequest.t(), GRPC.Server.Stream.t()) :: CreateJWTResponse.t()
   def create_jwt(request, _stream) do
@@ -124,24 +124,31 @@ defmodule ERWeb.Grpc.EventRelay.Server do
     batch_size = if batch_size > 1000, do: 100, else: batch_size
     # TODO: make max batch_size configurable
 
-    batched_results =
-      ER.Events.list_events_for_topic(
-        offset: offset,
-        batch_size: batch_size,
-        topic_name: topic_name,
-        topic_identifier: topic_identifier,
-        filters: request.filters
+    try do
+      batched_results =
+        ER.Events.list_events_for_topic(
+          offset: offset,
+          batch_size: batch_size,
+          topic_name: topic_name,
+          topic_identifier: topic_identifier,
+          filters: request.filters
+        )
+
+      events = Enum.map(batched_results.results, &build_event(&1, topic))
+
+      PullEventsResponse.new(
+        events: events,
+        next_offset: batched_results.next_offset,
+        previous_offset: batched_results.previous_offset,
+        total_count: batched_results.total_count,
+        total_batches: batched_results.total_batches
       )
-
-    events = Enum.map(batched_results.results, &build_event(&1, topic))
-
-    PullEventsResponse.new(
-      events: events,
-      next_offset: batched_results.next_offset,
-      previous_offset: batched_results.previous_offset,
-      total_count: batched_results.total_count,
-      total_batches: batched_results.total_batches
-    )
+    rescue
+      e in ER.Filter.BadFieldError ->
+        raise GRPC.RPCError,
+          status: GRPC.Status.invalid_argument(),
+          message: e.message
+    end
   end
 
   defp build_event(event, topic) do
@@ -811,7 +818,10 @@ defmodule ERWeb.Grpc.EventRelay.Server do
       topic_name: request.metric.topic_name,
       topic_identifier: request.metric.topic_identifier,
       type: from_grpc_enum(request.metric.type),
-      filters: Enum.map(request.metric.filters, &Map.from_struct/1)
+      filters:
+        Enum.map(request.metric.filters, fn filter ->
+          Map.from_struct(filter) |> ER.Filter.translate_cast_as()
+        end)
     }
 
     metric =

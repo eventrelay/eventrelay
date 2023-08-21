@@ -178,11 +178,20 @@ message PullEventsRequest {
   repeated Filter filters = 4; 
 }
 
+enum CastAs {
+  INTEGER = 0;
+  FLOAT = 1;
+  STRING = 2;
+  DATE = 3;
+  DATETIME = 4;
+}
+
 message Filter {
   string field = 1;
   string comparison = 2;
   string value = 3;
   string field_path = 4;
+  CastAs cast_as = 5;
 }
 
 message PullEventsResponse {
