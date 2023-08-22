@@ -23,6 +23,9 @@ defmodule ER.Events.Event do
           context: map(),
           errors: list(),
           durable: boolean(),
+          trace_key: binary(),
+          reference_key: binary(),
+          group_key: binary(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }
@@ -40,7 +43,10 @@ defmodule ER.Events.Event do
              :offset,
              :source,
              :context,
-             :errors
+             :errors,
+             :group_key,
+             :reference_key,
+             :trace_key
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id

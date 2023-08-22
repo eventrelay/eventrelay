@@ -21,7 +21,7 @@ defmodule ERWeb.RateLimiter do
         {"request:create_topic", 1_000, 5}
 
       _ ->
-        {"request:#{type}", 1_000, 20}
+        {"request:#{type}", 1_000, 10_000}
     end
   end
 end

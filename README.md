@@ -72,6 +72,12 @@ Pull Events:
 grpcurl -plaintext -proto event_relay.proto -d '{"topic": "users", "offset": 0, "batch_size": 10}' localhost:50051 eventrelay.EventRelay.PullEvents
 ```
 
+Pull Events (w/ filter and cast_as):
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"topic": "carts", "offset": 0, "batch_size": 10, "filters": [{"field_path": "data.cart.total", "comparison": ">", "value": "10", "cast_as": "INTEGER"}]}' localhost:50051 eventrelay.EventRelay.PullEvents
+```
+
 Create a subscription:
 
 ```
@@ -112,23 +118,6 @@ Create ApiKey:
 grpcurl -plaintext -proto event_relay.proto -d '{"type": "consumer"}' localhost:50051
 eventrelay.EventRelay.CreateApiKey
 ```
-
-## Event
-
-{
-"id": "04f7f9b0-5b9b-11eb-9e8b-0f1f9b4f4a9c",
-"name": "user_login",
-"topic": "organization:1234",
-"source": "grpc|websocket",
-"user_id": "123",
-"anonymous_id": "123",
-"occurred_at": "2020-01-01T00:00:00.000Z"
-"context": {
-},
-"data": {
-"email": "thomas@example.com",
-},
-}
 
 Events are stored in a per topic table. If the event topic name is `users` then the table that stores the events will be
 `users_events`. This is done to shard the events over multiple tables instead of having one massive events table.
