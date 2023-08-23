@@ -2,7 +2,8 @@
 
 It is not meant to be the fastest or most webscale event streaming/storage system out there. It will never compete with the
 likes of Kafka for most throughput or lowest latency. It is meant to be a low maintenance, reliable, and easy to use
-event streaming/storage alternative for the rest of us.
+event streaming/storage alternative for the rest of us. Some simple load testing says that a single instance of EventRelay can handle 
+around 12,000 rps. Which means it can handle probably 80% of most people's needs.
 
 To start the server:
 
