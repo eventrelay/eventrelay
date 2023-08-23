@@ -6,6 +6,7 @@ defmodule ERWeb.Grpc.Eventrelay.CastAs do
   field :FLOAT, 2
   field :DATE, 3
   field :DATETIME, 4
+  field :BOOLEAN, 5
 end
 
 defmodule ERWeb.Grpc.Eventrelay.MetricType do

@@ -69,6 +69,51 @@ defmodule ER do
     value
   end
 
+  def to_boolean("true"), do: true
+  def to_boolean("false"), do: false
+  def to_boolean("1"), do: true
+  def to_boolean("0"), do: false
+  def to_boolean(1), do: true
+  def to_boolean(0), do: false
+  def to_boolean(true), do: true
+  def to_boolean(false), do: false
+  def to_boolean(nil), do: false
+  def to_boolean(_), do: false
+
+  def to_datetime(datetime) when is_binary(datetime) do
+    case DateTime.from_iso8601(datetime) do
+      {:ok, start, _} ->
+        start
+
+      _ ->
+        nil
+    end
+  end
+
+  def to_datetime(%DateTime{} = datetime) do
+    datetime
+  end
+
+  def to_datetime(%NaiveDateTime{} = datetime) do
+    datetime
+  end
+
+  def to_datetime(_) do
+    nil
+  end
+
+  def to_iso8601(%DateTime{} = datetime) do
+    DateTime.to_iso8601(datetime)
+  end
+
+  def to_iso8601(%NaiveDateTime{} = datetime) do
+    NaiveDateTime.to_iso8601(datetime)
+  end
+
+  def to_iso8601(_) do
+    ""
+  end
+
   @doc """
   Takes an {:ok, value} tuple and returns the value
 

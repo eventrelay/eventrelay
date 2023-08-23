@@ -13,6 +13,7 @@
   <:item title="Secret"><%= @api_key.secret %></:item>
   <:item title="Status"><%= @api_key.status %></:item>
   <:item title="Type"><%= @api_key.type %></:item>
+  <:item title="Token"><%= ER.Accounts.ApiKey.encode_key_and_secret(@api_key) %></:item>
 </.list>
 
 <div :if={@api_key.type == :producer} class="mt-8">

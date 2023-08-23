@@ -10,10 +10,36 @@ defmodule ER.Filter do
     field :field_path, :string
 
     field :comparison, Ecto.Enum,
-      values: [:equal, :not_equal, :like, :ilike, :in, :greater_than, :less_than]
+      values: [
+        :equal,
+        :not_equal,
+        :like,
+        :ilike,
+        :in,
+        :greater_than,
+        :greater_than_or_equal,
+        :less_than,
+        :less_than_or_equal
+      ]
 
     field :value, :string
-    field :cast_as, Ecto.Enum, values: [:integer, :float, :string, :date, :datetime]
+    field :cast_as, Ecto.Enum, values: [:string, :integer, :float, :date, :datetime, :boolean]
+  end
+
+  def field_options(:event) do
+    [
+      :name,
+      :occurred_at,
+      :reference_key,
+      :group_key,
+      :trace_key,
+      :source,
+      :topic_name,
+      :topic_identifier,
+      :user_id,
+      :anonymous_id,
+      :offset
+    ]
   end
 
   def changeset(filter, attrs) do
@@ -34,8 +60,14 @@ defmodule ER.Filter do
       "greater_than" ->
         ">"
 
+      "greater_than_or_equal" ->
+        ">="
+
       "less_than" ->
         "<"
+
+      "less_than_or_equal" ->
+        "<="
 
       c ->
         c

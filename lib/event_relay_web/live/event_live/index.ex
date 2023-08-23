@@ -80,7 +80,7 @@ defmodule ERWeb.EventLive.Index do
 
     event_filters =
       Enum.reduce(untransformed_filters, [], fn filter, acc ->
-        [struct(ER.Events.EventFilter, atomize_map(filter)) | acc]
+        [struct(ER.Filter, atomize_map(filter)) | acc]
       end)
 
     search_form = Ecto.Changeset.change(%ER.Events.SearchForm{event_filters: event_filters}, %{})
@@ -135,7 +135,7 @@ defmodule ERWeb.EventLive.Index do
 
     search_form = %{
       search_form
-      | data: %{data | event_filters: [%ER.Events.EventFilter{} | data.event_filters]}
+      | data: %{data | event_filters: [%ER.Filter{} | data.event_filters]}
     }
 
     socket =
@@ -174,6 +174,6 @@ defmodule ERWeb.EventLive.Index do
   end
 
   defp build_empty_search_form() do
-    Ecto.Changeset.change(%ER.Events.SearchForm{event_filters: [%ER.Events.EventFilter{}]}, %{})
+    Ecto.Changeset.change(%ER.Events.SearchForm{event_filters: [%ER.Filter{}]}, %{})
   end
 end

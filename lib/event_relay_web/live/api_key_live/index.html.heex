@@ -14,7 +14,6 @@
   row_id={fn row -> "api_keys-#{row.id}" end}
 >
   <:col :let={api_key} label="Key"><%= api_key.key %></:col>
-  <:col :let={api_key} label="Secret"><%= api_key.secret %></:col>
   <:col :let={api_key} label="Status"><%= api_key.status %></:col>
   <:col :let={api_key} label="Type"><%= api_key.type %></:col>
   <:action :let={api_key}>

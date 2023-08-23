@@ -261,6 +261,14 @@ defmodule ER.Events do
     to_integer(value)
   end
 
+  def cast_as(%{cast_as: :boolean, value: value}) do
+    to_boolean(value)
+  end
+
+  def cast_as(%{cast_as: :datetime, value: value}) do
+    to_datetime(value)
+  end
+
   def cast_as(%{value: value}) do
     value
   end
@@ -432,9 +440,18 @@ defmodule ER.Events do
   # TODO: Write a test
   def append_filter(query, %{field: field, comparison: ">"} = filter) do
     field = String.to_atom(field)
+    value = cast_as(filter)
 
     query
-    |> where([events: events], field(events, ^field) > ^cast_as(filter))
+    |> where([events: events], field(events, ^field) > ^value)
+  end
+
+  def append_filter(query, %{field: field, comparison: ">="} = filter) do
+    field = String.to_atom(field)
+    value = cast_as(filter)
+
+    query
+    |> where([events: events], field(events, ^field) >= ^value)
   end
 
   # TODO: Write a test
@@ -443,6 +460,13 @@ defmodule ER.Events do
 
     query
     |> where([events: events], field(events, ^field) < ^cast_as(filter))
+  end
+
+  def append_filter(query, %{field: field, comparison: "<="} = filter) do
+    field = String.to_atom(field)
+
+    query
+    |> where([events: events], field(events, ^field) <= ^cast_as(filter))
   end
 
   @doc """

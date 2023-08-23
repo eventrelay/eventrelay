@@ -184,6 +184,7 @@ enum CastAs {
   FLOAT = 2;
   DATE = 3;
   DATETIME = 4;
+  BOOLEAN = 5;
 }
 
 message Filter {

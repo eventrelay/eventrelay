@@ -183,21 +183,23 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [x] Write Google PubSub ingestor
 - [x] Ability to apply lua scripts to ingested events
 - [x] Metrics
-- [ ] Write tests!!!!
 - [x] Broadcast metrics updates via subscriptions and internal pubsub
 - [x] Refactor EventFilter to Filter
+- [x] Add cast_as to event filter form
+- [x] Add occurred_at to field list with > and <
+- [ ] Write tests!!!!
 - [ ] Ability to forward an event to another topic and transform the event with a lua script
 - [ ] add histogram type metric
-- [ ] make sure subscription and delivery servers restart properly
-- [ ] UI for managing Ingestors/Transformers
 - [ ] UI to tail events
+- [ ] UI for managing Ingestors/Transformers
 - [ ] UI to manage subscriptions
 - [ ] UI to view deliveries
 - [ ] Refactor comparisions pattern matching to not need ER.Filter.translate function
+- [ ] make sure subscription and delivery servers restart properly
 - [ ] add subscription/delivery server crash state reloading from redis
 - [ ] Improve docs about Google PubSub ingestor
 - [ ] switch to Nebulex redis adapter
-- [ ] Write S3 subscription
+- [x] Write S3 subscription
 - [ ] Write S3 ingestor
 - [ ] index event table properly
 - [ ] add documentation to event_relay.proto file
