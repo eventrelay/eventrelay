@@ -4,7 +4,7 @@ import Config
 config :event_relay, ER.Repo,
   username: "postgres",
   password: "postgres",
-  hostname: "localhost",
+  hostname: "127.0.0.1",
   database: "event_relay_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
