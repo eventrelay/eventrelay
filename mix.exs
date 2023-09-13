@@ -95,7 +95,6 @@ defmodule ER.MixProject do
       {:goth, "~> 1.0"},
       {:exlua, github: "themusicman/exlua", branch: "master"},
       {:luerl, "~> 0.3"}
-      # {:ssl_verify_fun, "~> 1.1.7", manager: :rebar3, override: true}
     ]
   end
 
