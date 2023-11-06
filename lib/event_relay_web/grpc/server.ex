@@ -542,9 +542,7 @@ defmodule ERWeb.Grpc.EventRelay.Server do
             end
           end)
           |> Enum.reject(&is_nil/1)
-          |> IO.inspect(label: "api_key_subscriptions")
         end)
-        |> IO.inspect(label: "transaction")
         |> case do
           {:ok, api_key_subscription_ids} ->
             DeleteSubscriptionsFromApiKeyResponse.new(

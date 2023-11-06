@@ -181,6 +181,75 @@ defmodule ER do
   def boolean?(value) when not is_boolean(value), do: false
 
   @doc """
+  Convert something to a boolean
+
+  iex> ER.to_boolean("Y")
+  true
+
+  iex> ER.to_boolean("y")
+  true
+
+  iex> ER.to_boolean("YES")
+  true
+
+  iex> ER.to_boolean("Yes")
+  true
+
+  iex> ER.to_boolean("yes")
+  true
+
+  iex> ER.to_boolean("true")
+  true
+
+  iex> ER.to_boolean(1)
+  true
+
+  iex> ER.to_boolean(true)
+  true 
+
+  iex> ER.to_boolean("N")
+  false
+
+  iex> ER.to_boolean("n")
+  false
+
+  iex> ER.to_boolean("NO")
+  false
+
+  iex> ER.to_boolean("No")
+  false
+
+  iex> ER.to_boolean("no")
+  false
+
+  iex> ER.to_boolean("false")
+  false
+
+  iex> ER.to_boolean(0)
+  false
+
+  iex> ER.to_boolean(false)
+  false
+  """
+  def to_boolean("Y"), do: true
+  def to_boolean("y"), do: true
+  def to_boolean("YES"), do: true
+  def to_boolean("Yes"), do: true
+  def to_boolean("yes"), do: true
+  def to_boolean("true"), do: true
+  def to_boolean(1), do: true
+  def to_boolean(true), do: true
+  def to_boolean("N"), do: false
+  def to_boolean("n"), do: false
+  def to_boolean("NO"), do: false
+  def to_boolean("No"), do: false
+  def to_boolean("no"), do: false
+  def to_boolean("false"), do: false
+  def to_boolean(0), do: false
+  def to_boolean(false), do: false
+  def to_boolean(_), do: false
+
+  @doc """
   Converts the top level keys in a map from atoms to strings
 
   ## Examples

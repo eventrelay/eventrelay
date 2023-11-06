@@ -464,85 +464,123 @@ end
 defmodule ERWeb.Grpc.Eventrelay.EventRelay.Service do
   use GRPC.Service, name: "eventrelay.EventRelay", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :PublishEvents,
-      ERWeb.Grpc.Eventrelay.PublishEventsRequest,
-      ERWeb.Grpc.Eventrelay.PublishEventsResponse
+  rpc(
+    :PublishEvents,
+    ERWeb.Grpc.Eventrelay.PublishEventsRequest,
+    ERWeb.Grpc.Eventrelay.PublishEventsResponse
+  )
 
-  rpc :PullEvents,
-      ERWeb.Grpc.Eventrelay.PullEventsRequest,
-      ERWeb.Grpc.Eventrelay.PullEventsResponse
+  rpc(
+    :PullEvents,
+    ERWeb.Grpc.Eventrelay.PullEventsRequest,
+    ERWeb.Grpc.Eventrelay.PullEventsResponse
+  )
 
-  rpc :ListMetrics,
-      ERWeb.Grpc.Eventrelay.ListMetricsRequest,
-      ERWeb.Grpc.Eventrelay.ListMetricsResponse
+  rpc(
+    :ListMetrics,
+    ERWeb.Grpc.Eventrelay.ListMetricsRequest,
+    ERWeb.Grpc.Eventrelay.ListMetricsResponse
+  )
 
-  rpc :GetMetric, ERWeb.Grpc.Eventrelay.GetMetricRequest, ERWeb.Grpc.Eventrelay.GetMetricResponse
+  rpc(:GetMetric, ERWeb.Grpc.Eventrelay.GetMetricRequest, ERWeb.Grpc.Eventrelay.GetMetricResponse)
 
-  rpc :CreateMetric,
-      ERWeb.Grpc.Eventrelay.CreateMetricRequest,
-      ERWeb.Grpc.Eventrelay.CreateMetricResponse
+  rpc(
+    :CreateMetric,
+    ERWeb.Grpc.Eventrelay.CreateMetricRequest,
+    ERWeb.Grpc.Eventrelay.CreateMetricResponse
+  )
 
-  rpc :DeleteMetric,
-      ERWeb.Grpc.Eventrelay.DeleteMetricRequest,
-      ERWeb.Grpc.Eventrelay.DeleteMetricResponse
+  rpc(
+    :DeleteMetric,
+    ERWeb.Grpc.Eventrelay.DeleteMetricRequest,
+    ERWeb.Grpc.Eventrelay.DeleteMetricResponse
+  )
 
-  rpc :GetMetricValue,
-      ERWeb.Grpc.Eventrelay.GetMetricValueRequest,
-      ERWeb.Grpc.Eventrelay.GetMetricValueResponse
+  rpc(
+    :GetMetricValue,
+    ERWeb.Grpc.Eventrelay.GetMetricValueRequest,
+    ERWeb.Grpc.Eventrelay.GetMetricValueResponse
+  )
 
-  rpc :ListTopics,
-      ERWeb.Grpc.Eventrelay.ListTopicsRequest,
-      ERWeb.Grpc.Eventrelay.ListTopicsResponse
+  rpc(
+    :ListTopics,
+    ERWeb.Grpc.Eventrelay.ListTopicsRequest,
+    ERWeb.Grpc.Eventrelay.ListTopicsResponse
+  )
 
-  rpc :CreateTopic,
-      ERWeb.Grpc.Eventrelay.CreateTopicRequest,
-      ERWeb.Grpc.Eventrelay.CreateTopicResponse
+  rpc(
+    :CreateTopic,
+    ERWeb.Grpc.Eventrelay.CreateTopicRequest,
+    ERWeb.Grpc.Eventrelay.CreateTopicResponse
+  )
 
-  rpc :DeleteTopic,
-      ERWeb.Grpc.Eventrelay.DeleteTopicRequest,
-      ERWeb.Grpc.Eventrelay.DeleteTopicResponse
+  rpc(
+    :DeleteTopic,
+    ERWeb.Grpc.Eventrelay.DeleteTopicRequest,
+    ERWeb.Grpc.Eventrelay.DeleteTopicResponse
+  )
 
-  rpc :ListSubscriptions,
-      ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest,
-      ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse
+  rpc(
+    :ListSubscriptions,
+    ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest,
+    ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse
+  )
 
-  rpc :GetSubscription,
-      ERWeb.Grpc.Eventrelay.GetSubscriptionRequest,
-      ERWeb.Grpc.Eventrelay.GetSubscriptionResponse
+  rpc(
+    :GetSubscription,
+    ERWeb.Grpc.Eventrelay.GetSubscriptionRequest,
+    ERWeb.Grpc.Eventrelay.GetSubscriptionResponse
+  )
 
-  rpc :CreateSubscription,
-      ERWeb.Grpc.Eventrelay.CreateSubscriptionRequest,
-      ERWeb.Grpc.Eventrelay.CreateSubscriptionResponse
+  rpc(
+    :CreateSubscription,
+    ERWeb.Grpc.Eventrelay.CreateSubscriptionRequest,
+    ERWeb.Grpc.Eventrelay.CreateSubscriptionResponse
+  )
 
-  rpc :DeleteSubscription,
-      ERWeb.Grpc.Eventrelay.DeleteSubscriptionRequest,
-      ERWeb.Grpc.Eventrelay.DeleteSubscriptionResponse
+  rpc(
+    :DeleteSubscription,
+    ERWeb.Grpc.Eventrelay.DeleteSubscriptionRequest,
+    ERWeb.Grpc.Eventrelay.DeleteSubscriptionResponse
+  )
 
-  rpc :CreateApiKey,
-      ERWeb.Grpc.Eventrelay.CreateApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.CreateApiKeyResponse
+  rpc(
+    :CreateApiKey,
+    ERWeb.Grpc.Eventrelay.CreateApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.CreateApiKeyResponse
+  )
 
-  rpc :RevokeApiKey,
-      ERWeb.Grpc.Eventrelay.RevokeApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.RevokeApiKeyResponse
+  rpc(
+    :RevokeApiKey,
+    ERWeb.Grpc.Eventrelay.RevokeApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.RevokeApiKeyResponse
+  )
 
-  rpc :AddSubscriptionsToApiKey,
-      ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyResponse
+  rpc(
+    :AddSubscriptionsToApiKey,
+    ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyResponse
+  )
 
-  rpc :DeleteSubscriptionsFromApiKey,
-      ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyResponse
+  rpc(
+    :DeleteSubscriptionsFromApiKey,
+    ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyResponse
+  )
 
-  rpc :AddTopicsToApiKey,
-      ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyResponse
+  rpc(
+    :AddTopicsToApiKey,
+    ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyResponse
+  )
 
-  rpc :DeleteTopicsFromApiKey,
-      ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyResponse
+  rpc(
+    :DeleteTopicsFromApiKey,
+    ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyResponse
+  )
 
-  rpc :CreateJWT, ERWeb.Grpc.Eventrelay.CreateJWTRequest, ERWeb.Grpc.Eventrelay.CreateJWTResponse
+  rpc(:CreateJWT, ERWeb.Grpc.Eventrelay.CreateJWTRequest, ERWeb.Grpc.Eventrelay.CreateJWTResponse)
 end
 
 defmodule ERWeb.Grpc.Eventrelay.EventRelay.Stub do

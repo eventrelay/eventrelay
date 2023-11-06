@@ -10,6 +10,7 @@ defmodule ER.Accounts.ApiKey do
   alias ER.Events.Topic
   alias __MODULE__
   import ER
+  alias ER.Repo
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -71,6 +72,20 @@ defmodule ER.Accounts.ApiKey do
   def encode_key_and_secret(%ApiKey{key: key, secret: secret} = _api_key) do
     Base.encode64(key <> ":" <> secret)
   end
+
+  def allowed_topic?(api_key, topic_name) do
+    api_key = Repo.preload(api_key, :topics)
+    allowed_topic_names = Enum.map(api_key.topics, & &1.name)
+    topic_name in allowed_topic_names
+  end
+
+  def allowed_subscription?(api_key, topic_name) do
+    api_key = Repo.preload(api_key, subscriptions: :topic)
+    allowed_topic_names = api_key.subscriptions |> Enum.map(& &1.topic) |> Enum.map(& &1.name)
+    topic_name in allowed_topic_names
+  end
+
+  def decode_key_and_secret(nil), do: {:error, :invalid_token}
 
   def decode_key_and_secret(token) do
     token

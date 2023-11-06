@@ -187,6 +187,12 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [x] Refactor EventFilter to Filter
 - [x] Add cast_as to event filter form
 - [x] Add occurred_at to field list with > and <
+- [x] Implement basic publish events for JSON API
+- [ ] Add auth to JSON API
+- [ ] Add auth to JSON API
+- [ ] Check ApiKey topics for producer authorization in GRPC API
+- [ ] Check ApiKey subscriptions for consumer authorization in GRPC API
+- [ ] Implement ability to pull events through JSON API
 - [ ] Write tests!!!!
 - [ ] Ability to forward an event to another topic and transform the event with a lua script
 - [ ] add histogram type metric
