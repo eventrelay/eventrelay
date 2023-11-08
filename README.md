@@ -3,20 +3,18 @@
 It is not meant to be the fastest or most webscale event streaming/storage system out there. It will never compete with the
 likes of Kafka for most throughput or lowest latency. It is meant to be a low maintenance, reliable, and easy to use
 event streaming/storage alternative for the rest of us. Some simple load testing says that a single instance of EventRelay can handle 
-around 12,000 rps. Which means it can handle probably 80% of most people's needs.
+around 12,000 rps. Which means it can probably satisfy the needs of 80% of applications out there.
 
 
 ## Use Cases
 
 ### Event Streaming
 
-Your applications can publish events to EventRelay and they can consume those events using a GRPC API. It implements a pull based 
-approach to event streaming similar to projects like Kafka.
+Your applications can publish events to EventRelay and they can consume those events using a GRPC API. It implements a pull based approach to event streaming similar to projects like Kafka.
 
 ### Debug Log
 
-You can send events to EventRelay in the same places you would log to debug. Then you can filter and search the events to 
-assist in debugging issues in your application.
+You can send events to EventRelay in the same places you would log to debug. Then you can filter and search the events to assist in debugging issues in your application.
 
 ### Audit Log
 
@@ -34,9 +32,7 @@ webhooks more complicated than just sending a POST request.
 
 ### Websockets
 
-Whether you are implementing a notification system, chat app or just updating some metrics on a dashboard EventRelay can 
-handle all the websocket communication for you.
-
+Whether you are implementing a notification system, chat app or just updating some metrics on a dashboard EventRelay can handle all the websocket communication for you.
 
 
 ## Web UI
@@ -198,75 +194,4 @@ it will pause sending events for that topic/destination to preserve the order.~~
 
 ## Todos
 
-- [x] GRPC API to publish events
-- [x] GRPC API to list,create,delete topics
-- [x] GRPC API to create,delete,list subscriptions
-- [x] GRPC API to create,revoke api keys
-- [x] GRPC API to create JWT for an api key
-- [x] websocket streaming implementation
-- [x] pull events GRPC API (offset/batch based)
-- [x] webhook implementation
-- [x] add auth
-- [x] add rate limiting
-- [x] add auth to websocket
-- [x] websocket publish events (code commented out until producer topic authorization figured out)
-- [x] non-durable events
-- [x] figure out producer topic authorization
-- [x] test not passing topic when publishing events
-- [x] UI to manage topics
-- [x] UI to view events
-- [x] Write Google PubSub ingestor
-- [x] Ability to apply lua scripts to ingested events
-- [x] Metrics
-- [x] Broadcast metrics updates via subscriptions and internal pubsub
-- [x] Refactor EventFilter to Filter
-- [x] Add cast_as to event filter form
-- [x] Add occurred_at to field list with > and <
-<<<<<<< HEAD
-- [x] Implement basic publish events for JSON API
-- [ ] Add auth to JSON API
-- [ ] Add auth to JSON API
-- [ ] Check ApiKey topics for producer authorization in GRPC API
-- [ ] Check ApiKey subscriptions for consumer authorization in GRPC API
-- [ ] Implement ability to pull events through JSON API
-- [ ] Write tests!!!!
-=======
-- [ ] Write more tests!!!!
-- [ ] Split GRPC API into multiple services
-- [ ] Add `group_key` to ApiKey (useful for tracking tenant the key is associated with) 
->>>>>>> c0f6659 (update readme)
-- [ ] Ability to forward an event to another topic and transform the event with a lua script
-- [ ] add histogram type metric
-- [ ] Refactor comparisions pattern matching to not need ER.Filter.translate function
-- [ ] Add partioning to support use with worker queues
-- [ ] make sure subscription and delivery servers restart properly
-- [ ] add subscription/delivery server crash state reloading from redis
-- [ ] Write docs about Google PubSub ingestor
-- [ ] switch to Nebulex redis adapter?
-- [x] Write S3 subscription
-- [ ] Write S3 ingestor
-- [ ] Write wrapper around [phoenix](https://www.npmjs.com/package/phoenix) for websocket support using EventRelay semantics
-- [ ] index event table properly
-- [ ] add documentation to event_relay.proto file
-- [ ] generate HTML docs from event_relay.proto file
-- [ ] add pagination to list topics
-- [ ] test all the authorization policies
-- [ ] Standardize logging formatting
-- [ ] Implement json logger
-- [ ] add rate limiting for webhooks
-- [ ] GRPC streaming implementation
-- [ ] Test various scenarios of creating and droping topics
-- [x] Pro: UI to API Keys (move to Pro package)
-- [ ] Pro: UI to manage subscriptions
-- [ ] Pro: UI to manage users
-- [ ] Pro: UI to view deliveries
-- [ ] Pro: Tempalate system to render template with event/metric data
-- [ ] Pro: Subscription to send Slack messages
-- [ ] Pro: Subscription to send SMS messages
-- [ ] Pro: Subscription to send Email messages
-- [ ] Pro: Subscriptions to send events to BigQuery, Postgres, MariaDB, etc.
-- [ ] Pro: Embeddable metrics dashboards 
-- [ ] Pro: UI to realtime tail events
-- [ ] Pro: UI for managing Ingestors/Transformers
-- [ ] Pro: Ability to analyze events/metrics with AI (yes, THE buzzword of 2023)
-- [ ] Pro: Dashboard UI for metrics
+See [GitHub Project](https://github.com/orgs/eventrelay/projects/1) moving forward.
