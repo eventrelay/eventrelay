@@ -5,6 +5,44 @@ likes of Kafka for most throughput or lowest latency. It is meant to be a low ma
 event streaming/storage alternative for the rest of us. Some simple load testing says that a single instance of EventRelay can handle 
 around 12,000 rps. Which means it can handle probably 80% of most people's needs.
 
+
+## Use Cases
+
+### Event Streaming
+
+Your applications can publish events to EventRelay and they can consume those events using a GRPC API. It implements a pull based 
+approach to event streaming similar to projects like Kafka.
+
+### Debug Log
+
+You can send events to EventRelay in the same places you would log to debug. Then you can filter and search the events to 
+assist in debugging issues in your application.
+
+### Audit Log
+
+You can send events to EventRelay every time you want to track which user did what to which resource in your system.
+
+Example:
+
+[Bosun](https://github.com/themusicman/bosun) is an authorization package written in Elixir which creates an audit log and 
+can optionally send it to EventRelay.
+
+### Webhooks
+
+EventRelay comes with built-in webhook support. No need to worry about implementing retry logic or the other concerns that make
+webhooks more complicated than just sending a POST request.
+
+### Websockets
+
+Whether you are implementing a notification system, chat app or just updating some metrics on a dashboard EventRelay can 
+handle all the websocket communication for you.
+
+
+
+## Web UI
+![Events](https://github.com/eventrelay/eventrelay/assets/41780/5aa1f274-f417-41c9-b091-832c194f2267)
+
+## Local Development
 To start the server:
 
 - Install dependencies with `mix deps.get`
@@ -13,8 +51,6 @@ To start the server:
 
 Now you can visit [`localhost:9000`](http://localhost:9000) from your browser.
 
-## Web UI
-![Events](https://github.com/eventrelay/eventrelay/assets/41780/5aa1f274-f417-41c9-b091-832c194f2267)
 
 ## GRPC
 
@@ -179,7 +215,6 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [x] test not passing topic when publishing events
 - [x] UI to manage topics
 - [x] UI to view events
-- [x] UI to API Keys
 - [x] Write Google PubSub ingestor
 - [x] Ability to apply lua scripts to ingested events
 - [x] Metrics
@@ -187,20 +222,20 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [x] Refactor EventFilter to Filter
 - [x] Add cast_as to event filter form
 - [x] Add occurred_at to field list with > and <
-- [ ] Write tests!!!!
+- [ ] Write more tests!!!!
+- [ ] Split GRPC API into multiple services
+- [ ] Add `group_key` to ApiKey (useful for tracking tenant the key is associated with) 
 - [ ] Ability to forward an event to another topic and transform the event with a lua script
 - [ ] add histogram type metric
-- [ ] UI to tail events
-- [ ] UI for managing Ingestors/Transformers
-- [ ] UI to manage subscriptions
-- [ ] UI to view deliveries
 - [ ] Refactor comparisions pattern matching to not need ER.Filter.translate function
+- [ ] Add partioning to support use with worker queues
 - [ ] make sure subscription and delivery servers restart properly
 - [ ] add subscription/delivery server crash state reloading from redis
-- [ ] Improve docs about Google PubSub ingestor
-- [ ] switch to Nebulex redis adapter
+- [ ] Write docs about Google PubSub ingestor
+- [ ] switch to Nebulex redis adapter?
 - [x] Write S3 subscription
 - [ ] Write S3 ingestor
+- [ ] Write wrapper around [phoenix](https://www.npmjs.com/package/phoenix) for websocket support using EventRelay semantics
 - [ ] index event table properly
 - [ ] add documentation to event_relay.proto file
 - [ ] generate HTML docs from event_relay.proto file
@@ -210,5 +245,18 @@ it will pause sending events for that topic/destination to preserve the order.~~
 - [ ] Implement json logger
 - [ ] add rate limiting for webhooks
 - [ ] GRPC streaming implementation
-- [ ] UI to manage users
 - [ ] Test various scenarios of creating and droping topics
+- [x] Pro: UI to API Keys (move to Pro package)
+- [ ] Pro: UI to manage subscriptions
+- [ ] Pro: UI to manage users
+- [ ] Pro: UI to view deliveries
+- [ ] Pro: Tempalate system to render template with event/metric data
+- [ ] Pro: Subscription to send Slack messages
+- [ ] Pro: Subscription to send SMS messages
+- [ ] Pro: Subscription to send Email messages
+- [ ] Pro: Subscriptions to send events to BigQuery, Postgres, MariaDB, etc.
+- [ ] Pro: Embeddable metrics dashboards 
+- [ ] Pro: UI to realtime tail events
+- [ ] Pro: UI for managing Ingestors/Transformers
+- [ ] Pro: Ability to analyze events/metrics with AI (yes, THE buzzword of 2023)
+- [ ] Pro: Dashboard UI for metrics
