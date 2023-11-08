@@ -38,7 +38,6 @@ EventRelay includes built-in webhook support, eliminating the need to concern yo
 
 Whether you're implementing a notification system, a chat application, or simply updating metrics on a dashboard, EventRelay effortlessly manages all aspects of websocket communication for you.
 
-
 ## Web UI
 ![Events](https://github.com/eventrelay/eventrelay/assets/41780/5aa1f274-f417-41c9-b091-832c194f2267)
 
