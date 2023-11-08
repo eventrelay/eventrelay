@@ -1,38 +1,36 @@
 # EventRelay
 
-It is not meant to be the fastest or most webscale event streaming/storage system out there. It will never compete with the
-likes of Kafka for most throughput or lowest latency. It is meant to be a low maintenance, reliable, and easy to use
-event streaming/storage alternative for the rest of us. Some simple load testing says that a single instance of EventRelay can handle 
-around 12,000 rps. Which means it can probably satisfy the needs of 80% of applications out there.
-
+While it may not strive to be the fastest or most webscale event streaming/storage system available, EventRelay isn't designed to rival powerhouse platforms like Kafka in terms of throughput or latency. Instead, it focuses on providing a low-maintenance, dependable, and user-friendly alternative for the majority of users. Preliminary load testing indicates that a single instance of EventRelay can manage approximately 12,000 requests per second (rps), suggesting its suitability for meeting the requirements of up to 80% of applications.
 
 ## Use Cases
 
 ### Event Streaming
 
-Your applications can publish events to EventRelay and they can consume those events using a GRPC API. It implements a pull based approach to event streaming similar to projects like Kafka.
+EventRelay allows your applications to both publish and consume events through a GRPC API. It employs a pull-based approach to event streaming, akin to projects like Kafka.
 
 ### Debug Log
 
-You can send events to EventRelay in the same places you would log to debug. Then you can filter and search the events to assist in debugging issues in your application.
+Integrate EventRelay seamlessly into your debugging process by sending events to the same locations where you would typically log debug information. This enables you to easily filter and search events, aiding in the resolution of issues within your application.
+
+### Metrics Collection
+
+Effortlessly send events to EventRelay and define your desired metrics.
 
 ### Audit Log
 
-You can send events to EventRelay every time you want to track which user did what to which resource in your system.
+Leverage EventRelay to record events every time you need to track user actions on specific resources within your system.
 
 Example:
 
-[Bosun](https://github.com/themusicman/bosun) is an authorization package written in Elixir which creates an audit log and 
-can optionally send it to EventRelay.
+Bosun is an Elixir-based authorization package that generates an audit log and can optionally transmit it to EventRelay.
 
 ### Webhooks
 
-EventRelay comes with built-in webhook support. No need to worry about implementing retry logic or the other concerns that make
-webhooks more complicated than just sending a POST request.
+EventRelay includes built-in webhook support, eliminating the need to concern yourself with implementing retry logic or other complexities associated with sending POST requests.
 
 ### Websockets
 
-Whether you are implementing a notification system, chat app or just updating some metrics on a dashboard EventRelay can handle all the websocket communication for you.
+Whether you're implementing a notification system, a chat application, or simply updating metrics on a dashboard, EventRelay effortlessly manages all aspects of websocket communication for you.
 
 
 ## Web UI
