@@ -1,5 +1,5 @@
 defmodule ERWeb.Grpc.Eventrelay.CastAs do
-  use Protobuf, enum: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, enum: true, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :STRING, 0
   field :INTEGER, 1
@@ -10,7 +10,7 @@ defmodule ERWeb.Grpc.Eventrelay.CastAs do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.MetricType do
-  use Protobuf, enum: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, enum: true, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :SUM, 0
   field :AVG, 1
@@ -20,71 +20,71 @@ defmodule ERWeb.Grpc.Eventrelay.MetricType do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ApiKeyType do
-  use Protobuf, enum: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, enum: true, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :PRODUCER, 0
   field :CONSUMER, 1
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ApiKeyStatus do
-  use Protobuf, enum: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, enum: true, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :ACTIVE, 0
   field :REVOKED, 1
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Topic do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :name, 2, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListTopicsRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :page, 1, type: :int32
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListTopicsResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :topics, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Topic
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateTopicRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :name, 1, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateTopicResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :topic, 1, type: ERWeb.Grpc.Eventrelay.Topic
 end
 
 defmodule ERWeb.Grpc.Eventrelay.DeleteTopicRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.DeleteTopicResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :topic, 1, type: ERWeb.Grpc.Eventrelay.Topic
 end
 
 defmodule ERWeb.Grpc.Eventrelay.NewSubscription.ConfigEntry do
-  use Protobuf, map: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, map: true, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :key, 1, type: :string
   field :value, 2, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.NewSubscription do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :name, 1, type: :string
   field :topic_name, 2, type: :string, json_name: "topicName"
@@ -101,14 +101,14 @@ defmodule ERWeb.Grpc.Eventrelay.NewSubscription do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Subscription.ConfigEntry do
-  use Protobuf, map: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, map: true, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :key, 1, type: :string
   field :value, 2, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Subscription do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :name, 2, type: :string
@@ -126,14 +126,14 @@ defmodule ERWeb.Grpc.Eventrelay.Subscription do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :page, 1, type: :int32
   field :page_size, 2, type: :int32, json_name: "pageSize"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :subscriptions, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Subscription
   field :total_count, 2, type: :int32, json_name: "totalCount"
@@ -143,50 +143,50 @@ defmodule ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.GetSubscriptionRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.GetSubscriptionResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :subscription, 1, type: ERWeb.Grpc.Eventrelay.Subscription
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateSubscriptionRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :subscription, 1, type: ERWeb.Grpc.Eventrelay.NewSubscription
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateSubscriptionResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :subscription, 1, type: ERWeb.Grpc.Eventrelay.Subscription
 end
 
 defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :subscription, 1, type: ERWeb.Grpc.Eventrelay.Subscription
 end
 
 defmodule ERWeb.Grpc.Eventrelay.NewEvent.ContextEntry do
-  use Protobuf, map: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, map: true, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :key, 1, type: :string
   field :value, 2, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.NewEvent do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :name, 1, type: :string
   field :data, 2, type: :string
@@ -201,14 +201,14 @@ defmodule ERWeb.Grpc.Eventrelay.NewEvent do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Event.ContextEntry do
-  use Protobuf, map: true, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, map: true, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :key, 1, type: :string
   field :value, 2, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Event do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :name, 2, type: :string
@@ -227,7 +227,7 @@ defmodule ERWeb.Grpc.Eventrelay.Event do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PublishEventsRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :topic, 1, type: :string
   field :events, 2, repeated: true, type: ERWeb.Grpc.Eventrelay.NewEvent
@@ -235,13 +235,13 @@ defmodule ERWeb.Grpc.Eventrelay.PublishEventsRequest do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PublishEventsResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :events, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Event
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PullEventsRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :topic, 1, type: :string
   field :batch_size, 2, type: :int32, json_name: "batchSize"
@@ -250,7 +250,7 @@ defmodule ERWeb.Grpc.Eventrelay.PullEventsRequest do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Filter do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :field, 1, type: :string
   field :comparison, 2, type: :string
@@ -260,7 +260,7 @@ defmodule ERWeb.Grpc.Eventrelay.Filter do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PullEventsResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :events, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Event
   field :total_count, 2, type: :int32, json_name: "totalCount"
@@ -270,7 +270,7 @@ defmodule ERWeb.Grpc.Eventrelay.PullEventsResponse do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.NewMetric do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :name, 1, type: :string
   field :topic_name, 2, type: :string, json_name: "topicName"
@@ -281,7 +281,7 @@ defmodule ERWeb.Grpc.Eventrelay.NewMetric do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Metric do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :name, 2, type: :string
@@ -293,19 +293,19 @@ defmodule ERWeb.Grpc.Eventrelay.Metric do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.GetMetricValueRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.GetMetricValueResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :value, 1, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListMetricsRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :topic, 1, type: :string
   field :page, 2, type: :int32
@@ -314,7 +314,7 @@ defmodule ERWeb.Grpc.Eventrelay.ListMetricsRequest do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListMetricsResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :metrics, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Metric
   field :total_count, 2, type: :int32, json_name: "totalCount"
@@ -324,43 +324,43 @@ defmodule ERWeb.Grpc.Eventrelay.ListMetricsResponse do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.GetMetricRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.GetMetricResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :metric, 1, type: ERWeb.Grpc.Eventrelay.Metric
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateMetricRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :metric, 1, type: ERWeb.Grpc.Eventrelay.NewMetric
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateMetricResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :metric, 1, type: ERWeb.Grpc.Eventrelay.Metric
 end
 
 defmodule ERWeb.Grpc.Eventrelay.DeleteMetricRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.DeleteMetricResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :metric, 1, type: ERWeb.Grpc.Eventrelay.Metric
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ApiKey do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :key, 2, type: :string
@@ -370,219 +370,221 @@ defmodule ERWeb.Grpc.Eventrelay.ApiKey do
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateApiKeyRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :type, 4, type: ERWeb.Grpc.Eventrelay.ApiKeyType, enum: true
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateApiKeyResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :api_key, 1, type: ERWeb.Grpc.Eventrelay.ApiKey, json_name: "apiKey"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.RevokeApiKeyRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
 end
 
 defmodule ERWeb.Grpc.Eventrelay.RevokeApiKeyResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :api_key, 1, type: ERWeb.Grpc.Eventrelay.ApiKey, json_name: "apiKey"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :subscription_ids, 2, repeated: true, type: :string, json_name: "subscriptionIds"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :subscription_ids, 2, repeated: true, type: :string, json_name: "subscriptionIds"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :subscription_ids, 2, repeated: true, type: :string, json_name: "subscriptionIds"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :subscription_ids, 2, repeated: true, type: :string, json_name: "subscriptionIds"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :topic_names, 2, repeated: true, type: :string, json_name: "topicNames"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :topic_names, 2, repeated: true, type: :string, json_name: "topicNames"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :topic_names, 2, repeated: true, type: :string, json_name: "topicNames"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :topic_names, 2, repeated: true, type: :string, json_name: "topicNames"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateJWTRequest do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :expiration, 1, type: :int64
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateJWTResponse do
-  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :jwt, 1, type: :string
 end
 
-defmodule ERWeb.Grpc.Eventrelay.EventRelay.Service do
-  use GRPC.Service, name: "eventrelay.EventRelay", protoc_gen_elixir_version: "0.12.0"
+defmodule ERWeb.Grpc.Eventrelay.Events.Service do
+  use GRPC.Service, name: "eventrelay.Events", protoc_gen_elixir_version: "0.12.0"
 
-  rpc(
-    :PublishEvents,
-    ERWeb.Grpc.Eventrelay.PublishEventsRequest,
-    ERWeb.Grpc.Eventrelay.PublishEventsResponse
-  )
+  rpc :PublishEvents,
+      ERWeb.Grpc.Eventrelay.PublishEventsRequest,
+      ERWeb.Grpc.Eventrelay.PublishEventsResponse
 
-  rpc(
-    :PullEvents,
-    ERWeb.Grpc.Eventrelay.PullEventsRequest,
-    ERWeb.Grpc.Eventrelay.PullEventsResponse
-  )
-
-  rpc(
-    :ListMetrics,
-    ERWeb.Grpc.Eventrelay.ListMetricsRequest,
-    ERWeb.Grpc.Eventrelay.ListMetricsResponse
-  )
-
-  rpc(:GetMetric, ERWeb.Grpc.Eventrelay.GetMetricRequest, ERWeb.Grpc.Eventrelay.GetMetricResponse)
-
-  rpc(
-    :CreateMetric,
-    ERWeb.Grpc.Eventrelay.CreateMetricRequest,
-    ERWeb.Grpc.Eventrelay.CreateMetricResponse
-  )
-
-  rpc(
-    :DeleteMetric,
-    ERWeb.Grpc.Eventrelay.DeleteMetricRequest,
-    ERWeb.Grpc.Eventrelay.DeleteMetricResponse
-  )
-
-  rpc(
-    :GetMetricValue,
-    ERWeb.Grpc.Eventrelay.GetMetricValueRequest,
-    ERWeb.Grpc.Eventrelay.GetMetricValueResponse
-  )
-
-  rpc(
-    :ListTopics,
-    ERWeb.Grpc.Eventrelay.ListTopicsRequest,
-    ERWeb.Grpc.Eventrelay.ListTopicsResponse
-  )
-
-  rpc(
-    :CreateTopic,
-    ERWeb.Grpc.Eventrelay.CreateTopicRequest,
-    ERWeb.Grpc.Eventrelay.CreateTopicResponse
-  )
-
-  rpc(
-    :DeleteTopic,
-    ERWeb.Grpc.Eventrelay.DeleteTopicRequest,
-    ERWeb.Grpc.Eventrelay.DeleteTopicResponse
-  )
-
-  rpc(
-    :ListSubscriptions,
-    ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest,
-    ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse
-  )
-
-  rpc(
-    :GetSubscription,
-    ERWeb.Grpc.Eventrelay.GetSubscriptionRequest,
-    ERWeb.Grpc.Eventrelay.GetSubscriptionResponse
-  )
-
-  rpc(
-    :CreateSubscription,
-    ERWeb.Grpc.Eventrelay.CreateSubscriptionRequest,
-    ERWeb.Grpc.Eventrelay.CreateSubscriptionResponse
-  )
-
-  rpc(
-    :DeleteSubscription,
-    ERWeb.Grpc.Eventrelay.DeleteSubscriptionRequest,
-    ERWeb.Grpc.Eventrelay.DeleteSubscriptionResponse
-  )
-
-  rpc(
-    :CreateApiKey,
-    ERWeb.Grpc.Eventrelay.CreateApiKeyRequest,
-    ERWeb.Grpc.Eventrelay.CreateApiKeyResponse
-  )
-
-  rpc(
-    :RevokeApiKey,
-    ERWeb.Grpc.Eventrelay.RevokeApiKeyRequest,
-    ERWeb.Grpc.Eventrelay.RevokeApiKeyResponse
-  )
-
-  rpc(
-    :AddSubscriptionsToApiKey,
-    ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyRequest,
-    ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyResponse
-  )
-
-  rpc(
-    :DeleteSubscriptionsFromApiKey,
-    ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyRequest,
-    ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyResponse
-  )
-
-  rpc(
-    :AddTopicsToApiKey,
-    ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyRequest,
-    ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyResponse
-  )
-
-  rpc(
-    :DeleteTopicsFromApiKey,
-    ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyRequest,
-    ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyResponse
-  )
-
-  rpc(:CreateJWT, ERWeb.Grpc.Eventrelay.CreateJWTRequest, ERWeb.Grpc.Eventrelay.CreateJWTResponse)
+  rpc :PullEvents,
+      ERWeb.Grpc.Eventrelay.PullEventsRequest,
+      ERWeb.Grpc.Eventrelay.PullEventsResponse
 end
 
-defmodule ERWeb.Grpc.Eventrelay.EventRelay.Stub do
-  use GRPC.Stub, service: ERWeb.Grpc.Eventrelay.EventRelay.Service
+defmodule ERWeb.Grpc.Eventrelay.Events.Stub do
+  use GRPC.Stub, service: ERWeb.Grpc.Eventrelay.Events.Service
+end
+
+defmodule ERWeb.Grpc.Eventrelay.Metrics.Service do
+  use GRPC.Service, name: "eventrelay.Metrics", protoc_gen_elixir_version: "0.12.0"
+
+  rpc :ListMetrics,
+      ERWeb.Grpc.Eventrelay.ListMetricsRequest,
+      ERWeb.Grpc.Eventrelay.ListMetricsResponse
+
+  rpc :GetMetric, ERWeb.Grpc.Eventrelay.GetMetricRequest, ERWeb.Grpc.Eventrelay.GetMetricResponse
+
+  rpc :CreateMetric,
+      ERWeb.Grpc.Eventrelay.CreateMetricRequest,
+      ERWeb.Grpc.Eventrelay.CreateMetricResponse
+
+  rpc :DeleteMetric,
+      ERWeb.Grpc.Eventrelay.DeleteMetricRequest,
+      ERWeb.Grpc.Eventrelay.DeleteMetricResponse
+
+  rpc :GetMetricValue,
+      ERWeb.Grpc.Eventrelay.GetMetricValueRequest,
+      ERWeb.Grpc.Eventrelay.GetMetricValueResponse
+end
+
+defmodule ERWeb.Grpc.Eventrelay.Metrics.Stub do
+  use GRPC.Stub, service: ERWeb.Grpc.Eventrelay.Metrics.Service
+end
+
+defmodule ERWeb.Grpc.Eventrelay.Topics.Service do
+  use GRPC.Service, name: "eventrelay.Topics", protoc_gen_elixir_version: "0.12.0"
+
+  rpc :ListTopics,
+      ERWeb.Grpc.Eventrelay.ListTopicsRequest,
+      ERWeb.Grpc.Eventrelay.ListTopicsResponse
+
+  rpc :CreateTopic,
+      ERWeb.Grpc.Eventrelay.CreateTopicRequest,
+      ERWeb.Grpc.Eventrelay.CreateTopicResponse
+
+  rpc :DeleteTopic,
+      ERWeb.Grpc.Eventrelay.DeleteTopicRequest,
+      ERWeb.Grpc.Eventrelay.DeleteTopicResponse
+end
+
+defmodule ERWeb.Grpc.Eventrelay.Topics.Stub do
+  use GRPC.Stub, service: ERWeb.Grpc.Eventrelay.Topics.Service
+end
+
+defmodule ERWeb.Grpc.Eventrelay.Subscriptions.Service do
+  use GRPC.Service, name: "eventrelay.Subscriptions", protoc_gen_elixir_version: "0.12.0"
+
+  rpc :ListSubscriptions,
+      ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest,
+      ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse
+
+  rpc :GetSubscription,
+      ERWeb.Grpc.Eventrelay.GetSubscriptionRequest,
+      ERWeb.Grpc.Eventrelay.GetSubscriptionResponse
+
+  rpc :CreateSubscription,
+      ERWeb.Grpc.Eventrelay.CreateSubscriptionRequest,
+      ERWeb.Grpc.Eventrelay.CreateSubscriptionResponse
+
+  rpc :DeleteSubscription,
+      ERWeb.Grpc.Eventrelay.DeleteSubscriptionRequest,
+      ERWeb.Grpc.Eventrelay.DeleteSubscriptionResponse
+end
+
+defmodule ERWeb.Grpc.Eventrelay.Subscriptions.Stub do
+  use GRPC.Stub, service: ERWeb.Grpc.Eventrelay.Subscriptions.Service
+end
+
+defmodule ERWeb.Grpc.Eventrelay.ApiKeys.Service do
+  use GRPC.Service, name: "eventrelay.ApiKeys", protoc_gen_elixir_version: "0.12.0"
+
+  rpc :CreateApiKey,
+      ERWeb.Grpc.Eventrelay.CreateApiKeyRequest,
+      ERWeb.Grpc.Eventrelay.CreateApiKeyResponse
+
+  rpc :RevokeApiKey,
+      ERWeb.Grpc.Eventrelay.RevokeApiKeyRequest,
+      ERWeb.Grpc.Eventrelay.RevokeApiKeyResponse
+
+  rpc :AddSubscriptionsToApiKey,
+      ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyRequest,
+      ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyResponse
+
+  rpc :DeleteSubscriptionsFromApiKey,
+      ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyRequest,
+      ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyResponse
+
+  rpc :AddTopicsToApiKey,
+      ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyRequest,
+      ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyResponse
+
+  rpc :DeleteTopicsFromApiKey,
+      ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyRequest,
+      ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyResponse
+end
+
+defmodule ERWeb.Grpc.Eventrelay.ApiKeys.Stub do
+  use GRPC.Stub, service: ERWeb.Grpc.Eventrelay.ApiKeys.Service
+end
+
+defmodule ERWeb.Grpc.Eventrelay.JWT.Service do
+  use GRPC.Service, name: "eventrelay.JWT", protoc_gen_elixir_version: "0.12.0"
+
+  rpc :CreateJWT, ERWeb.Grpc.Eventrelay.CreateJWTRequest, ERWeb.Grpc.Eventrelay.CreateJWTResponse
+end
+
+defmodule ERWeb.Grpc.Eventrelay.JWT.Stub do
+  use GRPC.Stub, service: ERWeb.Grpc.Eventrelay.JWT.Service
 end

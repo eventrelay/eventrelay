@@ -9,27 +9,42 @@ option java_outer_classname = "EventRelayProto";
 
 package eventrelay;
 
-service EventRelay {
+service Events {
   rpc PublishEvents(PublishEventsRequest) returns (PublishEventsResponse) {}
   rpc PullEvents(PullEventsRequest) returns (PullEventsResponse) {}
+}
+
+service Metrics {
   rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {}
   rpc GetMetric(GetMetricRequest) returns (GetMetricResponse) {}
   rpc CreateMetric(CreateMetricRequest) returns (CreateMetricResponse) {}
   rpc DeleteMetric(DeleteMetricRequest) returns (DeleteMetricResponse) {}
   rpc GetMetricValue(GetMetricValueRequest) returns (GetMetricValueResponse) {}
+}
+
+service Topics {
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse) {}
   rpc CreateTopic(CreateTopicRequest) returns (CreateTopicResponse) {}
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {}
+}
+
+service Subscriptions {
   rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse) {}
   rpc GetSubscription(GetSubscriptionRequest) returns (GetSubscriptionResponse) {}
   rpc CreateSubscription(CreateSubscriptionRequest) returns (CreateSubscriptionResponse) {}
   rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse) {}
+}
+
+service ApiKeys {
   rpc CreateApiKey(CreateApiKeyRequest) returns (CreateApiKeyResponse) {}
   rpc RevokeApiKey(RevokeApiKeyRequest) returns (RevokeApiKeyResponse) {}
   rpc AddSubscriptionsToApiKey(AddSubscriptionsToApiKeyRequest) returns (AddSubscriptionsToApiKeyResponse) {}
   rpc DeleteSubscriptionsFromApiKey(DeleteSubscriptionsFromApiKeyRequest) returns (DeleteSubscriptionsFromApiKeyResponse) {}
   rpc AddTopicsToApiKey(AddTopicsToApiKeyRequest) returns (AddTopicsToApiKeyResponse) {}
   rpc DeleteTopicsFromApiKey(DeleteTopicsFromApiKeyRequest) returns (DeleteTopicsFromApiKeyResponse) {}
+}
+
+service JWT {
   rpc CreateJWT(CreateJWTRequest) returns (CreateJWTResponse) {}
 }
 
