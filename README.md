@@ -2,6 +2,14 @@
 
 While it may not strive to be the fastest or most webscale event streaming/storage system available, EventRelay isn't designed to rival powerhouse platforms like Kafka in terms of throughput or latency. Instead, it focuses on providing a low-maintenance, dependable, and user-friendly alternative for the majority of users. Preliminary load testing indicates that a single instance of EventRelay can manage approximately 12,000 requests per second (rps), suggesting its suitability for meeting the requirements of up to 80% of applications.
 
+
+## Objectives
+
+- Foster a dynamic and engaged community.
+- Deliver an exceptional developer experience.
+- Facilitate minimal production administration.
+
+
 ## Use Cases
 
 ### Event Streaming
