@@ -30,7 +30,7 @@ Leverage EventRelay to record events every time you need to track user actions o
 
 Example:
 
-Bosun is an Elixir-based authorization package that generates an audit log and can optionally transmit it to EventRelay.
+[Bosun](https://github.com/themusicman/bosun) is an Elixir-based authorization package that generates an audit log and can optionally transmit it to EventRelay.
 
 ### Webhooks
 
