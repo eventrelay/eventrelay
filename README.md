@@ -20,7 +20,7 @@ EventRelay allows your applications to both publish and consume events through a
 
 Integrate EventRelay seamlessly into your debugging process by sending events to the same locations where you would typically log debug information. This enables you to easily filter and search events, aiding in the resolution of issues within your application.
 
-### Metrics Collection
+### Metrics & Analytics
 
 Effortlessly send events to EventRelay and define your desired metrics.
 
