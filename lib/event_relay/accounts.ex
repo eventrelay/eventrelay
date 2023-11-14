@@ -379,6 +379,29 @@ defmodule ER.Accounts do
     from_api_keys() |> Repo.get(id)
   end
 
+  def get_api_key_with_topic(api_key, topic_name) do
+    {:ok, api_key_id} = Ecto.UUID.dump(api_key.id)
+
+    from_api_keys()
+    |> join(:left, [api_keys: a], t in assoc(a, :api_key_topics), as: :api_key_topics)
+    |> where(as(:api_keys).id == ^api_key_id)
+    |> where(as(:api_key_topics).topic_name == ^topic_name)
+    |> Repo.one()
+  end
+
+  def get_api_key_with_subscription_topic(api_key, topic_name) do
+    {:ok, api_key_id} = Ecto.UUID.dump(api_key.id)
+
+    from_api_keys()
+    |> join(:left, [api_keys: a], as in assoc(a, :api_key_subscriptions),
+      as: :api_key_subscriptions
+    )
+    |> join(:left, [api_key_subscriptions: as], s in assoc(as, :subscription), as: :subscriptions)
+    |> where(as(:api_keys).id == ^api_key_id)
+    |> where(as(:subscriptions).topic_name == ^topic_name)
+    |> Repo.one()
+  end
+
   @doc """
   Gets a single api_key by the key 
   """
