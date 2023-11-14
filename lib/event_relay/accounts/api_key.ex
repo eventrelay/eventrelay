@@ -72,6 +72,24 @@ defmodule ER.Accounts.ApiKey do
     Base.encode64(key <> ":" <> secret)
   end
 
+  def allowed_topic?(api_key, topic_name) do
+    if ER.Accounts.get_api_key_with_topic(api_key, topic_name) do
+      true
+    else
+      false
+    end
+  end
+
+  def allowed_subscription?(api_key, topic_name) do
+    if ER.Accounts.get_api_key_with_subscription_topic(api_key, topic_name) do
+      true
+    else
+      false
+    end
+  end
+
+  def decode_key_and_secret(nil), do: {:error, :invalid_token}
+
   def decode_key_and_secret(token) do
     token
     |> Base.decode64()

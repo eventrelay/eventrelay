@@ -2,6 +2,7 @@ defmodule ERWeb.EventsChannel do
   use ERWeb, :channel
   require Logger
   alias ER.Events.Event
+  import ER, only: [atomize_map: 1]
 
   @impl true
   def join("events:" <> subscription_id, payload, socket) do
@@ -34,7 +35,7 @@ defmodule ERWeb.EventsChannel do
         %{"topic" => topic, "durable" => durable, "events" => events} = payload,
         socket
       ) do
-    request = ERWeb.Grpc.Eventrelay.PublishEventsRequest.new(payload)
+    request = ERWeb.Grpc.Eventrelay.PublishEventsRequest.new(atomize_map(payload))
 
     case Bosun.permit(socket.assigns.producer_api_key, :request, request) do
       {:ok, _} ->

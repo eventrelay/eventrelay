@@ -15,6 +15,7 @@ defmodule ERWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug ERWeb.APIAuth
   end
 
   scope "/", ERWeb do
@@ -24,9 +25,10 @@ defmodule ERWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", ERWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", ERWeb do
+    pipe_through [:api, :authenticate_api_token]
+    post "/events", EventController, :publish
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:event_relay, :dev_routes) do
