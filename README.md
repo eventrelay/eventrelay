@@ -165,6 +165,18 @@ grpcurl -plaintext -proto event_relay.proto -d '{"type": "consumer"}' localhost:
 eventrelay.ApiKeys.CreateApiKey
 ```
 
+Get a metric value:
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"id": "9d9807e5-7925-4c9e-805a-6e1aea59adc0"}' localhost:50051 eventrelay.Metrics.GetMetricValue
+```
+
+Create a metric value:
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"metric": {"name": "Count of metrics", "filters": [{"field_path": "data.cart.total", "comparison": "greater_than", "value": "10", "cast_as": "INTEGER"}], "field_path": "group_key", "type": "COUNT", "topic_name": "metrics"}}' localhost:50051 eventrelay.Metrics.CreateMetric
+```
+
 Events are stored in a per topic table. If the event topic name is `users` then the table that stores the events will be
 `users_events`. This is done to shard the events over multiple tables instead of having one massive events table.
 

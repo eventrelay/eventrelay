@@ -48,7 +48,7 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.Server do
       field_path: metric.field_path,
       topic_name: metric.topic_name,
       topic_identifier: metric.topic_identifier,
-      type: metric.type,
+      type: to_grpc_enum(metric.type),
       filters: Enum.map(metric.filters, &build_event_filter/1)
     )
   end
@@ -57,7 +57,7 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.Server do
     Filter.new(
       field: filter.field,
       field_path: filter.field_path,
-      comparison: filter.comparison,
+      comparison: to_string(filter.comparison),
       value: filter.value
     )
   end
