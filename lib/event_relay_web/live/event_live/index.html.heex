@@ -68,22 +68,27 @@
 <.table
   id="events"
   rows={@events}
-  row_click={&JS.navigate(~p"/topics/#{@topic}/events/#{&1}")}
   row_id={fn row -> "events-#{row.id}" end}
 >
   <:col :let={event} label="Topic Name"><%= event.topic_name %></:col>
   <:col :let={event} label="Topic Identifier"><%= event.topic_identifier %></:col>
   <:col :let={event} label="Name"><%= event.name %></:col>
-  <:col :let={event} label="Reference Key"><%= event.reference_key %></:col>
-  <:col :let={event} label="Trace Key"><%= event.trace_key %></:col>
-  <:col :let={event} label="Group Key"><%= event.group_key %></:col>
+  <:col :let={event} label="Keys">
+    <p :if={event.group_key}>Group key: <%= event.group_key %></p>
+    <p :if={event.reference_key}>Reference key: <%= event.reference_key %></p>
+    <p :if={event.trace_key}>Trace key: <%= event.trace_key %></p>
+  </:col>
   <:col :let={event} label="Offset"><%= event.offset %></:col>
   <:col :let={event} label="Source"><%= event.source %></:col>
   <:col :let={event} label="Occurred at"><%= event.occurred_at %></:col>
-  <:col :let={event} label="Context"><%= inspect(event.context) %></:col>
-  <:col :let={event} label="Data"><%= inspect(event.data) %></:col>
+  <:col :let={event} label="Context">
+    <div id={"#{event.id}-context"} phx-hook="JsonView" data-json={Jason.encode!(event.context)}></div>
+  </:col>
+  <:col :let={event} label="Data">
+    <div id={"#{event.id}-data"} phx-hook="JsonView" data-json={Jason.encode!(event.data)}></div>
+  </:col>
   <:action :let={event}>
-    <div class="sr-only">
+    <div>
       <.link navigate={~p"/topics/#{@topic}/events/#{event}"}>Show</.link>
     </div>
   </:action>

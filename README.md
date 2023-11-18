@@ -171,6 +171,12 @@ Get a metric value:
 grpcurl -plaintext -proto event_relay.proto -d '{"id": "9d9807e5-7925-4c9e-805a-6e1aea59adc0"}' localhost:50051 eventrelay.Metrics.GetMetricValue
 ```
 
+List metrics value:
+
+```
+grpcurl -plaintext -proto event_relay.proto -d '{"topic": "metrics"}' localhost:50051 eventrelay.Metrics.ListMetrics
+```
+
 Create a metric value:
 
 ```

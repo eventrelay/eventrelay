@@ -21,10 +21,25 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
+import jsonview from "../vendor/json-view"
 import "./user_socket.js"
 
+let Hooks = {}
+Hooks.JsonView = {
+  mounted() {
+    if (this.el.dataset.json) {
+      json = JSON.parse(this.el.dataset.json)
+      const tree = jsonview.create(json);
+      jsonview.render(tree, this.el);
+      // jsonview.expand(tree);
+    } else {
+      console.error("JSON could not be found and/or parsed")
+    }
+  }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})

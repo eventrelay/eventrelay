@@ -8,8 +8,14 @@
   <:item title="Offset"><%= @event.offset %></:item>
   <:item title="Source"><%= @event.source %></:item>
   <:item title="Occurred at"><%= @event.occurred_at %></:item>
-  <:item title="Context"><%= inspect(@event.context) %></:item>
-  <:item title="Data"><%= inspect(@event.data) %></:item>
+  <:item title="Context">
+    <div id={"#{@event.id}-context"} phx-hook="JsonView" data-json={Jason.encode!(@event.context)}>
+    </div>
+  </:item>
+  <:item title="Data">
+    <div id={"#{@event.id}-data"} phx-hook="JsonView" data-json={Jason.encode!(@event.data)}>
+    </div>
+  </:item>
 </.list>
 
 <.back navigate={~p"/topics/#{@topic}/events"}>Back to events</.back>

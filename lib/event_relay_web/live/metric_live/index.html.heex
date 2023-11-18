@@ -12,10 +12,11 @@
   rows={@streams.metrics}
   row_click={fn {_id, metric} -> JS.navigate(~p"/metrics/#{metric}") end}
 >
+  <:col :let={{_id, metric}} label="ID"><%= metric.id %></:col>
   <:col :let={{_id, metric}} label="Name"><%= metric.name %></:col>
+  <:col :let={{_id, metric}} label="Value"><%= ER.Metrics.get_value_for_metric(metric) %></:col>
   <:col :let={{_id, metric}} label="Field path"><%= metric.field_path %></:col>
   <:col :let={{_id, metric}} label="Type"><%= metric.type %></:col>
-  <:col :let={{_id, metric}} label="Filters"><%= metric.filters %></:col>
   <:action :let={{_id, metric}}>
     <div class="sr-only">
       <.link navigate={~p"/metrics/#{metric}"}>Show</.link>
