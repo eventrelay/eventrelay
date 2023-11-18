@@ -31,7 +31,8 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.Server do
 
       metric ->
         try do
-          GetMetricValueResponse.new(value: ER.Metrics.get_value_for_metric(metric))
+          value = to_string(ER.Metrics.get_value_for_metric(metric))
+          GetMetricValueResponse.new(value: value)
         rescue
           error ->
             Logger.error("Failed to delete topic: #{inspect(error)}")
