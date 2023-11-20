@@ -111,6 +111,52 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert result.total_count == 2
     end
 
+    test "returns correct next_offset events", %{topic: topic} do
+      totals = [10, 30, 54, 23, 22, 65, 14, 56]
+
+      Enum.each(totals, fn total ->
+        attrs = params_for(:event, topic: topic)
+        attrs = %{attrs | data: %{"cart" => %{"total" => total}}}
+        ER.Events.create_event_for_topic(attrs)
+      end)
+
+      request = %PullEventsRequest{
+        topic: topic.name,
+        filters: [],
+        batch_size: 3,
+        offset: 0
+      }
+
+      result = Server.pull_events(request, nil)
+
+      assert result.next_offset == 3
+      assert result.previous_offset == nil
+
+      request = %PullEventsRequest{
+        topic: topic.name,
+        filters: [],
+        batch_size: 3,
+        offset: result.next_offset
+      }
+
+      result = Server.pull_events(request, nil)
+
+      assert result.next_offset == 6
+      assert result.previous_offset == 0
+
+      request = %PullEventsRequest{
+        topic: topic.name,
+        filters: [],
+        batch_size: 3,
+        offset: result.next_offset
+      }
+
+      result = Server.pull_events(request, nil)
+
+      assert result.next_offset == nil
+      assert result.previous_offset == 3
+    end
+
     test "returns filtered events", %{topic: topic} do
       totals = [10, 30]
 

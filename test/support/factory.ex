@@ -8,7 +8,6 @@ defmodule ER.Factory do
       data: %{},
       name: "some name",
       occurred_at: DateTime.to_iso8601(~U[2022-12-21 18:27:00Z]),
-      offset: Enum.random(0..9_999_999),
       source: "some source"
     }
   end
