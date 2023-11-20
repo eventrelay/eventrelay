@@ -132,10 +132,13 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert result.next_offset == 3
       assert result.previous_offset == nil
 
+      last_offset = result.events |> List.last() |> Map.get(:offset)
+
       request = %PullEventsRequest{
         topic: topic.name,
         filters: [],
         batch_size: 3,
+        # 3
         offset: result.next_offset
       }
 
@@ -144,10 +147,17 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert result.next_offset == 6
       assert result.previous_offset == 0
 
+      first_offset = result.events |> List.first() |> Map.get(:offset)
+
+      assert last_offset + 1 == first_offset
+
+      last_offset = result.events |> List.last() |> Map.get(:offset)
+
       request = %PullEventsRequest{
         topic: topic.name,
         filters: [],
         batch_size: 3,
+        # 6
         offset: result.next_offset
       }
 
@@ -155,6 +165,10 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       assert result.next_offset == nil
       assert result.previous_offset == 3
+
+      first_offset = result.events |> List.first() |> Map.get(:offset)
+
+      assert last_offset + 1 == first_offset
     end
 
     test "returns filtered events", %{topic: topic} do
