@@ -65,11 +65,7 @@
   </div>
 </div>
 
-<.table
-  id="events"
-  rows={@events}
-  row_id={fn row -> "events-#{row.id}" end}
->
+<.table id="events" rows={@events} row_id={fn row -> "events-#{row.id}" end}>
   <:col :let={event} label="Topic Name"><%= event.topic_name %></:col>
   <:col :let={event} label="Topic Identifier"><%= event.topic_identifier %></:col>
   <:col :let={event} label="Name"><%= event.name %></:col>
@@ -82,7 +78,8 @@
   <:col :let={event} label="Source"><%= event.source %></:col>
   <:col :let={event} label="Occurred at"><%= event.occurred_at %></:col>
   <:col :let={event} label="Context">
-    <div id={"#{event.id}-context"} phx-hook="JsonView" data-json={Jason.encode!(event.context)}></div>
+    <div id={"#{event.id}-context"} phx-hook="JsonView" data-json={Jason.encode!(event.context)}>
+    </div>
   </:col>
   <:col :let={event} label="Data">
     <div id={"#{event.id}-data"} phx-hook="JsonView" data-json={Jason.encode!(event.data)}></div>
