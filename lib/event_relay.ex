@@ -36,13 +36,8 @@ defmodule ER do
     0
   end
 
-  def to_float(value) when is_float(value) do
+  def to_float(value) when is_binary(value) do
     value
-  end
-
-  def to_float(value) when is_integer(value) do
-    value
-    |> Integer.to_string()
     |> Float.parse()
     |> case do
       {value, _} ->
@@ -51,6 +46,16 @@ defmodule ER do
       _ ->
         0.0
     end
+  end
+
+  def to_float(value) when is_float(value) do
+    value
+  end
+
+  def to_float(value) when is_integer(value) do
+    value
+    |> Integer.to_string()
+    |> to_float()
   end
 
   def to_float(%Decimal{} = value) do
