@@ -16,6 +16,10 @@ While it may not strive to be the fastest or most webscale event streaming/stora
 
 EventRelay allows your applications to both publish and consume events through a GRPC API. It employs a pull-based approach to event streaming, akin to projects like Kafka.
 
+#### Worker Queues
+
+Utilize deliver once events to create worker queues via the GRPC API
+
 ### Debug Log
 
 Integrate EventRelay seamlessly into your debugging process by sending events to the same locations where you would typically log debug information. This enables you to easily filter and search events, aiding in the resolution of issues within your application.
