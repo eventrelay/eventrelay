@@ -387,7 +387,7 @@ message DeleteTopicsFromApiKeyRequest {
 }
 
 message CreateJWTRequest {
-  // unix timestamp in seconds
+  // unix timestamp
   int64 expiration = 1;
 }
 

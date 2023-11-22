@@ -62,16 +62,21 @@ Now you can visit [`localhost:9000`](http://localhost:9000) from your browser.
 See the [wiki](https://github.com/eventrelay/eventrelay/wiki/GRPC) for more about the GRPC API.
 
 
-Events are stored in a per topic table. If the event topic name is `users` then the table that stores the events will be
-`users_events`. This is done to shard the events over multiple tables instead of having one massive events table.
+## Core Concepts
 
-## Topic
+### Events
+
+Events are stored in a per topic table in the Postgres database. EventRelay at its core is about moving events from one place to another. Whether that is from the API to storage in the database in the case of durable events, from the API to a websocket consumer for durable and non-durable events, or from a source via an ingestor to a consumer via the API. Events are the foundational concept in EventRealy.
+
+Read more about [events](https://github.com/eventrelay/eventrelay/wiki/Events)
+
+### Topics
 
 A topic is like a bucket that is used to organize your events. It is composed of 2 parts:
 
 Ex. `users:123`
 
-The first part `users` is the topic name (character limit of 50) and the second part `123` is the topic id - which is optional. The topic id if provided allows you to scope access to the topic. See the Authentication and Authentication section.
+The first part `users` is the topic name (character limit of 50) and the second part `123` is the topic id - which is optional. The topic id if provided allows you to scope access to the topic. 
 
 More examples of valid topics:
 
@@ -82,11 +87,36 @@ Ex.
 
 A topic name can only be a max of 50 characters.
 
-## Authentication and Authorization
+Read more about [topics](https://github.com/eventrelay/eventrelay/wiki/Topics)
 
-There are two types of API keys: producer and consumer.
+### Subscriptions
 
-A producer API key is allowed to interact with the all of the GRPC API and
+In EventRelay subscriptions define who and how events can be consumed by external clients. There are a few different types of subscriptions: API, webhook, websocket, and S3.
+
+Read more about [subscriptions](https://github.com/eventrelay/eventrelay/wiki/Subscriptions)
+
+### Metrics
+
+Metrics are ways of deriving aggregate data about the events that are stored in EventRelay.
+
+Read more about [metrics](https://github.com/eventrelay/eventrelay/wiki/Metrics)
+
+### API Keys
+
+API Keys control access to the various APIs that clients can use to interact with EventRelay.
+
+**APIs**
+
+- GRPC API (main)
+- REST API 
+    - only supports publishing events
+- Websockets 
+    - only supports publishing events and consuming events 
+    - uses JWT based authentication and authorization
+    - an API key can be used to [generate a JWT token](https://github.com/eventrelay/eventrelay/wiki/GRPC#create-jwt-token)
+    
+Read more about [authentication and authorization](https://github.com/eventrelay/eventrelay/wiki/Authentication-and-Authroization)
+
 
 ## Delivery Guarantees
 
