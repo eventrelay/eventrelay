@@ -22,13 +22,11 @@ defmodule ER.Factory do
   def subscription_factory do
     %ER.Subscriptions.Subscription{
       name: Faker.Lorem.word(),
-      offset: 42,
       ordered: false,
       push: true,
       paused: false,
       config: %{},
       topic: build(:topic),
-      topic_identifier: "some_topic_identifier",
       subscription_type: "webhook"
     }
   end

@@ -12,6 +12,7 @@ package eventrelay;
 service Events {
   rpc PublishEvents(PublishEventsRequest) returns (PublishEventsResponse) {}
   rpc PullEvents(PullEventsRequest) returns (PullEventsResponse) {}
+  rpc PullQueuedEvents(PullQueuedEventsRequest) returns (PullQueuedEventsResponse) {}
 }
 
 service Metrics {
@@ -193,6 +194,24 @@ message PullEventsRequest {
   repeated Filter filters = 4; 
 }
 
+message PullEventsResponse {
+  repeated Event events = 1;
+  int32 total_count = 2;
+  int32 next_offset = 3;
+  int32 previous_offset = 4;
+  int32 total_batches = 5;
+}
+
+message PullQueuedEventsRequest {
+  string subscription_id = 3;
+  // max batchSize is 1000, if not specified, defaults to 100
+  int32 batch_size = 2;
+}
+
+message PullQueuedEventsResponse {
+  repeated Event events = 1;
+}
+
 enum CastAs {
   STRING = 0;
   INTEGER = 1;
@@ -210,13 +229,6 @@ message Filter {
   CastAs cast_as = 5;
 }
 
-message PullEventsResponse {
-  repeated Event events = 1;
-  int32 total_count = 2;
-  int32 next_offset = 3;
-  int32 previous_offset = 4;
-  int32 total_batches = 5;
-}
 
 enum MetricType {
   SUM = 0;

@@ -9,6 +9,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
     PublishEventsRequest,
     NewEvent,
     PullEventsRequest,
+    PullQueuedEventsRequest,
     Filter
   }
 
@@ -195,6 +196,96 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       result = Server.pull_events(request, nil)
 
       assert result.total_count == 1
+    end
+  end
+
+  describe "pull_queued_events/2" do
+    setup do
+      {:ok, topic} = Events.create_topic(%{name: "jobs"})
+      subscription = insert(:subscription, topic: topic)
+      subscription_without_locks = insert(:subscription, topic: topic)
+
+      # spin up the subscription servers
+      ER.Subscriptions.Server.factory(subscription.id)
+      ER.Subscriptions.Server.factory(subscription_without_locks.id)
+
+      {:ok,
+       subscription: subscription,
+       subscription_without_locks: subscription_without_locks,
+       topic: topic}
+    end
+
+    test "returns events", %{
+      topic: topic,
+      subscription: subscription,
+      subscription_without_locks: subscription_without_locks
+    } do
+      Enum.map(1..20, fn i ->
+        attrs =
+          params_for(:event,
+            topic: topic,
+            offset: i
+          )
+
+        {:ok, event} = Events.create_event_for_topic(attrs)
+        event
+      end)
+
+      request = %PullQueuedEventsRequest{
+        batch_size: 10,
+        subscription_id: subscription.id
+      }
+
+      first_result = Server.pull_queued_events(request, nil)
+
+      request = %PullQueuedEventsRequest{
+        batch_size: 10,
+        subscription_id: subscription.id
+      }
+
+      second_result = Server.pull_queued_events(request, nil)
+
+      events = first_result.events
+      assert Enum.count(events) == 10
+      first_event = List.first(events)
+      last_event = List.last(events)
+      assert first_event.offset == 1
+      assert last_event.offset == 10
+
+      events = second_result.events
+      assert Enum.count(events) == 10
+      first_event = List.first(events)
+      last_event = List.last(events)
+      # did we properly sequence the calls and add the locks?
+      refute first_event.offset == 1
+      refute last_event.offset == 10
+      assert first_event.offset == 11
+      assert last_event.offset == 20
+
+      # now pull events for a subscription without locks
+      request = %PullQueuedEventsRequest{
+        batch_size: 10,
+        subscription_id: subscription_without_locks.id
+      }
+
+      result = Server.pull_queued_events(request, nil)
+
+      events = result.events
+      assert Enum.count(events) == 10
+      first_event = List.first(events)
+      last_event = List.last(events)
+      # we should be starting at the beginning again with the subscription that has no locks
+      assert first_event.offset == 1
+      assert last_event.offset == 10
+
+      request = %PullQueuedEventsRequest{
+        batch_size: 10,
+        subscription_id: subscription.id
+      }
+
+      result = Server.pull_queued_events(request, nil)
+      # we should have no results for this subscription since they are all locked
+      assert Enum.count(result.events) == 0
     end
   end
 end

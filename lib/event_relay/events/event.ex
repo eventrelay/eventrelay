@@ -74,6 +74,10 @@ defmodule ER.Events.Event do
     field :trace_key, :string
 
     field :durable, :boolean, default: true, virtual: true
+
+    # An array of all the subscriptions that have locked this event. This is used with queued events to ensure deliver once functionality through the API
+    field :subscription_locks, {:array, :binary_id}, default: []
+
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
     timestamps(type: :utc_datetime)
@@ -97,7 +101,8 @@ defmodule ER.Events.Event do
       :topic_name,
       :topic_identifier,
       :user_id,
-      :anonymous_id
+      :anonymous_id,
+      :subscription_locks
     ])
     |> decode_context()
     |> decode_data()

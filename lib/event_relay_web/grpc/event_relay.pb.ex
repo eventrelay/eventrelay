@@ -249,16 +249,6 @@ defmodule ERWeb.Grpc.Eventrelay.PullEventsRequest do
   field :filters, 4, repeated: true, type: ERWeb.Grpc.Eventrelay.Filter
 end
 
-defmodule ERWeb.Grpc.Eventrelay.Filter do
-  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
-
-  field :field, 1, type: :string
-  field :comparison, 2, type: :string
-  field :value, 3, type: :string
-  field :field_path, 4, type: :string, json_name: "fieldPath"
-  field :cast_as, 5, type: ERWeb.Grpc.Eventrelay.CastAs, json_name: "castAs", enum: true
-end
-
 defmodule ERWeb.Grpc.Eventrelay.PullEventsResponse do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
@@ -267,6 +257,29 @@ defmodule ERWeb.Grpc.Eventrelay.PullEventsResponse do
   field :next_offset, 3, type: :int32, json_name: "nextOffset"
   field :previous_offset, 4, type: :int32, json_name: "previousOffset"
   field :total_batches, 5, type: :int32, json_name: "totalBatches"
+end
+
+defmodule ERWeb.Grpc.Eventrelay.PullQueuedEventsRequest do
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
+
+  field :subscription_id, 3, type: :string, json_name: "subscriptionId"
+  field :batch_size, 2, type: :int32, json_name: "batchSize"
+end
+
+defmodule ERWeb.Grpc.Eventrelay.PullQueuedEventsResponse do
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
+
+  field :events, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Event
+end
+
+defmodule ERWeb.Grpc.Eventrelay.Filter do
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
+
+  field :field, 1, type: :string
+  field :comparison, 2, type: :string
+  field :value, 3, type: :string
+  field :field_path, 4, type: :string, json_name: "fieldPath"
+  field :cast_as, 5, type: ERWeb.Grpc.Eventrelay.CastAs, json_name: "castAs", enum: true
 end
 
 defmodule ERWeb.Grpc.Eventrelay.NewMetric do
@@ -474,6 +487,12 @@ defmodule ERWeb.Grpc.Eventrelay.Events.Service do
     :PullEvents,
     ERWeb.Grpc.Eventrelay.PullEventsRequest,
     ERWeb.Grpc.Eventrelay.PullEventsResponse
+  )
+
+  rpc(
+    :PullQueuedEvents,
+    ERWeb.Grpc.Eventrelay.PullQueuedEventsRequest,
+    ERWeb.Grpc.Eventrelay.PullQueuedEventsResponse
   )
 end
 

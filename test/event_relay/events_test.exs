@@ -5,6 +5,133 @@ defmodule ER.EventsTest do
   import ER.Factory
   import ExUnit.CaptureLog
 
+  describe "list_queued_events_for_topic/1" do
+    setup do
+      {:ok, topic} = ER.Events.create_topic(%{name: "jobs"})
+      subscription = insert(:subscription, topic: topic)
+      subscription_with_locks = insert(:subscription, topic: topic)
+
+      {:ok,
+       topic: topic, subscription: subscription, subscription_with_locks: subscription_with_locks}
+    end
+
+    test "returns events that respect the subscription_locks", %{
+      topic: topic,
+      subscription: subscription,
+      subscription_with_locks: subscription_with_locks
+    } do
+      lock_events =
+        Enum.map(1..9, fn i ->
+          attrs =
+            params_for(:event,
+              topic: topic,
+              offset: i,
+              subscription_locks: [subscription_with_locks.id]
+            )
+
+          Events.create_event_for_topic(attrs)
+        end)
+
+      _unlock_events =
+        Enum.map(10..19, fn i ->
+          Events.create_event_for_topic(params_for(:event, topic: topic, offset: i))
+        end)
+
+      # first lets attempt to get events for subscription that have some events locked
+      events =
+        Events.list_queued_events_for_topic(
+          batch_size: 100,
+          topic_name: topic.name,
+          topic_identifier: nil,
+          subscription_id: subscription_with_locks.id
+        )
+
+      assert Enum.count(events) == 10
+      first_event = List.first(events)
+
+      # this would be the first locked event
+      refute first_event.offset == 1
+
+      # ensure that our first event is the first non-locked event
+      assert first_event.offset == 10
+
+      events =
+        Events.list_queued_events_for_topic(
+          batch_size: 100,
+          topic_name: topic.name,
+          topic_identifier: nil,
+          subscription_id: subscription.id
+        )
+
+      # should return all events
+      assert Enum.count(events) == 19
+      first_event = List.first(events)
+      assert first_event.offset == 1
+
+      # lets unlock an event and query again
+      {:ok, last_locked_event} = List.last(lock_events)
+
+      last_locked_event
+      |> Events.change_event(%{subscription_locks: []})
+      |> Repo.update()
+
+      events =
+        Events.list_queued_events_for_topic(
+          batch_size: 100,
+          topic_name: topic.name,
+          topic_identifier: nil,
+          subscription_id: subscription_with_locks.id
+        )
+
+      # we should have the original 10 plus the unlocked event
+      assert Enum.count(events) == 11
+      event = List.first(events)
+      # check that the first event is the last offset of the locked events
+      assert event.offset == 9
+
+      Events.lock_subscription_events(subscription.id, events)
+    end
+  end
+
+  describe "lock_subscription_events/2" do
+    setup do
+      {:ok, topic} = ER.Events.create_topic(%{name: "jobs"})
+      subscription = insert(:subscription, topic: topic)
+
+      {:ok, topic: topic, subscription: subscription}
+    end
+
+    test "locks the events for that subscription", %{
+      topic: topic,
+      subscription: subscription
+    } do
+      unlocked_events =
+        Enum.map(1..10, fn i ->
+          attrs =
+            params_for(:event,
+              topic: topic,
+              offset: i
+            )
+
+          {:ok, event} = Events.create_event_for_topic(attrs)
+          event
+        end)
+
+      Events.lock_subscription_events(subscription.id, unlocked_events)
+
+      events =
+        Events.list_queued_events_for_topic(
+          batch_size: 100,
+          topic_name: topic.name,
+          topic_identifier: nil,
+          subscription_id: subscription.id
+        )
+
+      # now that all the events are locked non should be found
+      assert events == []
+    end
+  end
+
   describe "events" do
     alias ER.Events.Event
 

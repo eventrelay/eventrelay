@@ -218,6 +218,49 @@ defmodule ER.Events do
     list_events_for_topic(topic_name: topic_name, topic_identifier: nil)
   end
 
+  def list_queued_events_for_topic(
+        batch_size: batch_size,
+        topic_name: topic_name,
+        topic_identifier: topic_identifier,
+        subscription_id: subscription_id
+      ) do
+    subscription_id = Ecto.UUID.dump!(subscription_id)
+
+    query =
+      from_events_for_topic(topic_name: topic_name)
+      |> where(as(:events).topic_name == ^topic_name)
+      |> where(not is_nil(as(:events).occurred_at))
+      |> where(^subscription_id not in as(:events).subscription_locks)
+      |> limit(^batch_size)
+      |> order_by(as(:events).offset)
+
+    query =
+      unless ER.empty?(topic_identifier) do
+        query |> where(as(:events).topic_identifier == ^topic_identifier)
+      else
+        query
+      end
+
+    # IO.inspect(sql: Repo.to_sql(:all, query))
+    Repo.all(query)
+  end
+
+  def lock_subscription_events(_subscription_id, []) do
+    nil
+  end
+
+  def lock_subscription_events(subscription_id, events) do
+    event = List.first(events)
+    event_ids = Enum.map(events, & &1.id)
+    source = Ecto.get_meta(event, :source)
+
+    from(e in {source, Event},
+      where: e.id in ^event_ids,
+      update: [push: [subscription_locks: ^subscription_id]]
+    )
+    |> Repo.update_all([])
+  end
+
   def list_events do
     from_events() |> Repo.all()
   end

@@ -26,8 +26,8 @@ defmodule ER.Subscriptions.Subscription do
     field :push, :boolean, default: true
     field :paused, :boolean, default: false
     field :config, :map, default: %{}
-    belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
     field :topic_identifier, :string
+    belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
     timestamps(type: :utc_datetime)
   end
@@ -51,7 +51,11 @@ defmodule ER.Subscriptions.Subscription do
     |> unique_constraint(:name)
     |> ER.Schema.normalize_name()
     |> assoc_constraint(:topic)
-    |> validate_inclusion(:subscription_type, ["s3", "webhook", "websocket"])
+    |> validate_inclusion(:subscription_type, ["s3", "webhook", "websocket", "api"])
+  end
+
+  def api?(subscription) do
+    subscription.push == false && subscription.subscription_type == "api"
   end
 
   def websocket?(subscription) do
