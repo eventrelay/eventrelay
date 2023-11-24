@@ -28,6 +28,10 @@ Integrate EventRelay seamlessly into your debugging process by sending events to
 
 Effortlessly send events to EventRelay and define your desired metrics.
 
+### Customer Data Platform
+
+Collect first party data and make data driven decisions.
+
 ### Audit Log
 
 Leverage EventRelay to record events every time you need to track user actions on specific resources within your system.
