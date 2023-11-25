@@ -26,6 +26,8 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
   def create_api_key(request, _stream) do
     api_key = ER.Accounts.ApiKey.build(from_grpc_enum(request.type), :active)
 
+    api_key = %{api_key | group_key: request.group_key}
+
     api_key =
       case ER.Accounts.create_api_key(api_key) do
         {:ok, api_key} ->
@@ -399,7 +401,8 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
       key: api_key.key,
       secret: api_key.secret,
       type: to_grpc_enum(api_key.type),
-      status: to_grpc_enum(api_key.status)
+      status: to_grpc_enum(api_key.status),
+      group_key: api_key.group_key
     )
   end
 end

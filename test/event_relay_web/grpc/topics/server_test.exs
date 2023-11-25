@@ -13,12 +13,14 @@ defmodule ERWeb.Grpc.EventRelay.Topics.ServerTest do
   describe "create_topic/2" do
     test "create a new topic" do
       request = %CreateTopicRequest{
-        name: "audit_log"
+        name: "audit_log",
+        group_key: "tester"
       }
 
       result = Server.create_topic(request, nil)
 
       refute ER.Events.get_topic(result.topic.id) == nil
+      assert result.topic.group_key == "tester"
     end
   end
 

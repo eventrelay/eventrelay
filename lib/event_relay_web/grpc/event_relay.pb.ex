@@ -38,6 +38,7 @@ defmodule ERWeb.Grpc.Eventrelay.Topic do
 
   field :id, 1, type: :string
   field :name, 2, type: :string
+  field :group_key, 3, type: :string, json_name: "groupKey"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListTopicsRequest do
@@ -56,6 +57,7 @@ defmodule ERWeb.Grpc.Eventrelay.CreateTopicRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :name, 1, type: :string
+  field :group_key, 2, type: :string, json_name: "groupKey"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateTopicResponse do
@@ -98,6 +100,7 @@ defmodule ERWeb.Grpc.Eventrelay.NewSubscription do
 
   field :paused, 7, type: :bool
   field :subscription_type, 8, type: :string, json_name: "subscriptionType"
+  field :group_key, 9, type: :string, json_name: "groupKey"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Subscription.ConfigEntry do
@@ -123,6 +126,7 @@ defmodule ERWeb.Grpc.Eventrelay.Subscription do
 
   field :paused, 8, type: :bool
   field :subscription_type, 9, type: :string, json_name: "subscriptionType"
+  field :group_key, 10, type: :string, json_name: "groupKey"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest do
@@ -380,12 +384,14 @@ defmodule ERWeb.Grpc.Eventrelay.ApiKey do
   field :secret, 3, type: :string
   field :status, 4, type: ERWeb.Grpc.Eventrelay.ApiKeyStatus, enum: true
   field :type, 5, type: ERWeb.Grpc.Eventrelay.ApiKeyType, enum: true
+  field :group_key, 6, type: :string, json_name: "groupKey"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateApiKeyRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :type, 4, type: ERWeb.Grpc.Eventrelay.ApiKeyType, enum: true
+  field :type, 1, type: ERWeb.Grpc.Eventrelay.ApiKeyType, enum: true
+  field :group_key, 2, type: :string, json_name: "groupKey"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.CreateApiKeyResponse do
