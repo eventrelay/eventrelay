@@ -55,6 +55,7 @@ service JWT {
 message Topic {
   string id = 1;
   string name = 2;
+  string group_key = 3;
 }
 
 /**
@@ -73,6 +74,7 @@ message ListTopicsResponse {
 
 message CreateTopicRequest {
   string name = 1;
+  string group_key = 2;
 }
 
 message CreateTopicResponse {
@@ -95,6 +97,7 @@ message NewSubscription {
   map<string, string> config = 6;
   bool paused = 7;
   string subscription_type = 8;
+  string group_key = 9;
 }
 
 message Subscription {
@@ -106,6 +109,7 @@ message Subscription {
   map<string, string> config = 7;
   bool paused = 8;
   string subscription_type = 9;
+  string group_key = 10;
 }
 
 message ListSubscriptionsRequest {
@@ -325,10 +329,12 @@ message ApiKey {
   string secret = 3;
   ApiKeyStatus status = 4;
   ApiKeyType type = 5;
+  string group_key = 6;
 }
 
 message CreateApiKeyRequest {
-  ApiKeyType type = 4;
+  ApiKeyType type = 1;
+  string group_key = 2;
 }
 
 message CreateApiKeyResponse {

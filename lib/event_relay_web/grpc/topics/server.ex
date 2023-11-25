@@ -16,7 +16,8 @@ defmodule ERWeb.Grpc.EventRelay.Topics.Server do
       |> Enum.map(fn topic ->
         Topic.new(
           id: topic.id,
-          name: topic.name
+          name: topic.name,
+          group_key: topic.group_key
         )
       end)
 
@@ -26,9 +27,9 @@ defmodule ERWeb.Grpc.EventRelay.Topics.Server do
   @spec create_topic(CreateTopicRequest.t(), GRPC.Server.Stream.t()) :: CreateTopicResponse.t()
   def create_topic(request, _stream) do
     topic =
-      case ER.Events.create_topic(%{name: request.name}) do
+      case ER.Events.create_topic(%{name: request.name, group_key: request.group_key}) do
         {:ok, topic} ->
-          Topic.new(id: topic.id, name: topic.name)
+          Topic.new(id: topic.id, name: topic.name, group_key: topic.group_key)
 
         {:error, %Ecto.Changeset{} = changeset} ->
           case changeset.errors do

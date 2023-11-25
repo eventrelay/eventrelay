@@ -25,13 +25,15 @@ defmodule ER.Events.Topic do
   @derive {Jason.Encoder,
            only: [
              :id,
-             :name
+             :name,
+             :group_key
            ]}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "topics" do
     field :name, :string
+    field :group_key, :string
     has_many :events, Event, foreign_key: :topic_name, references: :name
 
     timestamps(type: :utc_datetime)
@@ -73,7 +75,7 @@ defmodule ER.Events.Topic do
   @doc false
   def changeset(topic, attrs) do
     topic
-    |> cast(attrs, [:name])
+    |> cast(attrs, [:name, :group_key])
     |> validate_required([:name])
     # this is the max length of a topic name because of postgres table name and foreign key length limits
     |> validate_length(:name, max: 45)

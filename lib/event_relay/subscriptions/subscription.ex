@@ -14,7 +14,8 @@ defmodule ER.Subscriptions.Subscription do
              :subscription_type,
              :push,
              :paused,
-             :config
+             :config,
+             :group_key
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -27,6 +28,8 @@ defmodule ER.Subscriptions.Subscription do
     field :paused, :boolean, default: false
     field :config, :map, default: %{}
     field :topic_identifier, :string
+    field :group_key, :string
+
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
     timestamps(type: :utc_datetime)
@@ -44,7 +47,8 @@ defmodule ER.Subscriptions.Subscription do
       :paused,
       :config,
       :topic_identifier,
-      :subscription_type
+      :subscription_type,
+      :group_key
     ])
     |> validate_required([:name, :topic_name, :push, :subscription_type])
     |> validate_length(:name, min: 3, max: 255)

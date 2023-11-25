@@ -18,6 +18,7 @@ defmodule ER.Accounts.ApiKey do
     field(:secret, :string)
     field(:status, Ecto.Enum, values: [:active, :revoked])
     field(:type, Ecto.Enum, values: [:admin, :producer, :consumer])
+    field(:group_key, :string)
 
     # handles authorization for consumers
     has_many(:api_key_subscriptions, ApiKeySubscription, on_delete: :delete_all)
@@ -39,7 +40,7 @@ defmodule ER.Accounts.ApiKey do
     api_key = ApiKey.build(indifferent_get(attrs, :type), indifferent_get(attrs, :status))
 
     api_token
-    |> cast(attrs, [:key, :secret, :status, :type])
+    |> cast(attrs, [:key, :secret, :status, :type, :group_key])
     |> put_key(api_key)
     |> put_secret(api_key)
     |> validate_required([:key, :secret, :status, :type])
@@ -50,7 +51,7 @@ defmodule ER.Accounts.ApiKey do
 
   def changeset(api_token, attrs) do
     api_token
-    |> cast(attrs, [:key, :secret, :status, :type])
+    |> cast(attrs, [:key, :secret, :status, :type, :group_key])
     |> validate_required([:key, :secret, :status, :type])
     |> unique_constraint(:key_secret_status_type_unique,
       name: :api_keys_key_secret_status_type_index
