@@ -111,23 +111,10 @@ defmodule ER.Accounts.ApiKey do
     end
   end
 
-  @key_size 42
-  @secret_size 64
-
   def build(type, status \\ :active) do
-    key =
-      :crypto.strong_rand_bytes(@key_size)
-      |> Base.url_encode64()
-      |> binary_part(0, @key_size)
-
-    secret =
-      :crypto.strong_rand_bytes(@secret_size)
-      |> Base.url_encode64()
-      |> binary_part(0, @secret_size)
-
     %ApiKey{
-      key: key,
-      secret: secret,
+      key: ER.Auth.generate_key(),
+      secret: ER.Auth.generate_secret(),
       status: status,
       type: type
     }

@@ -92,3 +92,17 @@ end)
 #   end)
 
 # Repo.insert_all(Event, events)
+
+# topic = %Topic{name: "dogs"} |> Repo.insert!()
+#
+# ER.Events.Event.create_table!(topic)
+# ER.Subscriptions.Delivery.create_table!(topic)
+# %ER.Subscriptions.Subscription{
+#   name: "dogs_webhook",
+#   subscription_type: "webhook",
+#   push: true,
+#   topic_name: "dogs",
+#   config: %{"endpoint_url" => "http://localhost:5000/api/webhooks"},
+#   signing_secret: ER.Auth.generate_secret()
+# }
+# |> Repo.insert!()
