@@ -5,6 +5,7 @@ defmodule ER.Events.Event do
 
   alias ER.Events.Topic
   alias ER.Repo
+  alias __MODULE__
 
   @typedoc """
   The Event schema
@@ -177,6 +178,28 @@ defmodule ER.Events.Event do
 
   def data_json(event) do
     Jason.encode!(event.data)
+  end
+
+  @doc """
+  JSON encode an event
+  """
+  def json_encode!(event) do
+    Jason.encode!(event)
+  end
+
+  @doc """
+  Produce a signature for an event
+  """
+
+  def signature(value, opts \\ [])
+
+  def signature(value, opts) when is_binary(value) do
+    opts = Keyword.put(opts, :value, value)
+    ER.Auth.signature(opts)
+  end
+
+  def signature(%Event{} = event, opts) do
+    event |> json_encode!() |> signature(opts)
   end
 
   @doc """

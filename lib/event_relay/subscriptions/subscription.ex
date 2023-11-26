@@ -29,6 +29,7 @@ defmodule ER.Subscriptions.Subscription do
     field :config, :map, default: %{}
     field :topic_identifier, :string
     field :group_key, :string
+    field :signing_secret, :string
 
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
@@ -48,14 +49,25 @@ defmodule ER.Subscriptions.Subscription do
       :config,
       :topic_identifier,
       :subscription_type,
-      :group_key
+      :group_key,
+      :signing_secret
     ])
     |> validate_required([:name, :topic_name, :push, :subscription_type])
     |> validate_length(:name, min: 3, max: 255)
     |> unique_constraint(:name)
+    |> put_signing_secret()
     |> ER.Schema.normalize_name()
     |> assoc_constraint(:topic)
     |> validate_inclusion(:subscription_type, ["s3", "webhook", "websocket", "api"])
+  end
+
+  def put_signing_secret(changeset) do
+    # we only want to add the signing_secret if there is not one
+    if changeset.data.signing_secret == nil do
+      put_change(changeset, :signing_secret, ER.Auth.generate_secret())
+    else
+      changeset
+    end
   end
 
   def api?(subscription) do

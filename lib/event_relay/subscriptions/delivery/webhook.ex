@@ -23,10 +23,15 @@ defmodule ER.Subscriptions.Delivery.Webhook do
         event,
         subscription_id,
         subscription_topic_name,
-        subscription_topic_identifier
+        subscription_topic_identifier,
+        subscription_signing_secret
       ) do
-    HTTPoison.post(url, Jason.encode!(event), [
+    body = Event.json_encode!(event)
+
+    HTTPoison.post(url, body, [
       {"Content-Type", "application/json"},
+      {"X-Event-Relay-Signature",
+       Event.signature(body, signing_secret: subscription_signing_secret)},
       {"X-Event-Relay-Subscription-Id", subscription_id},
       {"X-Event-Relay-Subscription-Topic-Name", subscription_topic_name},
       {"X-Event-Relay-Subscription-Topic-Identifier", subscription_topic_identifier}

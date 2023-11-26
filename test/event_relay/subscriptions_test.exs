@@ -44,6 +44,7 @@ defmodule ER.SubscriptionsTest do
       assert subscription.push == true
       assert subscription.paused == false
       assert subscription.topic_name == topic.name
+      refute subscription.signing_secret == nil
     end
 
     test "create_subscription/1 with invalid data returns error changeset" do
@@ -52,6 +53,7 @@ defmodule ER.SubscriptionsTest do
 
     test "update_subscription/2 with valid data updates the subscription" do
       subscription = insert(:subscription)
+      original_signing_secret = subscription.signing_secret
       topic = insert(:topic)
 
       update_attrs = %{
@@ -69,6 +71,7 @@ defmodule ER.SubscriptionsTest do
       assert subscription.ordered == false
       assert subscription.push == true
       assert subscription.topic_name == topic.name
+      assert subscription.signing_secret == original_signing_secret
     end
 
     test "update_subscription/2 with invalid data returns error changeset" do

@@ -17,10 +17,6 @@ defmodule ER.Subscriptions.Webhook.Delivery.Server do
           "delivery" => delivery
         } = state
       ) do
-    # Check Redis cache to see if we have a delivery in progress
-    # if we do, then we need to load the delivery and then
-    # if not then we need to initialize normally
-
     state =
       state
       |> Map.put("delivery_attempts", delivery.attempts)
@@ -29,6 +25,7 @@ defmodule ER.Subscriptions.Webhook.Delivery.Server do
       |> Map.put("subscription_name", subscription.name)
       |> Map.put("subscription_topic_name", subscription.topic_name)
       |> Map.put("subscription_topic_identifier", subscription.topic_identifier)
+      |> Map.put("subscription_signing_secret", subscription.signing_secret)
       # this could be a problem with serialization
       |> Map.put("event", event)
       |> Map.put("attempt_count", 0)
@@ -48,6 +45,7 @@ defmodule ER.Subscriptions.Webhook.Delivery.Server do
           "subscription_id" => subscription_id,
           "subscription_topic_name" => subscription_topic_name,
           "subscription_topic_identifier" => subscription_topic_identifier,
+          "subscription_signing_secret" => subscription_signing_secret,
           "event" => event,
           "delivery_attempts" => delivery_attempts
         } = state
@@ -62,7 +60,8 @@ defmodule ER.Subscriptions.Webhook.Delivery.Server do
         event,
         subscription_id,
         subscription_topic_name,
-        subscription_topic_identifier
+        subscription_topic_identifier,
+        subscription_signing_secret
       )
       |> Webhook.handle_response()
 

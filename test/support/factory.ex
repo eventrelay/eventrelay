@@ -27,7 +27,8 @@ defmodule ER.Factory do
       paused: false,
       config: %{},
       topic: build(:topic),
-      subscription_type: "webhook"
+      subscription_type: "webhook",
+      signing_secret: ER.Auth.generate_secret()
     }
   end
 
