@@ -12,7 +12,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
   }
 
   alias ERWeb.Grpc.Eventrelay.Event, as: GrpcEvent
-
+  import ER, only: [to_boolean: 1]
   alias ER.Events.Event
 
   @spec publish_events(PublishEventsRequest.t(), GRPC.Server.Stream.t()) ::
@@ -21,7 +21,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     events = request.events
     topic = request.topic
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
-    durable = unless ER.boolean?(request.durable), do: false, else: request.durable
+    durable = unless ER.boolean?(request.durable), do: true, else: to_boolean(request.durable)
 
     if topic_name do
       events =

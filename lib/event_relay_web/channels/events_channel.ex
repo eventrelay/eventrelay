@@ -2,7 +2,7 @@ defmodule ERWeb.EventsChannel do
   use ERWeb, :channel
   require Logger
   alias ER.Events.Event
-  import ER, only: [atomize_map: 1]
+  import ER, only: [atomize_map: 1, to_boolean: 1]
 
   @impl true
   def join("events:" <> subscription_id, payload, socket) do
@@ -41,7 +41,7 @@ defmodule ERWeb.EventsChannel do
       {:ok, _} ->
         response = %{status: "ok"}
         {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
-        durable = unless ER.boolean?(durable), do: false, else: durable
+        durable = unless ER.boolean?(durable), do: true, else: to_boolean(durable)
 
         Enum.map(events, fn event ->
           case ER.Events.produce_event_for_topic(%{

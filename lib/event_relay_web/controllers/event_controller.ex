@@ -16,7 +16,7 @@ defmodule ERWeb.EventController do
   def publish(conn, %{"topic" => topic, "durable" => durable, "events" => events}) do
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
 
-    durable = to_boolean(durable)
+    durable = unless ER.boolean?(durable), do: true, else: to_boolean(durable)
 
     unless ER.empty?(topic_name) do
       case Bosun.permit(conn.assigns.api_key, :publish_events, %Event{}, topic_name: topic_name) do
