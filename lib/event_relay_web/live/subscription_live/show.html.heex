@@ -10,10 +10,17 @@
 
 <.list>
   <:item title="Name"><%= @subscription.name %></:item>
-  <:item title="Offset"><%= @subscription.offset %></:item>
   <:item title="Topic name"><%= @subscription.topic_name %></:item>
   <:item title="Push"><%= @subscription.push %></:item>
-  <:item title="Ordered"><%= @subscription.ordered %></:item>
+  <:item title="Signing Secret"><%= @subscription.signing_secret %></:item>
+  <:item title="Config">
+    <div
+      id={"#{@subscription.id}-config"}
+      phx-hook="JsonView"
+      data-json={Jason.encode!(@subscription.config)}
+    >
+    </div>
+  </:item>
 </.list>
 
 <.back navigate={~p"/subscriptions"}>Back to subscriptions</.back>

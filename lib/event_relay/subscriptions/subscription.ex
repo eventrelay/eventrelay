@@ -27,6 +27,7 @@ defmodule ER.Subscriptions.Subscription do
     field :push, :boolean, default: true
     field :paused, :boolean, default: false
     field :config, :map, default: %{}
+    field :config_json, :string, virtual: true
     field :topic_identifier, :string
     field :group_key, :string
     field :signing_secret, :string
@@ -47,6 +48,7 @@ defmodule ER.Subscriptions.Subscription do
       :ordered,
       :paused,
       :config,
+      :config_json,
       :topic_identifier,
       :subscription_type,
       :group_key,
@@ -55,10 +57,31 @@ defmodule ER.Subscriptions.Subscription do
     |> validate_required([:name, :topic_name, :push, :subscription_type])
     |> validate_length(:name, min: 3, max: 255)
     |> unique_constraint(:name)
+    |> decode_config()
     |> put_signing_secret()
     |> ER.Schema.normalize_name()
     |> assoc_constraint(:topic)
     |> validate_inclusion(:subscription_type, ["s3", "webhook", "websocket", "api"])
+  end
+
+  def decode_config(%Ecto.Changeset{changes: %{config_json: context}} = changeset) do
+    case Jason.decode(context) do
+      {:ok, decoded} ->
+        changeset
+        |> put_change(:config, decoded)
+
+      {:error, _} ->
+        changeset
+        |> add_error(:config, "is invalid JSON")
+    end
+  end
+
+  def decode_config(changeset) do
+    changeset
+  end
+
+  def config_json(subscription) do
+    Jason.encode!(subscription.config)
   end
 
   def put_signing_secret(changeset) do
