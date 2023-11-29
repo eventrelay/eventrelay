@@ -6,6 +6,9 @@
 - Deliver an exceptional developer experience.
 - Facilitate minimal production administration.
 
+## Getting Started
+
+See the [wiki](https://github.com/eventrelay/eventrelay/wiki/Getting-Started)
 
 ## Use Cases
 
@@ -49,10 +52,6 @@ Whether you're implementing a notification system, a chat application, or simply
 ## Web UI
 ![Events](https://github.com/eventrelay/eventrelay/assets/41780/5aa1f274-f417-41c9-b091-832c194f2267)
 
-
-## Getting Started
-
-See the [wiki](https://github.com/eventrelay/eventrelay/wiki/Getting-Started)
 
 
 ## GRPC API
