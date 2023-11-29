@@ -13,9 +13,11 @@
   row_click={&JS.navigate(~p"/api_keys/#{&1}")}
   row_id={fn row -> "api_keys-#{row.id}" end}
 >
+  <:col :let={api_key} label="Name"><%= api_key.name %></:col>
   <:col :let={api_key} label="Key"><%= api_key.key %></:col>
   <:col :let={api_key} label="Status"><%= api_key.status %></:col>
   <:col :let={api_key} label="Type"><%= api_key.type %></:col>
+  <:col :let={api_key} label="Group Key"><%= api_key.group_key %></:col>
   <:action :let={api_key}>
     <div class="sr-only">
       <.link navigate={~p"/api_keys/#{api_key}"}>Show</.link>

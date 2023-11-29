@@ -14,6 +14,7 @@ defmodule ER.Accounts.ApiKey do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "api_keys" do
+    field(:name, :string)
     field(:key, :string)
     field(:secret, :string)
     field(:status, Ecto.Enum, values: [:active, :revoked])
@@ -51,7 +52,7 @@ defmodule ER.Accounts.ApiKey do
 
   def changeset(api_token, attrs) do
     api_token
-    |> cast(attrs, [:key, :secret, :status, :type, :group_key])
+    |> cast(attrs, [:name, :key, :secret, :status, :type, :group_key])
     |> validate_required([:key, :secret, :status, :type])
     |> unique_constraint(:key_secret_status_type_unique,
       name: :api_keys_key_secret_status_type_index

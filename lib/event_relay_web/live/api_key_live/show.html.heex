@@ -1,5 +1,5 @@
 <.header>
-  Api key <%= @api_key.id %>
+  API Key <%= @api_key.name %>
   <:subtitle></:subtitle>
   <:actions>
     <.link patch={~p"/api_keys/#{@api_key}/show/edit"} phx-click={JS.push_focus()}>
@@ -9,10 +9,12 @@
 </.header>
 
 <.list>
+  <:item title="Name"><%= @api_key.name %></:item>
   <:item title="Key"><%= @api_key.key %></:item>
   <:item title="Secret"><%= @api_key.secret %></:item>
   <:item title="Status"><%= @api_key.status %></:item>
   <:item title="Type"><%= @api_key.type %></:item>
+  <:item title="Group Key"><%= @api_key.group_key %></:item>
   <:item title="Token"><%= ER.Accounts.ApiKey.encode_key_and_secret(@api_key) %></:item>
 </.list>
 

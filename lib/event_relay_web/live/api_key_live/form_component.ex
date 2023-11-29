@@ -20,10 +20,12 @@ defmodule ERWeb.ApiKeyLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={f[:status]} type="text" label="status" />
-        <.input field={f[:type]} type="text" label="type" />
+        <.input field={f[:name]} type="text" label="Name" />
+        <.input field={f[:status]} type="text" label="Status" />
+        <.input field={f[:type]} type="text" label="Type" />
+        <.input field={f[:group_key]} type="text" label="Group Key" />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Api key</.button>
+          <.button phx-disable-with="Saving...">Save API key</.button>
         </:actions>
       </.simple_form>
     </div>
