@@ -1,8 +1,5 @@
 # EventRelay (Current Status: ALPHA)
 
-While it may not strive to be the fastest or most webscale event streaming/storage system available, EventRelay isn't designed to rival powerhouse platforms like Kafka in terms of throughput or latency. Instead, it focuses on providing a simple, low-maintenance, dependable, and user-friendly alternative for the majority of users. Preliminary load testing indicates that a single instance of EventRelay can manage approximately 12,000 requests per second (rps) with next to zero performance optimization work done, suggesting its suitability for meeting the requirements of up to 80% of applications (totally made up statistic).
-
-
 ## Objectives
 
 - Foster a dynamic and engaged community.
@@ -52,14 +49,11 @@ Whether you're implementing a notification system, a chat application, or simply
 ## Web UI
 ![Events](https://github.com/eventrelay/eventrelay/assets/41780/5aa1f274-f417-41c9-b091-832c194f2267)
 
-## Local Development
-To start the server:
 
-- Install dependencies with `mix deps.get`
-- Create and migrate your database with `mix ecto.setup`
-- Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+## Getting Started
 
-Now you can visit [`localhost:9000`](http://localhost:9000) from your browser.
+See the [wiki](https://github.com/eventrelay/eventrelay/wiki/Getting-Started)
+
 
 ## GRPC API
 

@@ -2,6 +2,7 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
   use ERWeb, :live_component
 
   alias ER.Subscriptions
+  alias ER.Subscriptions.Subscription
 
   @impl true
   def render(assigns) do
@@ -9,7 +10,7 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
     <div>
       <.header>
         <%= @title %>
-        <:subtitle>Use this form to manage subscription records in your database.</:subtitle>
+        <:subtitle></:subtitle>
       </.header>
 
       <.simple_form
@@ -20,12 +21,13 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={f[:name]} type="text" label="name" />
-        <.input field={f[:subscription_type]} type="text" label="subscription_type" />
-        <.input field={f[:offset]} type="number" label="offset" />
-        <.input field={f[:topic_name]} type="text" label="topic_name" />
-        <.input field={f[:push]} type="checkbox" label="push" />
-        <.input field={f[:ordered]} type="checkbox" label="ordered" />
+        <.input field={f[:name]} type="text" label="Name" />
+        <.input field={f[:subscription_type]} type="text" label="Type" />
+        <.input field={f[:topic_name]} type="text" label="Topic Name" />
+        <.input field={f[:topic_identifier]} type="text" label="Topic Identifier" />
+        <.input field={f[:group_key]} type="text" label="Group Key" />
+        <.input field={f[:push]} type="checkbox" label="Push?" />
+        <.input field={f[:config_json]} type="textarea" label="Config" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Subscription</.button>
         </:actions>
@@ -36,6 +38,7 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
 
   @impl true
   def update(%{subscription: subscription} = assigns, socket) do
+    subscription = %{subscription | config_json: Subscription.config_json(subscription)}
     changeset = Subscriptions.change_subscription(subscription)
 
     {:ok,

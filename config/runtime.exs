@@ -29,7 +29,7 @@ if config_env() == :prod do
   config :event_relay, :grpc_port, ER.to_integer(System.get_env("ER_GRPC_PORT") || "50051")
 
   database_url =
-    System.get_env("DATABASE_URL") ||
+    System.get_env("ER_DATABASE_URL") ||
       raise """
       environment variable DATABASE_URL is missing.
       For example: ecto://USER:PASS@HOST/DATABASE
