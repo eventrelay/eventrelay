@@ -12,7 +12,9 @@ on:
 permissions:
   contents: read
   
-container-job:
+
+jobs:
+  container-job:
     # Containers must run in Linux based operating systems
     runs-on: ubuntu-latest
     # Docker Hub image that `container-job` executes in
@@ -34,7 +36,6 @@ container-job:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-jobs:
   build:
 
     name: Build and test
