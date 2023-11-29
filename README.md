@@ -1,5 +1,7 @@
 # EventRelay (Current Status: ALPHA)
 
+[![Elixir CI](https://github.com/eventrelay/eventrelay/actions/workflows/elixir.yml/badge.svg)](https://github.com/eventrelay/eventrelay/actions/workflows/elixir.yml)
+
 ## Objectives
 
 - Foster a dynamic and engaged community.
