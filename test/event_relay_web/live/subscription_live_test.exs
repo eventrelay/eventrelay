@@ -7,24 +7,18 @@ defmodule ERWeb.SubscriptionLiveTest do
 
   @create_attrs %{
     name: "some_name",
-    offset: 42,
-    ordered: true,
     push: true,
     topic_name: "test",
     subscription_type: "webhook"
   }
   @update_attrs %{
     name: "some_updated_name",
-    offset: 43,
-    ordered: false,
     push: false,
     topic_name: "test",
     subscription_type: "webhook"
   }
   @invalid_attrs %{
     name: nil,
-    offset: nil,
-    ordered: false,
     push: false,
     topic_name: nil,
     subscription_type: nil
