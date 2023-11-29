@@ -44,11 +44,11 @@ defmodule ER.Events.Topic do
     
     ## Examples:
 
-      iex> ER.Events.Topic.parse_topic("users")
-      {"users", nil}
+        iex> ER.Events.Topic.parse_topic("users")
+        {"users", nil}
 
-      iex> ER.Events.Topic.parse_topic("users:123")
-      {"users", "123"}
+        iex> ER.Events.Topic.parse_topic("users:123")
+        {"users", "123"}
 
   """
   @spec parse_topic(String.t()) :: {String.t(), String.t()}
