@@ -25,6 +25,18 @@ config :ex_aws, :s3,
   host: System.get_env("ER_S3_HOST", "localhost"),
   port: System.get_env("ER_S3_PORT", "9000")
 
+if config_env() == :dev do
+  # Configure your database
+  config :event_relay, ER.Repo,
+    username: System.get_env("ER_DB_USERNAME") || "postgres",
+    password: System.get_env("ER_DB_PASSWORD") || "postgres",
+    hostname: System.get_env("ER_DB_HOSTNAME") || "localhost",
+    database: "event_relay_dev",
+    stacktrace: true,
+    show_sensitive_data_on_connection_error: true,
+    pool_size: 10
+end
+
 if config_env() == :prod do
   config :event_relay, :grpc_port, ER.to_integer(System.get_env("ER_GRPC_PORT") || "50051")
 
