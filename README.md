@@ -2,15 +2,19 @@
 
 [![Elixir CI](https://github.com/eventrelay/eventrelay/actions/workflows/elixir.yml/badge.svg)](https://github.com/eventrelay/eventrelay/actions/workflows/elixir.yml)
 
+EventRelay is a simple to use event storage and streaming platform. 
+
 ## Objectives
 
-- Foster a dynamic and engaged community.
+- Foster a dynamic and engaged community and ecosystem.
 - Deliver an exceptional developer experience.
 - Facilitate minimal production administration.
 
-## Getting Started
+## Give it a Spin 🚀
 
-See the [wiki](https://github.com/eventrelay/eventrelay/wiki/Getting-Started)
+Checkout [Getting Started](https://github.com/eventrelay/eventrelay/wiki/Getting-Started) to get EventRelay setup locally.
+
+After you have it setup locally take a look at [Up and Running](https://github.com/eventrelay/eventrelay/wiki/Up-and-Running) to publish your first event.
 
 ## Use Cases
 
@@ -53,8 +57,6 @@ Whether you're implementing a notification system, a chat application, or simply
 
 ## Web UI
 ![Events](https://github.com/eventrelay/eventrelay/assets/41780/5aa1f274-f417-41c9-b091-832c194f2267)
-
-
 
 ## GRPC API
 
