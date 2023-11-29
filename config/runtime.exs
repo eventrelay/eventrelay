@@ -25,7 +25,7 @@ config :ex_aws, :s3,
   host: System.get_env("ER_S3_HOST", "localhost"),
   port: System.get_env("ER_S3_PORT", "9000")
 
-if config_env() == :dev do
+if config_env() == :dev || config_env() == :test do
   # Configure your database
   config :event_relay, ER.Repo,
     username: System.get_env("ER_DB_USERNAME") || "postgres",
