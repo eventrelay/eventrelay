@@ -25,6 +25,15 @@ config :ex_aws, :s3,
   host: System.get_env("ER_S3_HOST", "localhost"),
   port: System.get_env("ER_S3_PORT", "9000")
 
+config :hammer,
+  backend:
+    {Hammer.Backend.Redis,
+     [
+       delete_buckets_timeout: 10_0000,
+       expiry_ms: 60_000 * 60 * 2,
+       redis_url: System.get_env("ER_REDIS_URL")
+     ]}
+
 if config_env() == :dev do
   database_url =
     System.get_env("ER_DATABASE_URL") ||

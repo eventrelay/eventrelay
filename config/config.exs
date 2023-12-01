@@ -14,7 +14,7 @@ config :event_relay,
 
 # Configures the endpoint
 config :event_relay, ERWeb.Endpoint,
-  url: [host: "localhost"],
+  url: [host: "0.0.0.0"],
   render_errors: [
     formats: [html: ERWeb.ErrorHTML, json: ERWeb.ErrorJSON],
     layout: false
