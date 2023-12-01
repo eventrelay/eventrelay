@@ -75,7 +75,8 @@ COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/event_relay .
 
 USER nobody
 
-EXPOSE 4050
+EXPOSE 9000
+EXPOSE 50051
 
 CMD ["/app/bin/server"]
 
