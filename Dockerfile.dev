@@ -24,6 +24,6 @@ RUN mix deps.compile
 
 COPY . .
 
-EXPOSE 4000
+EXPOSE 9000
+EXPOSE 50051
 
-CMD ["iex", "-S", "mix", "phx.server"]
