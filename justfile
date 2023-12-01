@@ -1,4 +1,3 @@
-alias t := test
 
 _default: 
   @just --list
@@ -17,6 +16,10 @@ down:
 # Did you try turning off and on again?
 restart: 
   docker compose down && docker compose up -d
+
+# Tail the docker compose logs
+logs:
+  docker compose logs -f
 
 # Run any command in the container
 run *ARGS='': (_run-docker '' ARGS)
@@ -57,3 +60,5 @@ alias cc := check-compile
 alias co := compile
 alias c := check
 alias f := format
+alias t := test
+alias l := logs
