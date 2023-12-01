@@ -54,40 +54,9 @@ EventRelay includes built-in webhook support, eliminating the need to concern yo
 
 Whether you're implementing a notification system, a chat application, or simply updating metrics on a dashboard, EventRelay effortlessly manages all aspects of websocket communication for you.
 
-
 ## Web UI
 ![Events](https://github.com/eventrelay/eventrelay/assets/41780/5aa1f274-f417-41c9-b091-832c194f2267)
 
-## GRPC API
+## Want to contribute or look at the roadmap?
 
-See the [wiki](https://github.com/eventrelay/eventrelay/wiki/GRPC) for more about the GRPC API.
-
-## Todos
-
-- [x] GRPC API to publish events
-- [x] GRPC API to list,create,delete topics
-- [x] GRPC API to create,delete,list subscriptions
-- [x] GRPC API to create,revoke api keys
-- [x] GRPC API to create JWT for an api key
-- [x] websocket streaming implementation
-- [x] pull events GRPC API (offset/batch based)
-- [x] webhook implementation
-- [x] add auth
-- [x] add rate limiting
-- [x] add auth to websocket
-- [x] websocket publish events (code commented out until producer topic authorization figured out)
-- [x] non-durable events
-- [x] figure out producer topic authorization
-- [x] test not passing topic when publishing events
-- [x] UI to manage topics
-- [x] UI to view events
-- [x] Write Google PubSub ingestor
-- [x] Ability to apply lua scripts to ingested events
-- [x] Metrics
-- [x] Broadcast metrics updates via subscriptions and internal pubsub
-- [x] Refactor EventFilter to Filter
-- [x] Add cast_as to event filter form
-- [x] Add occurred_at to field list with > and <
-- [x] Implement basic publish events for JSON API
-
-See [GitHub Project](https://github.com/orgs/eventrelay/projects/1) moving forward.
+Checkout the [GitHub Project Board](https://github.com/orgs/eventrelay/projects/1).
