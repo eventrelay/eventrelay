@@ -55,5 +55,5 @@ jobs:
       run: mix test
       env:
         # The hostname used to communicate with the PostgreSQL service container
-        ER_DB_HOSTNAME: db
+        ER_DATABASE_URL: postgres://postgres@db:5432/event_relay_test
         MIX_ENV: test
