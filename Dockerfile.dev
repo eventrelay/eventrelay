@@ -1,0 +1,29 @@
+
+FROM elixir:1.15.7
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y inotify-tools
+
+ENV MIX_ENV=dev \
+  TEST=1 \
+  LANG=C.UTF-8
+
+# Install hex and rebar
+RUN mix local.hex --force && \
+    mix local.rebar --force
+
+# Copy over all the necessary application files and directories
+COPY mix.exs .
+COPY mix.lock .
+
+
+# Fetch the application dependencies and build the application
+RUN mix deps.get
+RUN mix deps.compile
+
+COPY . .
+
+EXPOSE 9000
+EXPOSE 50051
+

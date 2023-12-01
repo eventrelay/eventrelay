@@ -9,7 +9,7 @@ import Config
 config :event_relay, ERWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: 9000],
+  http: [ip: {0, 0, 0, 0}, port: 9000],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
@@ -76,15 +76,6 @@ config :swoosh, :api_client, false
 
 # config :hammer,
 #   backend: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]}
-
-config :hammer,
-  backend:
-    {Hammer.Backend.Redis,
-     [
-       delete_buckets_timeout: 10_0000,
-       expiry_ms: 60_000 * 60 * 2,
-       redix_config: [host: "localhost", port: 6379]
-     ]}
 
 config :event_relay, :grpc_port, 50051
 

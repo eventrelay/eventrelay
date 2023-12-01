@@ -25,13 +25,36 @@ config :ex_aws, :s3,
   host: System.get_env("ER_S3_HOST", "localhost"),
   port: System.get_env("ER_S3_PORT", "9000")
 
-if config_env() == :dev || config_env() == :test do
+config :hammer,
+  backend:
+    {Hammer.Backend.Redis,
+     [
+       delete_buckets_timeout: 10_0000,
+       expiry_ms: 60_000 * 60 * 2,
+       redis_url: System.get_env("ER_REDIS_URL")
+     ]}
+
+if config_env() == :dev do
+  database_url =
+    System.get_env("ER_DATABASE_URL") ||
+      raise """
+      environment variable DATABASE_URL is missing.
+      For example: ecto://USER:PASS@HOST/DATABASE
+      """
+
   # Configure your database
   config :event_relay, ER.Repo,
-    username: System.get_env("ER_DB_USERNAME") || "postgres",
-    password: System.get_env("ER_DB_PASSWORD") || "postgres",
-    hostname: System.get_env("ER_DB_HOSTNAME") || "localhost",
-    database: "event_relay_dev",
+    url: database_url,
+    stacktrace: true,
+    show_sensitive_data_on_connection_error: true,
+    pool_size: 10
+end
+
+if config_env() == :test do
+  database_url = "postgres://postgres@postgres:5432/event_relay_test"
+  # Configure your database
+  config :event_relay, ER.Repo,
+    url: database_url,
     stacktrace: true,
     show_sensitive_data_on_connection_error: true,
     pool_size: 10
