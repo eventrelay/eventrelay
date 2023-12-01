@@ -54,6 +54,6 @@ jobs:
     - name: Run tests
       run: mix test
       env:
-          # The hostname used to communicate with the PostgreSQL service container
-          ER_DB_HOSTNAME: db
-          MIX_ENV: test
+        # The hostname used to communicate with the PostgreSQL service container
+        ER_DB_HOSTNAME: db
+        MIX_ENV: test
