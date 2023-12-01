@@ -1,0 +1,58 @@
+version: '3.9'
+services:
+  postgres:
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - 6432:5432
+    image: postgres:16.1-bullseye
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7.2.3-alpine
+    restart: always
+    ports:
+      - '7379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes: 
+      - redis_data:/data
+
+  event_relay:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - '9000:9000'
+      - '50051:50051'
+    volumes:
+      - ./:/app
+      - event_relay_build:/app/_build
+      - type: volume
+        source: shell_history
+        target: /tmp/iex_history
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      ERL_AFLAGS: -kernel shell_history enabled -kernel shell_history_path '"/tmp/iex_history"'
+      ER_DATABASE_URL: postgres://postgres@postgres:5432/event_relay_dev
+      MIX_ENV: dev
+    command: bash -c "iex -S mix phx.server"
+    stdin_open: true
+    tty: true
+
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  event_relay_build:
+    driver: local
+  shell_history:
+
