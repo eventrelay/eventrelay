@@ -8,12 +8,12 @@ defmodule ER.Application do
   @impl true
   def start(_type, _args) do
     # dev
-    topologies = [
-      example: [
-        strategy: Cluster.Strategy.Epmd,
-        config: [hosts: [:a@eventrelay]]
-      ]
-    ]
+    # topologies = [
+    #   example: [
+    #     strategy: Cluster.Strategy.Epmd,
+    #     config: [hosts: [:a@eventrelay]]
+    #   ]
+    # ]
 
     # prod
     # [
@@ -41,7 +41,7 @@ defmodule ER.Application do
       # Start the Endpoint (http/https)
       ERWeb.Endpoint,
       {GRPC.Server.Supervisor, {ERWeb.Grpc.Endpoint, ER.Env.grpc_port()}},
-      {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
+      # {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
       ER.Redix,
       {ER.Events.ChannelCache, []},
       ER.NodeListener,
