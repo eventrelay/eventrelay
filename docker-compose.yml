@@ -41,6 +41,7 @@ services:
     environment:
       ERL_AFLAGS: -kernel shell_history enabled -kernel shell_history_path '"/tmp/iex_history"'
       ER_DATABASE_URL: postgres://postgres@postgres:5432/event_relay_dev
+      ER_TEST_DATABASE_URL: postgres://postgres@postgres:5432/event_relay_test
       ER_REDIS_URL: redis://redis:6379
       MIX_ENV: dev
     command: bash -c "mix phx.server"

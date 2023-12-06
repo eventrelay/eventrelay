@@ -28,6 +28,7 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
         <.input field={f[:group_key]} type="text" label="Group Key" />
         <.input field={f[:push]} type="checkbox" label="Push?" />
         <.input field={f[:config_json]} type="textarea" label="Config" />
+        <.input field={f[:query]} type="textarea" label="Query" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Subscription</.button>
         </:actions>

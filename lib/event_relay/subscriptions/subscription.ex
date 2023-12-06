@@ -31,6 +31,7 @@ defmodule ER.Subscriptions.Subscription do
     field :topic_identifier, :string
     field :group_key, :string
     field :signing_secret, :string
+    field :query, :string
 
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
@@ -52,7 +53,8 @@ defmodule ER.Subscriptions.Subscription do
       :topic_identifier,
       :subscription_type,
       :group_key,
-      :signing_secret
+      :signing_secret,
+      :query
     ])
     |> validate_required([:name, :topic_name, :push, :subscription_type])
     |> validate_length(:name, min: 3, max: 255)
@@ -121,5 +123,16 @@ defmodule ER.Subscriptions.Subscription do
   def push_to_s3?(subscription) do
     s3?(subscription) &&
       subscription.paused != true
+  end
+
+  def matches?(%{query: nil}, _event) do
+    true
+  end
+
+  def matches?(%{query: query}, event) do
+    event =
+      Map.from_struct(event) |> Map.drop([:topic, :__meta__]) |> ER.atomize_map()
+
+    Predicated.test(query, event)
   end
 end

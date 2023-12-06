@@ -251,10 +251,10 @@ defmodule ER do
 
   ## Examples
 
-      iex> Blockit.stringify_map(%{a: 1, b: 2})
+      iex> ER.stringify_map(%{a: 1, b: 2})
       %{"a" => 1, "b" => 2}
 
-      iex> Blockit.stringify_map(%{"a" => 1, "b" => 2})
+      iex> ER.stringify_map(%{"a" => 1, "b" => 2})
       %{"a" => 1, "b" => 2}
 
 
@@ -272,20 +272,115 @@ defmodule ER do
 
   ## Examples
 
-      iex> Blockit.stringify_map(%{a: 1, b: 2})
+      iex> ER.atomize_map(%{a: 1, b: 2})
       %{"a" => 1, "b" => 2}
 
-      iex> Blockit.stringify_map(%{"a" => 1, "b" => 2})
+      iex> ER.atomize_map(%{"a" => 1, "b" => 2})
       %{"a" => 1, "b" => 2}
 
 
   """
+  def atomize_map(%NaiveDateTime{} = value) do
+    value
+  end
+
+  def atomize_map(%DateTime{} = value) do
+    value
+  end
+
+  def atomize_map(%Date{} = value) do
+    value
+  end
+
   def atomize_map(value) when is_map(value) do
     value
     |> Map.new(fn
-      {k, v} when is_atom(k) -> {k, v}
-      {k, v} when is_binary(k) -> {String.to_atom(k), v}
+      {k, v} when is_map(v) -> {ER.to_atom(k), atomize_map(v)}
+      {k, v} -> {ER.to_atom(k), v}
     end)
+  end
+
+  @doc """
+  Converts to an atom. Warning: This uses `String.to_atom`
+
+  iex> ER.to_atom(:test)
+  :test
+
+  iex> ER.to_atom("test")
+  :test
+
+  iex> ER.to_atom(1)
+  :"1"
+
+  iex> ER.to_atom(1.1)
+  :"1.1"
+  """
+
+  def to_atom(value) when is_binary(value) do
+    String.to_atom(value)
+  end
+
+  def to_atom(value) when is_atom(value) do
+    value
+  end
+
+  def to_atom(value) when is_float(value) do
+    value |> ER.to_s() |> to_atom()
+  end
+
+  def to_atom(value) when is_integer(value) do
+    value |> ER.to_s() |> to_atom()
+  end
+
+  def to_atom(_) do
+    nil
+  end
+
+  @doc """
+  Converts to a string
+
+  iex> ER.to_s(nil)
+  ""
+
+  iex> ER.to_s("test")
+  "test"
+
+  iex> ER.to_s(:test)
+  "test"
+
+  iex> ER.to_s(2.3)
+  "2.3"
+
+  iex> ER.to_s(1)
+  "1"
+
+  iex> ER.to_s(1)
+  "1"
+
+  """
+
+  def to_s(value) when is_binary(value) do
+    value
+  end
+
+  def to_s(value) when is_integer(value) do
+    Integer.to_string(value)
+  end
+
+  def to_s(value) when is_float(value) do
+    Float.to_string(value)
+  end
+
+  def to_s(value) when is_nil(value) do
+    ""
+  end
+
+  def to_s(value) when is_atom(value) do
+    Atom.to_string(value)
+  end
+
+  def to_s(_) do
+    ""
   end
 
   @doc """

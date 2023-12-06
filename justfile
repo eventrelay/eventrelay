@@ -21,6 +21,10 @@ restart:
 logs:
   docker compose logs -f
 
+# Build a new docker image
+build:
+  docker compose build
+
 # Run any command in the container
 run *ARGS='': (_run-docker '' ARGS)
 
@@ -46,6 +50,7 @@ compile: (_run-docker '-e MIX_ENV=dev' 'mix compile')
 # Format the code
 format: (_run-docker '-e MIX_ENV=dev' 'mix format') 
 
+
 # Run all the checks
 check:
   just compile
@@ -62,3 +67,4 @@ alias c := check
 alias f := format
 alias t := test
 alias l := logs
+alias b := build
