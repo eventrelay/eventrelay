@@ -42,6 +42,8 @@ defmodule ER.Subscriptions.Server do
         %{"id" => subscription_id, topic_name: topic_name, topic_identifier: topic_identifier} =
           state
       ) do
+    # TODO investigate pulling this out of this genserver to avoid blocking
+
     # get the events
     events =
       Events.list_queued_events_for_topic(
@@ -77,7 +79,16 @@ defmodule ER.Subscriptions.Server do
       |> ER.Metrics.publish_metric_updates()
       |> Enum.map(&elem(&1, 1))
 
-    events = [event | events]
+    events =
+      if handle_event?(subscription, event) do
+        [event | events]
+      else
+        Logger.debug(
+          "#{__MODULE__}.handle_info({:event_created, #{inspect(event)}} not handling event #{inspect(state)}) on node=#{inspect(Node.self())}"
+        )
+
+        events
+      end
 
     cond do
       Subscription.push_to_websocket?(subscription) ->
@@ -101,6 +112,10 @@ defmodule ER.Subscriptions.Server do
     # Logger.debug("#{__MODULE__}.handle_info(:tick)")
     schedule_next_tick()
     {:noreply, state}
+  end
+
+  def handle_event?(subscription, event) do
+    Subscription.matches?(subscription, event)
   end
 
   def handle_terminate(reason, state) do

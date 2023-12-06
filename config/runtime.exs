@@ -34,9 +34,25 @@ config :hammer,
        redis_url: System.get_env("ER_REDIS_URL")
      ]}
 
-if config_env() == :dev || config_env() == :test do
+if config_env() == :dev do
   database_url =
     System.get_env("ER_DATABASE_URL") ||
+      raise """
+      environment variable DATABASE_URL is missing.
+      For example: ecto://USER:PASS@HOST/DATABASE
+      """
+
+  # Configure your database
+  config :event_relay, ER.Repo,
+    url: database_url,
+    stacktrace: true,
+    show_sensitive_data_on_connection_error: true,
+    pool_size: 10
+end
+
+if config_env() == :test do
+  database_url =
+    System.get_env("ER_TEST_DATABASE_URL") ||
       raise """
       environment variable DATABASE_URL is missing.
       For example: ecto://USER:PASS@HOST/DATABASE
