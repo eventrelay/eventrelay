@@ -102,7 +102,9 @@ defmodule ER.MixProject do
 
       # Benchmarking
       {:benchee, "~> 1.0", only: :dev},
-      {:predicated, github: "themusicman/predicated", branch: "main"}
+      {:predicated, github: "themusicman/predicated", branch: "main"},
+      # {:predicated, path: "/home/tbrewer/projects/predicated"},
+      {:flamel, github: "themusicman/flamel", branch: "main"}
     ]
   end
 

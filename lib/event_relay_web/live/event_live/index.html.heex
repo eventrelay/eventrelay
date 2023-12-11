@@ -8,61 +8,12 @@
 </.header>
 
 <div id="filters">
-  <.form :let={f} for={@search_form} phx-submit="search">
-    <.inputs_for :let={nf} field={f[:event_filters]}>
-      <div class="flex gap-x-2 items-center">
-        <.input
-          type="select"
-          prompt="Select a field"
-          options={ER.Filter.field_options(:event)}
-          field={nf[:field]}
-        />
-        <div>or</div>
-        <.input
-          type="text"
-          field={nf[:field_path]}
-          placeholder="field path ex. data.user.first_name"
-        />
-        <.input
-          type="select"
-          options={Ecto.Enum.values(ER.Filter, :comparison)}
-          field={nf[:comparison]}
-        />
-        <.input type="text" field={nf[:value]} />
-        <.input
-          type="select"
-          options={Ecto.Enum.values(ER.Filter, :cast_as)}
-          field={nf[:cast_as]}
-        />
-        <br />
-        <a
-          class="mt-4 rounded bg-zinc-900 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          phx-click="remove_filter"
-          phx-value-index={nf.index}
-        >
-          Remove Filter
-        </a>
-        <hr class="mt-4 mb-2" />
-      </div>
-    </.inputs_for>
+  <.form id="search" phx-submit="search" for={@search_form}>
+    <.input type="text" field={@search_form[:query]} placeholder="search query" />
     <button class="mt-4 rounded-md bg-zinc-900 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
       Search
     </button>
   </.form>
-  <div class="mt-4">
-    <a
-      class="rounded bg-zinc-900 mr-2 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-      phx-click="clear_search_form"
-    >
-      Clear Search
-    </a>
-    <a
-      class="rounded bg-zinc-900 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-      phx-click="add_filter"
-    >
-      Add Filter
-    </a>
-  </div>
 </div>
 
 <.table id="events" rows={@events} row_id={fn row -> "events-#{row.id}" end}>

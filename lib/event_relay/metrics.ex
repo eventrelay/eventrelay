@@ -3,7 +3,7 @@ defmodule ER.Metrics do
   alias ER.Metrics.Metric
   import Ecto.Query
   alias Phoenix.PubSub
-  import ER
+  import ER.Metrics.Predicates
 
   def publish_metric_updates(updates) do
     Enum.map(updates, fn {value, _event, metric} ->
@@ -49,10 +49,10 @@ defmodule ER.Metrics do
         topic_name: topic_name,
         topic_identifier: topic_identifier,
         type: type,
-        filters: filters
+        query: query
       })
       when type == :count do
-    translated_filters = ER.Filter.translate(filters)
+    predicates = ER.Predicates.to_predicates(query)
 
     result =
       ER.Events.list_events_for_topic(
@@ -60,7 +60,7 @@ defmodule ER.Metrics do
         batch_size: 1,
         topic_name: topic_name,
         topic_identifier: topic_identifier,
-        filters: translated_filters
+        predicates: predicates
       )
 
     result.total_count
@@ -71,17 +71,17 @@ defmodule ER.Metrics do
         topic_identifier: topic_identifier,
         field_path: field_path,
         type: type,
-        filters: filters
+        query: query
       })
       when type in [:max, :min, :sum, :avg] do
-    translated_filters = ER.Filter.translate(filters)
+    predicates = ER.Predicates.to_predicates(query)
 
     ER.Events.calculate_metric(
       topic_name: topic_name,
       topic_identifier: topic_identifier,
       field_path: field_path,
       type: type,
-      filters: translated_filters
+      predicates: predicates
     )
   end
 
@@ -109,7 +109,25 @@ defmodule ER.Metrics do
   def list_metrics(
         topic_name: topic_name,
         topic_identifier: topic_identifier,
-        filters: filters,
+        query: query,
+        page: page,
+        page_size: page_size
+      ) do
+    predicates = ER.Predicates.to_predicates(query)
+
+    list_metrics(
+      topic_name: topic_name,
+      topic_identifier: topic_identifier,
+      predicates: predicates,
+      page: page,
+      page_size: page_size
+    )
+  end
+
+  def list_metrics(
+        topic_name: topic_name,
+        topic_identifier: topic_identifier,
+        predicates: predicates,
         page: page,
         page_size: page_size
       ) do
@@ -124,12 +142,13 @@ defmodule ER.Metrics do
         query
       end
 
-    ensure_filter_fields_exist!(filters)
-
     query =
-      Enum.reduce(ER.Filter.translate(filters), query, fn filter, query ->
-        append_filter(query, filter)
-      end)
+      if Flamel.present?(predicates) do
+        conditions = apply_predicates(predicates, nil, nil)
+        from query, where: ^conditions
+      else
+        query
+      end
 
     ER.PaginatedResults.new(query, %{"page" => page, "page_size" => page_size})
   end
@@ -152,57 +171,6 @@ defmodule ER.Metrics do
       end)
 
     Repo.all(query)
-  end
-
-  def ensure_filter_fields_exist!(filters) do
-    fields = ER.Metrics.Metric.__schema__(:fields)
-
-    Enum.map(filters, fn filter ->
-      field = indifferent_get(filter, :field) |> String.to_atom()
-
-      unless field in fields do
-        raise ER.Filter.BadFieldError, message: "#{field} does not exist"
-      end
-    end)
-  end
-
-  def append_filter(query, %{field: field, value: value, comparison: "="}) do
-    field = String.to_atom(field)
-
-    query
-    |> where([metrics: metrics], field(metrics, ^field) == ^value)
-  end
-
-  def append_filter(query, %{field: field, value: value, comparison: "!="}) do
-    field = String.to_atom(field)
-
-    query
-    |> where([metrics: metrics], field(metrics, ^field) != ^value)
-  end
-
-  def append_filter(query, %{field: field, value: value, comparison: "like"}) do
-    field = String.to_atom(field)
-
-    query
-    |> where([metrics: metrics], like(field(metrics, ^field), ^value))
-  end
-
-  def append_filter(query, %{field: field, value: value, comparison: "ilike"}) do
-    field = String.to_atom(field)
-
-    query
-    |> where([metrics: metrics], ilike(field(metrics, ^field), ^value))
-  end
-
-  def append_filter(query, %{field: field, value: value, comparison: "in"}) do
-    field = String.to_atom(field)
-
-    query
-    |> where([metrics: metrics], field(metrics, ^field) in ^value)
-  end
-
-  def append_filter(query, _filter) do
-    query
   end
 
   @doc """

@@ -8,7 +8,6 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.ServerTest do
   alias ERWeb.Grpc.Eventrelay.{
     GetMetricValueRequest,
     CreateMetricRequest,
-    Filter,
     NewMetric,
     DeleteMetricRequest,
     ListMetricsRequest
@@ -100,9 +99,7 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.ServerTest do
           topic_name: topic.name,
           type: :avg,
           field_path: "data.cart.total",
-          filters: [
-            %ER.Filter{field_path: "data.cart.kind", comparison: "equal", value: "completed"}
-          ]
+          query: "data.cart.kind == 'completed'"
         )
 
       totals = [10, 30]
@@ -135,7 +132,7 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.ServerTest do
           field_path: "data.cart.total",
           topic_name: topic.name,
           type: :SUM,
-          filters: [%Filter{field: "reference_key", comparison: "equal", value: "test"}]
+          query: "reference_key == 'test'"
         }
       }
 
@@ -166,26 +163,12 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.ServerTest do
 
       request = %ListMetricsRequest{
         topic: topic.name,
-        filters: [%Filter{field: "name", comparison: "equal", value: metric.name}]
+        query: "name == '#{metric.name}'"
       }
 
       result = Server.list_metrics(request, nil)
       assert Repo.aggregate(ER.Metrics.Metric, :count) == 2
       assert result.total_count == 1
-    end
-
-    test "return error if filter field name is invalid", %{topic: topic} do
-      metric = insert(:metric, topic_name: topic.name, type: :avg, field_path: "data.cart.total")
-      insert(:metric, topic_name: topic.name, type: :sum, field_path: "data.cart.total")
-
-      request = %ListMetricsRequest{
-        topic: topic.name,
-        filters: [%Filter{field: "bad_field", comparison: "equal", value: metric.name}]
-      }
-
-      assert_raise(GRPC.RPCError, "bad_field does not exist", fn ->
-        Server.list_metrics(request, nil)
-      end)
     end
   end
 end

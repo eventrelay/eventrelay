@@ -5,6 +5,67 @@ defmodule ER.EventsTest do
   import ER.Factory
   import ExUnit.CaptureLog
 
+  describe "list_events_for_topic/1" do
+    setup do
+      {:ok, topic} = ER.Events.create_topic(%{name: "metrics"})
+
+      {:ok, topic: topic}
+    end
+
+    test "returns events that respect the subscription_locks", %{
+      topic: topic
+    } do
+      attrs =
+        params_for(:event,
+          topic: topic,
+          name: "user.updated",
+          source: "app",
+          offset: 1,
+          data: %{"first_name" => "Thomas"}
+        )
+
+      Events.create_event_for_topic(attrs)
+
+      attrs =
+        params_for(:event,
+          topic: topic,
+          name: "user.created",
+          source: "app",
+          offset: 2,
+          data: %{"first_name" => "Thomas"}
+        )
+
+      Events.create_event_for_topic(attrs)
+
+      attrs =
+        params_for(:event,
+          topic: topic,
+          name: "user.updated",
+          source: "grpc",
+          offset: 3,
+          data: %{"first_name" => "Thomas"}
+        )
+
+      Events.create_event_for_topic(attrs)
+
+      {:ok, predicates} =
+        Predicated.Query.new(
+          "data.first_name == 'Thomas' AND (source == 'grpc' OR name == 'user.created')"
+        )
+
+      batch =
+        Events.list_events_for_topic(
+          offset: 0,
+          batch_size: 10,
+          topic_name: topic.name,
+          topic_identifier: nil,
+          predicates: predicates
+        )
+
+      assert Enum.count(batch.results) == 2
+    end
+  end
+
   describe "list_queued_events_for_topic/1" do
     setup do
       {:ok, topic} = ER.Events.create_topic(%{name: "jobs"})

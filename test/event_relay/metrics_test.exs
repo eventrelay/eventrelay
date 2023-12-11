@@ -13,7 +13,7 @@ defmodule ER.MetricsTest do
   describe "metrics" do
     alias ER.Metrics.Metric
 
-    @invalid_attrs %{field_path: nil, filters: nil, name: nil, type: :sum}
+    @invalid_attrs %{field_path: nil, query: nil, name: nil, type: :sum}
 
     test "list_metrics/0 returns all metrics" do
       metric = insert(:metric)
@@ -28,7 +28,7 @@ defmodule ER.MetricsTest do
     test "create_metric/1 with valid data creates a metric", %{topic: topic} do
       valid_attrs = %{
         field_path: "some field_path",
-        filters: [],
+        query: "data.first_name == 'Sarah'",
         name: "some sum",
         type: :sum,
         topic_name: topic.name
@@ -36,7 +36,7 @@ defmodule ER.MetricsTest do
 
       assert {:ok, %Metric{} = metric} = Metrics.create_metric(valid_attrs)
       assert metric.field_path == "some field_path"
-      assert metric.filters == []
+      assert metric.query == "data.first_name == 'Sarah'"
       assert metric.name == "some sum"
       assert metric.type == :sum
     end
@@ -50,7 +50,7 @@ defmodule ER.MetricsTest do
 
       update_attrs = %{
         field_path: "some updated field_path",
-        filters: [],
+        query: "data.first_name == 'Sarah'",
         name: "some updated name",
         type: :sum,
         topic_name: topic.name
@@ -58,7 +58,7 @@ defmodule ER.MetricsTest do
 
       assert {:ok, %Metric{} = metric} = Metrics.update_metric(metric, update_attrs)
       assert metric.field_path == "some updated field_path"
-      assert metric.filters == []
+      assert metric.query == "data.first_name == 'Sarah'"
       assert metric.name == "some updated name"
       assert metric.type == :sum
     end

@@ -11,8 +11,7 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.Server do
     DeleteMetricRequest,
     DeleteMetricResponse,
     ListMetricsRequest,
-    ListMetricsResponse,
-    Filter
+    ListMetricsResponse
   }
 
   import ER.Enum
@@ -49,16 +48,7 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.Server do
       topic_name: metric.topic_name,
       topic_identifier: metric.topic_identifier,
       type: to_grpc_enum(metric.type),
-      filters: Enum.map(metric.filters, &build_event_filter/1)
-    )
-  end
-
-  defp build_event_filter(filter) do
-    Filter.new(
-      field: filter.field,
-      field_path: filter.field_path,
-      comparison: to_string(filter.comparison),
-      value: filter.value
+      query: metric.query
     )
   end
 
@@ -66,38 +56,31 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.Server do
           ListMetricsResponse.t()
   def list_metrics(request, _stream) do
     topic = request.topic
-    filters = request.filters
+    query = request.query
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
 
     page = if request.page == 0, do: 1, else: request.page
     page_size = if request.page_size == 0, do: 100, else: request.page_size
     # TODO: add logic for max page size and make it configurable
 
-    try do
-      paginated_results =
-        ER.Metrics.list_metrics(
-          topic_name: topic_name,
-          topic_identifier: topic_identifier,
-          filters: filters,
-          page: page,
-          page_size: page_size
-        )
-
-      metrics = Enum.map(paginated_results.results, &build_metric/1)
-
-      ListMetricsResponse.new(
-        metrics: metrics,
-        total_count: paginated_results.total_count,
-        next_page: paginated_results.next_page,
-        previous_page: paginated_results.previous_page,
-        total_pages: paginated_results.total_pages
+    paginated_results =
+      ER.Metrics.list_metrics(
+        topic_name: topic_name,
+        topic_identifier: topic_identifier,
+        query: query,
+        page: page,
+        page_size: page_size
       )
-    rescue
-      e in ER.Filter.BadFieldError ->
-        raise GRPC.RPCError,
-          status: GRPC.Status.invalid_argument(),
-          message: e.message
-    end
+
+    metrics = Enum.map(paginated_results.results, &build_metric/1)
+
+    ListMetricsResponse.new(
+      metrics: metrics,
+      total_count: paginated_results.total_count,
+      next_page: paginated_results.next_page,
+      previous_page: paginated_results.previous_page,
+      total_pages: paginated_results.total_pages
+    )
   end
 
   @spec create_metric(CreateMetricRequest.t(), GRPC.Server.Stream.t()) ::
@@ -109,10 +92,7 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.Server do
       topic_name: request.metric.topic_name,
       topic_identifier: request.metric.topic_identifier,
       type: from_grpc_enum(request.metric.type),
-      filters:
-        Enum.map(request.metric.filters, fn filter ->
-          Map.from_struct(filter) |> ER.Filter.translate_cast_as()
-        end)
+      query: request.metric.query
     }
 
     metric =

@@ -137,13 +137,21 @@ defmodule ER.Subscriptions do
   end
 
   def list_events_for_deliveries(topic_name, deliveries) do
+    event_ids = Enum.map(deliveries, fn d -> "'#{d.event_id}'" end) |> Enum.join(", ")
+
+    predicates =
+      case Predicated.Query.new("id in [#{event_ids}]") do
+        {:ok, predicates} -> predicates
+        _ -> []
+      end
+
     batched_results =
       ER.Events.list_events_for_topic(
         offset: 0,
         batch_size: 100_000,
         topic_name: topic_name,
         topic_identifier: nil,
-        filters: [%{field: "id", value: Enum.map(deliveries, & &1.event_id), comparison: "in"}]
+        predicates: predicates
       )
 
     batched_results.results
