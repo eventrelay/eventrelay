@@ -4,7 +4,7 @@ defmodule ER.Events do
   """
   require Logger
   import Ecto.Query, warn: false
-  import ER
+  import ER.Events.Predicates
   alias ER.Repo
   alias Phoenix.PubSub
 
@@ -24,7 +24,7 @@ defmodule ER.Events do
         topic_name: topic_name,
         topic_identifier: topic_identifier,
         field_path: field_path,
-        filters: filters
+        predicates: predicates
       ) do
     query =
       from_events_for_topic(topic_name: topic_name)
@@ -38,9 +38,12 @@ defmodule ER.Events do
       end
 
     query =
-      Enum.reduce(filters, query, fn filter, query ->
-        append_filter(query, filter)
-      end)
+      if Flamel.present?(predicates) do
+        conditions = apply_predicates(predicates, nil, nil)
+        from query, where: ^conditions
+      else
+        query
+      end
 
     path = parse_path(field_path)
 
@@ -136,13 +139,13 @@ defmodule ER.Events do
         topic_identifier: topic_identifier,
         field_path: field_path,
         type: type,
-        filters: filters
+        predicates: predicates
       ) do
     prepare_calcuate_query(
       topic_name: topic_name,
       topic_identifier: topic_identifier,
       field_path: field_path,
-      filters: filters
+      predicates: predicates
     )
     |> apply_calculation_to_query(type)
     |> Repo.one()
@@ -162,7 +165,7 @@ defmodule ER.Events do
       batch_size: batch_size,
       topic_name: topic_name,
       topic_identifier: topic_identifier,
-      filters: []
+      predicates: []
     )
   end
 
@@ -171,12 +174,12 @@ defmodule ER.Events do
         batch_size: batch_size,
         topic_name: topic_name,
         topic_identifier: topic_identifier,
-        filters: filters
+        predicates: predicates
       ) do
     query =
       from_events_for_topic(topic_name: topic_name)
       |> where(as(:events).topic_name == ^topic_name)
-      |> apply_ordering(filters)
+      |> apply_ordering(predicates)
       |> where(not is_nil(as(:events).occurred_at))
 
     query =
@@ -186,14 +189,35 @@ defmodule ER.Events do
         query
       end
 
-    filters = ER.Filter.translate(filters)
-
     query =
-      Enum.reduce(filters, query, fn filter, query ->
-        append_filter(query, filter)
-      end)
+      if Flamel.present?(predicates) do
+        conditions = apply_predicates(predicates, nil, nil)
+        from query, where: ^conditions
+      else
+        query
+      end
+
+    # IO.inspect(sql: Repo.to_sql(:all, query))
 
     ER.BatchedResults.new(query, %{"offset" => offset, "batch_size" => batch_size})
+  end
+
+  def list_events_for_topic(
+        offset: offset,
+        batch_size: batch_size,
+        topic_name: topic_name,
+        topic_identifier: topic_identifier,
+        query: query
+      ) do
+    predicates = ER.Predicates.to_predicates(query)
+
+    list_events_for_topic(
+      offset: offset,
+      batch_size: batch_size,
+      topic_name: topic_name,
+      topic_identifier: topic_identifier,
+      predicates: predicates
+    )
   end
 
   def list_events_for_topic(
@@ -224,6 +248,7 @@ defmodule ER.Events do
         topic_identifier: topic_identifier,
         subscription_id: subscription_id
       ) do
+    subscription = ER.Subscriptions.get_subscription!(subscription_id)
     subscription_id = Ecto.UUID.dump!(subscription_id)
 
     query =
@@ -235,8 +260,22 @@ defmodule ER.Events do
       |> order_by(as(:events).offset)
 
     query =
+      if Flamel.present?(subscription.query) do
+        predicates = Predicated.Query.new(subscription.query)
+
+        if Flamel.present?(predicates) do
+          conditions = apply_predicates(predicates, nil, nil)
+          from query, where: ^conditions
+        else
+          query
+        end
+      else
+        query
+      end
+
+    query =
       unless ER.empty?(topic_identifier) do
-        query |> where(as(:events).topic_identifier == ^topic_identifier)
+        where(query, as(:events).topic_identifier == ^topic_identifier)
       else
         query
       end
@@ -265,259 +304,8 @@ defmodule ER.Events do
     from_events() |> Repo.all()
   end
 
-  def apply_ordering(query, filters) do
-    if has_date_filtering?(filters) do
-      query
-      |> order_by(asc: as(:events).occurred_at)
-    else
-      query
-      |> order_by(as(:events).offset)
-    end
-  end
-
-  def has_date_filtering?(filters) do
-    Enum.any?(
-      filters,
-      fn
-        filter when filter.field in ["start_date", "end_date"] -> true
-        _filter -> false
-      end
-    )
-  end
-
-  defp maybe_parse_and_apply_datetime(query, value, func) do
-    case DateTime.from_iso8601(value) do
-      {:ok, datetime, _} ->
-        func.(query, datetime)
-
-      _ ->
-        query
-    end
-  end
-
-  def parse_path(path) do
-    String.split(path, ".", trim: true)
-    |> Enum.map(&String.trim/1)
-  end
-
-  def cast_as(%{cast_as: :integer, value: value}) do
-    to_integer(value)
-  end
-
-  def cast_as(%{cast_as: :boolean, value: value}) do
-    to_boolean(value)
-  end
-
-  def cast_as(%{cast_as: :datetime, value: value}) do
-    to_datetime(value)
-  end
-
-  def cast_as(%{value: value}) do
-    value
-  end
-
-  def append_filter(query, %{field_path: "data." <> path, comparison: "="} = filter) do
-    path = parse_path(path)
-    value = cast_as(filter)
-
-    query
-    |> where(
-      [events: events],
-      json_extract_path(events.data, ^path) == ^value
-    )
-  end
-
-  def append_filter(query, %{field_path: "data." <> path, comparison: "<"} = filter) do
-    path = parse_path(path)
-    value = cast_as(filter)
-
-    query
-    |> where(
-      [events: events],
-      json_extract_path(events.data, ^path) < ^value
-    )
-  end
-
-  def append_filter(query, %{field_path: "data." <> path, comparison: ">"} = filter) do
-    path = parse_path(path)
-    value = cast_as(filter)
-
-    query
-    |> where(
-      [events: events],
-      json_extract_path(events.data, ^path) > ^value
-    )
-  end
-
-  def append_filter(
-        query,
-        %{field_path: "context." <> path, comparison: "="} = filter
-      ) do
-    query
-    |> where(
-      [events: events],
-      json_extract_path(events.context, ^parse_path(path)) == ^cast_as(filter)
-    )
-  end
-
-  def append_filter(
-        query,
-        %{field_path: "context." <> path, comparison: ">"} = filter
-      ) do
-    query
-    |> where(
-      [events: events],
-      json_extract_path(events.context, ^parse_path(path)) > ^cast_as(filter)
-    )
-  end
-
-  def append_filter(
-        query,
-        %{field_path: "context." <> path, comparison: "<"} = filter
-      ) do
-    query
-    |> where(
-      [events: events],
-      json_extract_path(events.context, ^parse_path(path)) < ^cast_as(filter)
-    )
-  end
-
-  def append_filter(query, %{field: "data", value: value, comparison: "like"}) do
-    query
-    |> where(
-      [events: events],
-      fragment("data::text LIKE ?", ^"%#{value}%")
-    )
-  end
-
-  def append_filter(query, %{field: "data", value: value, comparison: "ilike"}) do
-    query
-    |> where(
-      [events: events],
-      fragment("data::text ILIKE ?", ^"%#{value}%")
-    )
-  end
-
-  # def append_filter(query, %{field: "data." <> path, value: value, comparison: "="}) do
-  #   path =
-  #     String.split(path, ".", trim: true)
-  #     |> Enum.map(&String.trim/1)
-  #
-  #   query
-  #   |> where([events: events], json_extract_path(events.data, ^path) == ^value)
-  # end
-
-  def append_filter(query, %{field: "start_date", value: value, comparison: ">="}) do
-    maybe_parse_and_apply_datetime(query, value, fn query, datetime ->
-      query
-      |> where(
-        [events: events],
-        events.occurred_at >= ^datetime
-      )
-    end)
-  end
-
-  def append_filter(query, %{field: "start_date", value: value, comparison: ">"}) do
-    maybe_parse_and_apply_datetime(query, value, fn query, datetime ->
-      query
-      |> where(
-        [events: events],
-        events.occurred_at > ^datetime
-      )
-    end)
-  end
-
-  def append_filter(query, %{field: "end_date", value: value, comparison: "<="}) do
-    maybe_parse_and_apply_datetime(query, value, fn query, datetime ->
-      query
-      |> where(
-        [events: events],
-        events.occurred_at <= ^datetime
-      )
-    end)
-  end
-
-  def append_filter(query, %{field: "end_date", value: value, comparison: "<"}) do
-    maybe_parse_and_apply_datetime(query, value, fn query, datetime ->
-      query
-      |> where([events: events], events.occurred_at < ^datetime)
-    end)
-  end
-
-  def append_filter(query, %{field: field, comparison: "="} = filter) do
-    field = String.to_atom(field)
-
-    query
-    |> where([events: events], field(events, ^field) == ^cast_as(filter))
-  end
-
-  def append_filter(query, %{field: field, comparison: "!="} = filter) do
-    field = String.to_atom(field)
-
-    query
-    |> where([events: events], field(events, ^field) != ^cast_as(filter))
-  end
-
-  def append_filter(query, %{field: field, value: value, comparison: "like"}) do
-    field = String.to_atom(field)
-
-    query
-    |> where([events: events], like(field(events, ^field), ^value))
-  end
-
-  def append_filter(query, %{field: field, value: value, comparison: "ilike"}) do
-    field = String.to_atom(field)
-
-    query
-    |> where([events: events], ilike(field(events, ^field), ^value))
-  end
-
-  # TODO: Write a test
-  def append_filter(query, %{field: field, value: value, comparison: "in"}) do
-    field = String.to_atom(field)
-
-    query
-    |> where([events: events], field(events, ^field) in ^value)
-  end
-
-  # TODO: Write a test
-  def append_filter(query, %{field: field, comparison: ">"} = filter) do
-    field = String.to_atom(field)
-    value = cast_as(filter)
-
-    query
-    |> where([events: events], field(events, ^field) > ^value)
-  end
-
-  def append_filter(query, %{field: field, comparison: ">="} = filter) do
-    field = String.to_atom(field)
-    value = cast_as(filter)
-
-    query
-    |> where([events: events], field(events, ^field) >= ^value)
-  end
-
-  # TODO: Write a test
-  def append_filter(query, %{field: field, comparison: "<"} = filter) do
-    field = String.to_atom(field)
-
-    query
-    |> where([events: events], field(events, ^field) < ^cast_as(filter))
-  end
-
-  def append_filter(query, %{field: field, comparison: "<="} = filter) do
-    field = String.to_atom(field)
-
-    query
-    |> where([events: events], field(events, ^field) <= ^cast_as(filter))
-  end
-
-  @doc """
-  Fallback
-  """
-  def append_filter(query, _filter) do
-    # TODO: Noop for now...
-    query
+  def apply_ordering(query, _predicates) do
+    order_by(query, as(:events).offset)
   end
 
   @doc """

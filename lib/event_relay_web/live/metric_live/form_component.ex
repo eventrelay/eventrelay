@@ -24,6 +24,7 @@ defmodule ERWeb.MetricLive.FormComponent do
         <.input field={@form[:topic_identifier]} type="text" label="Topic Identifier" />
         <.input field={@form[:field_path]} type="text" label="Field path" />
         <.input field={@form[:type]} type="text" label="Type" />
+        <.input field={@form[:query]} type="textarea" label="Query" />
         <.input field={@form[:produce_update_event]} type="checkbox" label="Produce Update Event" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Metric</.button>

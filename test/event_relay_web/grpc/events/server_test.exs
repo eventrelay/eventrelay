@@ -103,8 +103,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       end)
 
       request = %PullEventsRequest{
-        topic: topic.name,
-        filters: []
+        topic: topic.name
       }
 
       result = Server.pull_events(request, nil)
@@ -123,7 +122,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PullEventsRequest{
         topic: topic.name,
-        filters: [],
         batch_size: 3,
         offset: 0
       }
@@ -137,7 +135,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PullEventsRequest{
         topic: topic.name,
-        filters: [],
         batch_size: 3,
         # 3
         offset: result.next_offset
@@ -156,7 +153,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PullEventsRequest{
         topic: topic.name,
-        filters: [],
         batch_size: 3,
         # 6
         offset: result.next_offset
@@ -183,14 +179,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PullEventsRequest{
         topic: topic.name,
-        filters: [
-          %Filter{
-            field_path: "data.cart.total",
-            comparison: "equal",
-            cast_as: :INTEGER,
-            value: "30"
-          }
-        ]
+        query: "data.cart.total == 30"
       }
 
       result = Server.pull_events(request, nil)

@@ -74,7 +74,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
           batch_size: batch_size,
           topic_name: topic_name,
           topic_identifier: topic_identifier,
-          filters: request.filters
+          query: request.query
         )
 
       events = Enum.map(batched_results.results, &build_event(&1, topic))

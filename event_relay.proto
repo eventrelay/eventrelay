@@ -195,7 +195,7 @@ message PullEventsRequest {
   // max batchSize is 1000, if not specified, defaults to 100
   int32 batch_size = 2;
   int32 offset = 3;
-  repeated Filter filters = 4; 
+  string query = 4;
 }
 
 message PullEventsResponse {
@@ -250,7 +250,7 @@ message NewMetric {
   // A path to the value using dot syntax ex. "data.cart.total" => 10.00 for {"cart": {"total": 10.00}}
   string field_path = 4;
   MetricType type = 5;
-  repeated Filter filters = 6; 
+  string query = 6;
 }
 
 message Metric {
@@ -261,7 +261,7 @@ message Metric {
   // A path to the value using dot syntax ex. "data.cart.total" => 10.00 for {"cart": {"total": 10.00}}
   string field_path = 5;
   MetricType type = 6;
-  repeated Filter filters = 7; 
+  string query = 7;
 }
 
 message GetMetricValueRequest {
@@ -277,7 +277,7 @@ message ListMetricsRequest {
   string topic = 1;
   int32 page = 2;
   int32 page_size = 3;
-  repeated Filter filters = 4; 
+  string query = 4;
 }
 
 message ListMetricsResponse {

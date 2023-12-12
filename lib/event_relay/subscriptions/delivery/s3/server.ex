@@ -72,7 +72,8 @@ defmodule ER.Subscriptions.Delivery.S3.Server do
         status: :pending
       )
 
-    {jsonl, _events} = jsonl_encode_delivery_events(subscription_topic_name, deliveries)
+    {jsonl, _events} =
+      jsonl_encode_delivery_events(subscription_topic_name, deliveries)
 
     case ER.Container.s3().put_object(bucket, build_events_file_name(now), jsonl) do
       {:ok, _result} ->
