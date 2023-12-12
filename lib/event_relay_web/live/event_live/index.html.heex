@@ -8,8 +8,8 @@
 </.header>
 
 <div id="filters">
-  <.form id="search" phx-submit="search" for={@search_form}>
-    <.input type="text" field={@search_form[:query]} placeholder="search query" />
+  <.form :let={f} id="search" phx-submit="search" for={@search_form}>
+    <.input type="text" field={f[:query]} placeholder="search query" />
     <button class="mt-4 rounded-md bg-zinc-900 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
       Search
     </button>

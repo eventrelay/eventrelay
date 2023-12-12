@@ -13,7 +13,7 @@ defmodule ERWeb.EventLive.Index do
       |> assign(:query, nil)
       |> assign(:offset, 0)
       |> assign(:batch_size, 20)
-      |> assign(:search_form, to_form(%{query: ""}))
+      |> assign(:search_form, build_search_form())
       |> assign(:topic, topic)
       |> assign_events(nil)
 
@@ -22,7 +22,6 @@ defmodule ERWeb.EventLive.Index do
 
   @impl true
   def handle_params(params, _url, socket) do
-    # TODO: figure out serializing search_form in query string
     offset = params["offset"]
 
     socket =
@@ -41,10 +40,13 @@ defmodule ERWeb.EventLive.Index do
         socket
       end
 
+    query = params["query"]
+
     socket =
       socket
       |> apply_action(socket.assigns.live_action, params)
-      |> assign_events(params["search"])
+      |> assign(:search_form, build_search_form(query))
+      |> assign_events(query)
 
     {:noreply, socket}
   end
@@ -63,19 +65,18 @@ defmodule ERWeb.EventLive.Index do
 
   @impl true
   def handle_event("search", params, socket) do
-    IO.inspect(params: params)
-    query = params["query"]
+    query = get_in(params, ["search_form", "query"]) || ""
     topic = socket.assigns.topic
 
     socket =
       socket
-      |> assign(:search_form, to_form(%{query: query}))
+      |> assign(:search_form, build_search_form(query))
       |> assign_events(query)
 
     {:noreply,
      push_patch(socket,
        to:
-         ~p"/topics/#{topic}/events?offset=#{socket.assigns.offset}&batch_size=#{socket.assigns.batch_size}"
+         ~p"/topics/#{topic}/events?query=#{query}&offset=#{socket.assigns.offset}&batch_size=#{socket.assigns.batch_size}"
      )}
   end
 
@@ -91,23 +92,13 @@ defmodule ERWeb.EventLive.Index do
   defp assign_events(socket, query) do
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(socket.assigns.topic)
 
-    predicates =
-      if Flamel.present?(query) do
-        case Predicated.Query.new(query) do
-          {:ok, predicates} -> predicates
-          _ -> []
-        end
-      else
-        []
-      end
-
     batched_result =
       ER.Events.list_events_for_topic(
         offset: socket.assigns.offset,
         batch_size: ER.to_integer(socket.assigns.batch_size),
         topic_name: topic_name,
         topic_identifier: topic_identifier,
-        predicates: predicates
+        query: query
       )
 
     socket
@@ -115,5 +106,9 @@ defmodule ERWeb.EventLive.Index do
     |> assign(:next_offset, batched_result.next_offset)
     |> assign(:previous_offset, batched_result.previous_offset)
     |> assign(:total_count, batched_result.total_count)
+  end
+
+  defp build_search_form(query \\ "") do
+    Ecto.Changeset.change(%ER.Events.SearchForm{}, %{query: query})
   end
 end
