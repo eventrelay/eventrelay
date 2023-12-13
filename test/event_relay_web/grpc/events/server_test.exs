@@ -9,8 +9,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
     PublishEventsRequest,
     NewEvent,
     PullEventsRequest,
-    PullQueuedEventsRequest,
-    Filter
+    PullQueuedEventsRequest
   }
 
   setup do
