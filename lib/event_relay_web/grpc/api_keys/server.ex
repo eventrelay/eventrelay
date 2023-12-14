@@ -24,12 +24,15 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
   @spec create_api_key(CreateApiKeyRequest.t(), GRPC.Server.Stream.t()) ::
           CreateApiKeyResponse.t()
   def create_api_key(request, _stream) do
-    api_key = ER.Accounts.ApiKey.build(from_grpc_enum(request.type), :active)
-
-    api_key = %{api_key | group_key: request.group_key}
+    attrs = %{
+      name: request.name,
+      group_key: request.group_key,
+      type: from_grpc_enum(request.type),
+      tls_hostname: request.tls_hostname
+    }
 
     api_key =
-      case ER.Accounts.create_api_key(api_key) do
+      case ER.Accounts.create_api_key(attrs) do
         {:ok, api_key} ->
           build_api_key(api_key)
 
@@ -210,9 +213,7 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
             end
           end)
           |> Enum.reject(&is_nil/1)
-          |> IO.inspect(label: "api_key_subscriptions")
         end)
-        |> IO.inspect(label: "transaction")
         |> case do
           {:ok, api_key_subscription_ids} ->
             DeleteSubscriptionsFromApiKeyResponse.new(

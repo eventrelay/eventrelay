@@ -54,8 +54,7 @@ subscriptions = [websocket_subscription, webhook_subscription]
 
 [:admin, :producer, :consumer]
 |> Enum.each(fn type ->
-  api_key = ApiKey.build(type, :active)
-  api_key = %{api_key | name: to_string(type)}
+  api_key = ApiKey.build(to_string(type), ["localhost"], type, :active)
   Accounts.create_api_key(api_key)
   IO.puts("------------- #{inspect(type)} API Key Token -------------")
 

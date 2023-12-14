@@ -52,10 +52,12 @@ defmodule ER.Factory do
       |> binary_part(0, 42)
 
     %ER.Accounts.ApiKey{
+      name: Faker.Person.name(),
       key: key,
       secret: secret,
       status: "active",
-      type: "consumer"
+      type: "consumer",
+      tls_hostname: Faker.Internet.domain_name()
     }
   end
 

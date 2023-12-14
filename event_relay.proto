@@ -325,16 +325,20 @@ enum ApiKeyStatus {
 
 message ApiKey {
   string id = 1;
-  string key = 2;
-  string secret = 3;
-  ApiKeyStatus status = 4;
-  ApiKeyType type = 5;
-  string group_key = 6;
+  string name = 2;
+  string key = 3;
+  string secret = 4;
+  ApiKeyStatus status = 5;
+  ApiKeyType type = 6;
+  string group_key = 7;
+  string tls_hostname = 8;
 }
 
 message CreateApiKeyRequest {
   ApiKeyType type = 1;
-  string group_key = 2;
+  string name = 2;
+  string group_key = 3;
+  string tls_hostname = 4;
 }
 
 message CreateApiKeyResponse {

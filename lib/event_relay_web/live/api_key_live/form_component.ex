@@ -24,6 +24,7 @@ defmodule ERWeb.ApiKeyLive.FormComponent do
         <.input field={f[:status]} type="text" label="Status" />
         <.input field={f[:type]} type="text" label="Type" />
         <.input field={f[:group_key]} type="text" label="Group Key" />
+        <.input field={f[:tls_hostname]} type="text" label="TLS Hostname" />
         <:actions>
           <.button phx-disable-with="Saving...">Save API key</.button>
         </:actions>

@@ -5,12 +5,15 @@ defmodule ERWeb.ApiKeyLiveTest do
   import ER.AccountsFixtures
 
   @create_attrs %{
+    name: "Test API key",
     status: :active,
-    type: :admin
+    type: :admin,
+    tls_hostname: "example.com"
   }
   @update_attrs %{
     status: :active,
-    type: :admin
+    type: :admin,
+    tls_hostname: "example.com"
   }
   @invalid_attrs %{status: nil, type: nil}
 

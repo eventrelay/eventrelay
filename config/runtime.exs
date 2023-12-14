@@ -34,6 +34,11 @@ config :hammer,
        redis_url: System.get_env("ER_REDIS_URL")
      ]}
 
+config :event_relay, :ca_key, System.get_env("ER_CA_KEY")
+config :event_relay, :ca_crt, System.get_env("ER_CA_CRT")
+config :event_relay, :grpc_server_key, System.get_env("ER_GRPC_SERVER_KEY")
+config :event_relay, :grpc_server_crt, System.get_env("ER_GRPC_SERVER_CRT")
+
 if config_env() == :dev do
   database_url =
     System.get_env("ER_DATABASE_URL") ||
@@ -162,10 +167,6 @@ if config_env() == :prod do
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
   #
   config :event_relay, :jwt_secret, System.get_env("ER_JWT_SECRET")
-end
-
-unless Code.ensure_loaded?(IEx) and IEx.started?() do
-  config :grpc, start_server: true
 end
 
 config :event_relay, :account_key, System.get_env("ER_ACCOUNT_KEY")
