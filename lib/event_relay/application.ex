@@ -60,35 +60,35 @@ defmodule ER.Application do
   end
 
   defp grpc_start_args() do
-    {_type, grpc_server_crt} =
-      ER.Env.grpc_server_crt()
-      |> ER.CA.to_der()
-
-    grpc_server_key =
-      ER.Env.grpc_server_key()
-      |> ER.CA.to_der()
-
-    {_type, ca_crt} =
-      ER.Env.ca_crt()
-      |> ER.CA.to_der()
-
-    cred =
-      GRPC.Credential.new(
-        ssl: [
-          cert: grpc_server_crt,
-          key: grpc_server_key,
-          cacerts: [ca_crt],
-          secure_renegotiate: true,
-          reuse_sessions: true,
-          verify: :verify_peer,
-          fail_if_no_peer_cert: true
-        ]
-      )
-
     opts = [endpoint: ERWeb.Grpc.Endpoint, port: ER.Env.grpc_port()]
 
     opts =
-      unless ER.Env.skip_grpc_auth?() do
+      if ER.Env.use_grpc_tls?() do
+        {_type, grpc_server_crt} =
+          ER.Env.grpc_server_crt()
+          |> ER.CA.to_der()
+
+        grpc_server_key =
+          ER.Env.grpc_server_key()
+          |> ER.CA.to_der()
+
+        {_type, ca_crt} =
+          ER.Env.ca_crt()
+          |> ER.CA.to_der()
+
+        cred =
+          GRPC.Credential.new(
+            ssl: [
+              cert: grpc_server_crt,
+              key: grpc_server_key,
+              cacerts: [ca_crt],
+              secure_renegotiate: true,
+              reuse_sessions: true,
+              verify: :verify_peer,
+              fail_if_no_peer_cert: true
+            ]
+          )
+
         Keyword.merge(opts, cred: cred)
       else
         opts

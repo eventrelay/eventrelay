@@ -46,6 +46,7 @@ services:
       # Setting ER_SKIP_GRPC_AUTH to true will turn off the 
       # authentication for the GRPC API
       ER_SKIP_GRPC_AUTH: FALSE 
+      ER_USE_GRPC_TLS: TRUE
 
       # DO NOT USE THESE IN PRODUCTION
       # See the wiki for how to generate your own CA

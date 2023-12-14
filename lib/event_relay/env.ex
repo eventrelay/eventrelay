@@ -1,6 +1,10 @@
 defmodule ER.Env do
   def skip_grpc_auth? do
-    System.get_env("ER_SKIP_GRPC_AUTH") == "true"
+    Flamel.to_boolean(System.get_env("ER_SKIP_GRPC_AUTH")) == true
+  end
+
+  def use_grpc_tls? do
+    Flamel.to_boolean(System.get_env("ER_USE_GRPC_TLS")) == true
   end
 
   def grpc_port do
