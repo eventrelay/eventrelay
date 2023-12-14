@@ -4,7 +4,7 @@
 
 EventRelay is a simple to use event storage and streaming platform. 
 
-## Objectives
+## 🥅 Goals
 
 - Foster a dynamic and engaged community and ecosystem.
 - Deliver an exceptional developer experience.
@@ -16,7 +16,15 @@ Checkout [Getting Started](https://github.com/eventrelay/eventrelay/wiki/Getting
 
 After you have it setup locally take a look at [Up and Running](https://github.com/eventrelay/eventrelay/wiki/Up-and-Running) to publish your first event.
 
-## Use Cases
+
+## 🎉 Projects Using EventRelay
+
+[WalEx](https://github.com/cpursley/walex)
+
+Listen to Postgres change events and do stuff with the data directly in Elixir or send them to some destination
+
+
+## Use Cases ⚡
 
 ### Event Streaming
 
