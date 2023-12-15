@@ -404,7 +404,8 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
       secret: api_key.secret,
       type: to_grpc_enum(api_key.type),
       status: to_grpc_enum(api_key.status),
-      group_key: api_key.group_key
+      group_key: api_key.group_key,
+      tls_hostname: api_key.tls_hostname
     )
   end
 end
