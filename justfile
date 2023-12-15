@@ -21,6 +21,13 @@ restart:
 logs:
   docker compose logs -f
 
+# Run migrations
+migrate: (_run-docker '-e MIX_ENV=dev' 'mix ecto.migrate') 
+
+# Rollback migrations
+rollback: (_run-docker '-e MIX_ENV=dev' 'mix ecto.rollback') 
+
+
 # Build a new docker image
 build:
   docker compose build

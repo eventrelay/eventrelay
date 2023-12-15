@@ -65,7 +65,7 @@ defmodule ER.MixProject do
       {:hammer_backend_redis, "~> 6.1"},
       {:hammer, "~> 6.1"},
       # GRPC - https://github.com/elixir-grpc/grpc
-      {:grpc, "~> 0.5.0"},
+      {:grpc, "~> 0.7"},
       {:protobuf, "~> 0.11"},
       # JWT - https://github.com/joken-elixir/joken
       {:joken, "~> 2.5"},
@@ -104,7 +104,10 @@ defmodule ER.MixProject do
       {:benchee, "~> 1.0", only: :dev},
       {:predicated, github: "themusicman/predicated", branch: "main"},
       # {:predicated, path: "/home/tbrewer/projects/predicated"},
-      {:flamel, github: "themusicman/flamel", branch: "main"}
+      {:flamel, github: "themusicman/flamel", branch: "main"},
+
+      # Certificate Authority/TLS 
+      {:x509, "~> 0.8"}
     ]
   end
 

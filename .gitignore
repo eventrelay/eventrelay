@@ -25,6 +25,10 @@ event_relay-*.tar
 # Ignore assets that are produced by build tools.
 /priv/static/assets/
 
+# Ignore any certs generated
+/priv/tls
+/out
+
 # Ignore digested assets cache.
 /priv/static/cache_manifest.json
 

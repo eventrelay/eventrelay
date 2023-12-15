@@ -20,6 +20,9 @@ defmodule ER.Accounts.ApiKey do
     field(:status, Ecto.Enum, values: [:active, :revoked])
     field(:type, Ecto.Enum, values: [:admin, :producer, :consumer])
     field(:group_key, :string)
+    field(:tls_key, :string)
+    field(:tls_crt, :string)
+    field(:tls_hostname, :string)
 
     # handles authorization for consumers
     has_many(:api_key_subscriptions, ApiKeySubscription, on_delete: :delete_all)
@@ -38,13 +41,21 @@ defmodule ER.Accounts.ApiKey do
 
   @doc false
   def create_changeset(api_token, attrs) do
-    api_key = ApiKey.build(indifferent_get(attrs, :type), indifferent_get(attrs, :status))
+    api_key =
+      ApiKey.build(
+        indifferent_get(attrs, :name),
+        indifferent_get(attrs, :tls_hostname),
+        indifferent_get(attrs, :type),
+        indifferent_get(attrs, :status)
+      )
 
     api_token
-    |> cast(attrs, [:key, :secret, :status, :type, :group_key])
+    |> cast(attrs, [:name, :key, :secret, :status, :type, :group_key, :tls_hostname])
     |> put_key(api_key)
     |> put_secret(api_key)
-    |> validate_required([:key, :secret, :status, :type])
+    |> put_tls_key(api_key)
+    |> put_tls_crt(api_key)
+    |> validate_required([:name, :key, :secret, :status, :type, :tls_key, :tls_crt, :tls_hostname])
     |> unique_constraint(:key_secret_status_type_unique,
       name: :api_keys_key_secret_status_type_index
     )
@@ -68,6 +79,14 @@ defmodule ER.Accounts.ApiKey do
 
   def put_secret(cs, api_key) do
     put_change(cs, :secret, api_key.secret)
+  end
+
+  def put_tls_key(cs, api_key) do
+    put_change(cs, :tls_key, api_key.tls_key)
+  end
+
+  def put_tls_crt(cs, api_key) do
+    put_change(cs, :tls_crt, api_key.tls_crt)
   end
 
   def encode_key_and_secret(%ApiKey{key: key, secret: secret} = _api_key) do
@@ -112,12 +131,22 @@ defmodule ER.Accounts.ApiKey do
     end
   end
 
-  def build(type, status \\ :active) do
+  def build(name, tls_hostname, type, status \\ :active) do
+    {key, crt} = generate_tls(name, tls_hostname)
+
     %ApiKey{
+      name: name,
       key: ER.Auth.generate_key(),
       secret: ER.Auth.generate_secret(),
       status: status,
-      type: type
+      type: type,
+      tls_key: key,
+      tls_crt: crt
     }
+  end
+
+  defp generate_tls(name, tls_hostname) do
+    alt_names = to_string(tls_hostname) |> String.split(",") |> Enum.map(&String.trim/1)
+    ER.CA.generate_key_and_crt(name, alt_names)
   end
 end

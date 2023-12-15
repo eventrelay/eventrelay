@@ -510,7 +510,7 @@ defmodule ER.AccountsTest do
     alias ER.Accounts.ApiKey
     import ER.Factory
 
-    @invalid_attrs %{key: nil, secret: nil, status: nil, type: nil}
+    @invalid_attrs %{name: nil, key: nil, secret: nil, status: nil, type: nil, tls_hostname: nil}
 
     test "list_api_keys/1 returns all api_keys" do
       api_key = insert(:api_key)
@@ -554,8 +554,10 @@ defmodule ER.AccountsTest do
 
     test "create_api_key/1 with valid data creates a api_key" do
       valid_attrs = %{
+        name: Faker.Person.name(),
         status: :active,
-        type: "consumer"
+        type: "consumer",
+        tls_hostname: Faker.Internet.domain_name()
       }
 
       assert {:ok, %ApiKey{} = api_key} = Accounts.create_api_key(valid_attrs)

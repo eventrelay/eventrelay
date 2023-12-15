@@ -16,6 +16,9 @@
   <:item title="Type"><%= @api_key.type %></:item>
   <:item title="Group Key"><%= @api_key.group_key %></:item>
   <:item title="Token"><%= ER.Accounts.ApiKey.encode_key_and_secret(@api_key) %></:item>
+  <:item title="TLS Hostname"><pre><%= @api_key.tls_hostname %></pre></:item>
+  <:item title="TLS Key"><pre><%= @api_key.tls_key %></pre></:item>
+  <:item title="TLS Certificate"><pre><%= @api_key.tls_crt %></pre></:item>
 </.list>
 
 <div :if={@api_key.type == :producer} class="mt-8">

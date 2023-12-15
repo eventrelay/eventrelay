@@ -3,7 +3,7 @@ defmodule ERWeb.Grpc.Endpoint do
 
   run(ERWeb.Grpc.EventRelay.Events.Server,
     interceptors: [
-      GRPC.Logger.Server,
+      GRPC.Server.Interceptors.Logger,
       ERWeb.Grpc.EventRelay.Interceptors.RateLimiter,
       ERWeb.Grpc.EventRelay.Interceptors.Authenticator
     ]
@@ -11,7 +11,7 @@ defmodule ERWeb.Grpc.Endpoint do
 
   run(ERWeb.Grpc.EventRelay.Topics.Server,
     interceptors: [
-      GRPC.Logger.Server,
+      GRPC.Server.Interceptors.Logger,
       ERWeb.Grpc.EventRelay.Interceptors.RateLimiter,
       ERWeb.Grpc.EventRelay.Interceptors.Authenticator
     ]
@@ -19,7 +19,7 @@ defmodule ERWeb.Grpc.Endpoint do
 
   run(ERWeb.Grpc.EventRelay.Subscriptions.Server,
     interceptors: [
-      GRPC.Logger.Server,
+      GRPC.Server.Interceptors.Logger,
       ERWeb.Grpc.EventRelay.Interceptors.RateLimiter,
       ERWeb.Grpc.EventRelay.Interceptors.Authenticator
     ]
@@ -27,7 +27,7 @@ defmodule ERWeb.Grpc.Endpoint do
 
   run(ERWeb.Grpc.EventRelay.Metrics.Server,
     interceptors: [
-      GRPC.Logger.Server,
+      GRPC.Server.Interceptors.Logger,
       ERWeb.Grpc.EventRelay.Interceptors.RateLimiter,
       ERWeb.Grpc.EventRelay.Interceptors.Authenticator
     ]
@@ -35,7 +35,7 @@ defmodule ERWeb.Grpc.Endpoint do
 
   run(ERWeb.Grpc.EventRelay.ApiKeys.Server,
     interceptors: [
-      GRPC.Logger.Server,
+      GRPC.Server.Interceptors.Logger,
       ERWeb.Grpc.EventRelay.Interceptors.RateLimiter,
       ERWeb.Grpc.EventRelay.Interceptors.Authenticator
     ]
@@ -43,7 +43,7 @@ defmodule ERWeb.Grpc.Endpoint do
 
   run(ERWeb.Grpc.EventRelay.JWT.Server,
     interceptors: [
-      GRPC.Logger.Server,
+      GRPC.Server.Interceptors.Logger,
       ERWeb.Grpc.EventRelay.Interceptors.RateLimiter,
       ERWeb.Grpc.EventRelay.Interceptors.Authenticator
     ]

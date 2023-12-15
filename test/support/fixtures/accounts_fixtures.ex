@@ -36,10 +36,12 @@ defmodule ER.AccountsFixtures do
     {:ok, api_key} =
       attrs
       |> Enum.into(%{
+        name: Faker.Person.name(),
         key: "some key",
         secret: "some secret",
         status: :active,
-        type: :admin
+        type: :admin,
+        tls_hostname: "example.com"
       })
       |> ER.Accounts.create_api_key()
 
