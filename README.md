@@ -23,6 +23,10 @@ After you have it setup locally take a look at [Up and Running](https://github.c
 
 Listen to Postgres change events and do stuff with the data directly in Elixir or send them to some destination
 
+[Bosun](https://github.com/themusicman/bosun) 
+
+An Elixir-based authorization package that generates an audit log and can optionally transmit it to EventRelay.
+
 
 ## Use Cases ⚡
 
@@ -49,10 +53,6 @@ Collect first party data and make data driven decisions.
 ### Audit Log
 
 Leverage EventRelay to record events every time you need to track user actions on specific resources within your system.
-
-Example:
-
-[Bosun](https://github.com/themusicman/bosun) is an Elixir-based authorization package that generates an audit log and can optionally transmit it to EventRelay.
 
 ### Webhooks
 
