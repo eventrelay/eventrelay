@@ -53,3 +53,4 @@ jobs:
         # The hostname used to communicate with the PostgreSQL service container
         ER_TEST_DATABASE_URL: postgres://postgres@localhost:5432/event_relay_test
         MIX_ENV: test
+        ER_USE_GRPC_TLS: FALSE
