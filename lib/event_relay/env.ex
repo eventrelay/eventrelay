@@ -12,11 +12,11 @@ defmodule ER.Env do
   end
 
   def grpc_server_key do
-    Application.get_env(:event_relay, :grpc_server_key) |> String.trim()
+    Application.get_env(:event_relay, :grpc_server_key) |> trim()
   end
 
   def grpc_server_crt do
-    Application.get_env(:event_relay, :grpc_server_crt) |> String.trim()
+    Application.get_env(:event_relay, :grpc_server_crt) |> trim()
   end
 
   def debug_transformers do
@@ -24,10 +24,14 @@ defmodule ER.Env do
   end
 
   def ca_key do
-    Application.get_env(:event_relay, :ca_key) |> String.trim()
+    Application.get_env(:event_relay, :ca_key) |> trim()
   end
 
   def ca_crt do
-    Application.get_env(:event_relay, :ca_crt) |> String.trim()
+    Application.get_env(:event_relay, :ca_crt) |> trim()
+  end
+
+  defp trim(value) do
+    value |> to_string() |> String.trim()
   end
 end
