@@ -11,6 +11,7 @@ defmodule ERWeb.EventLive.Index do
     socket =
       socket
       |> assign(:query, nil)
+      |> assign(:query_error, nil)
       |> assign(:offset, 0)
       |> assign(:batch_size, 20)
       |> assign(:search_form, build_search_form())
@@ -92,20 +93,53 @@ defmodule ERWeb.EventLive.Index do
   defp assign_events(socket, query) do
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(socket.assigns.topic)
 
-    batched_result =
-      ER.Events.list_events_for_topic(
-        offset: socket.assigns.offset,
-        batch_size: ER.to_integer(socket.assigns.batch_size),
-        topic_name: topic_name,
-        topic_identifier: topic_identifier,
-        query: query
-      )
+    results =
+      if Flamel.present?(query) do
+        case Predicated.Query.new(query) do
+          {:ok, predicates} ->
+            {:ok, predicates}
 
-    socket
-    |> assign(:events, batched_result.results)
-    |> assign(:next_offset, batched_result.next_offset)
-    |> assign(:previous_offset, batched_result.previous_offset)
-    |> assign(:total_count, batched_result.total_count)
+          {:error, unparsed: value} ->
+            {:error, value}
+
+          {:error, _} ->
+            {:error, query}
+        end
+      else
+        {:ok, []}
+      end
+
+    case results do
+      {:ok, predicates} ->
+        batched_result =
+          ER.Events.list_events_for_topic(
+            offset: socket.assigns.offset,
+            batch_size: ER.to_integer(socket.assigns.batch_size),
+            topic_name: topic_name,
+            topic_identifier: topic_identifier,
+            predicates: predicates
+          )
+
+        socket
+        |> assign(:events, batched_result.results)
+        |> assign(:next_offset, batched_result.next_offset)
+        |> assign(:previous_offset, batched_result.previous_offset)
+        |> assign(:total_count, batched_result.total_count)
+        |> assign(:query_error, nil)
+
+      {:error, msg} ->
+        socket
+        |> assign(:events, [])
+        |> assign(:offset, 0)
+        |> assign(:next_offset, nil)
+        |> assign(:previous_offset, nil)
+        |> assign(:total_count, 0)
+        |> assign(:batch_size, 20)
+        |> assign(
+          :query_error,
+          "There is a syntax error in this portion of the query: \"#{msg}\""
+        )
+    end
   end
 
   defp build_search_form(query \\ "") do
