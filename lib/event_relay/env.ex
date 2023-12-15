@@ -4,7 +4,7 @@ defmodule ER.Env do
   end
 
   def use_grpc_tls? do
-    Flamel.to_boolean(System.get_env("ER_USE_GRPC_TLS")) == true
+    Flamel.to_boolean(System.get_env("ER_USE_GRPC_TLS") || true) == true
   end
 
   def grpc_port do

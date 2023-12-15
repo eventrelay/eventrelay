@@ -28,7 +28,8 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
       name: request.name,
       group_key: request.group_key,
       type: from_grpc_enum(request.type),
-      tls_hostname: request.tls_hostname
+      tls_hostname: request.tls_hostname,
+      status: :active
     }
 
     api_key =
