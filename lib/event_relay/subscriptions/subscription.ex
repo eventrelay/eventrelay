@@ -24,7 +24,7 @@ defmodule ER.Subscriptions.Subscription do
     field :offset, :integer
     field :ordered, :boolean, default: false
     field :subscription_type, :string
-    field :push, :boolean, default: true
+    field :push, :boolean, default: false
     field :paused, :boolean, default: false
     field :config, :map, default: %{}
     field :config_json, :string, virtual: true
