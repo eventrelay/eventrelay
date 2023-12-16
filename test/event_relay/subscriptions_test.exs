@@ -41,7 +41,7 @@ defmodule ER.SubscriptionsTest do
       assert subscription.name == "some_name"
       assert subscription.offset == 42
       assert subscription.ordered == true
-      assert subscription.push == true
+      assert subscription.push == false
       assert subscription.paused == false
       assert subscription.topic_name == topic.name
       refute subscription.signing_secret == nil
