@@ -23,7 +23,7 @@ After you have it setup locally take a look at [Up and Running](https://github.c
 
 [WalEx](https://github.com/cpursley/walex)
 
-Subscribe to Postgres change events and stream them directly into EventRelay via a simple [config](https://github.com/eventrelay).
+Subscribe to Postgres change events and stream them directly into EventRelay via a simple [config]([https://github.com/eventrelay](https://github.com/cpursley/walex?tab=readme-ov-file#destinations)).
 
 [Bosun](https://github.com/themusicman/bosun) 
 
