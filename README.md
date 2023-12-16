@@ -17,11 +17,13 @@ Checkout [Getting Started](https://github.com/eventrelay/eventrelay/wiki/Getting
 After you have it setup locally take a look at [Up and Running](https://github.com/eventrelay/eventrelay/wiki/Up-and-Running) to publish your first event.
 
 
-## 🎉 Projects Using EventRelay
+## Projects Using EventRelay 🤝
+
+### Event Sources
 
 [WalEx](https://github.com/cpursley/walex)
 
-Listen to Postgres change events and do stuff with the data directly in Elixir or send them to some destination
+Subscribe to Postgres change events and stream them directly into EventRelay via a simple [config](https://github.com/eventrelay).
 
 [Bosun](https://github.com/themusicman/bosun) 
 
