@@ -9,10 +9,6 @@ defmodule ER.Subscriptions.Server do
   alias ER.Subscriptions.Subscription
   alias ER.Events
 
-  def pull_queued_events(args) do
-    GenServer.call(via(args[:subscription_id]), {:pull_queued_events, args[:batch_size]})
-  end
-
   def handle_continue(:load_state, %{"id" => id} = state) do
     subscription = ER.Subscriptions.get_subscription!(id)
     topic_name = subscription.topic_name
@@ -31,32 +27,6 @@ defmodule ER.Subscriptions.Server do
 
     schedule_next_tick()
     {:noreply, state}
-  end
-
-  @doc """
-  We are retrieving events through to subscription genserver to force the calls to be queued to allow use to properly update the subscription locks to enforce a deliver once constraint via the API.  
-  """
-  def handle_call(
-        {:pull_queued_events, batch_size},
-        _from,
-        %{"id" => subscription_id, topic_name: topic_name, topic_identifier: topic_identifier} =
-          state
-      ) do
-    # TODO investigate pulling this out of this genserver to avoid blocking
-
-    # get the events
-    events =
-      Events.list_queued_events_for_topic(
-        batch_size: batch_size,
-        topic_name: topic_name,
-        topic_identifier: topic_identifier,
-        subscription_id: subscription_id
-      )
-
-    # lock the events
-    Events.lock_subscription_events(subscription_id, events)
-
-    {:reply, events, state}
   end
 
   def handle_info(

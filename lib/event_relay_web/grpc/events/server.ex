@@ -8,7 +8,9 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     PullEventsRequest,
     PullEventsResponse,
     PullQueuedEventsRequest,
-    PullQueuedEventsResponse
+    PullQueuedEventsResponse,
+    UnLockQueuedEventsRequest,
+    UnLockQueuedEventsResponse
   }
 
   alias ERWeb.Grpc.Eventrelay.Event, as: GrpcEvent
@@ -100,15 +102,15 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     subscription =
       ER.Subscriptions.get_subscription!(request.subscription_id)
 
-    # ensure we have the subscription server started. this is a noop if it is already started
-    ER.Subscriptions.Server.factory(subscription.id)
+    # ensure we have the queued events server started. this is a noop if it is already started
+    ER.Subscriptions.QueuedEvents.Server.factory(subscription.id)
 
     batch_size = if request.batch_size == 0, do: 100, else: request.batch_size
     batch_size = if batch_size > 1000, do: 100, else: batch_size
 
     try do
       events =
-        ER.Subscriptions.Server.pull_queued_events(
+        ER.Subscriptions.QueuedEvents.Server.pull_queued_events(
           subscription_id: request.subscription_id,
           batch_size: batch_size
         )
@@ -119,6 +121,36 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
       events = Enum.map(events, &build_event(&1, full_topic))
 
       PullQueuedEventsResponse.new(events: events)
+    rescue
+      e in ER.Filter.BadFieldError ->
+        raise GRPC.RPCError,
+          status: GRPC.Status.invalid_argument(),
+          message: e.message
+    end
+  end
+
+  @spec unlock_queued_events(UnLockQueuedEventsRequest.t(), GRPC.Server.Stream.t()) ::
+          UnLockQueuedEventsResponse.t()
+  def unlock_queued_events(request, _stream) do
+    subscription =
+      ER.Subscriptions.get_subscription!(request.subscription_id)
+
+    # ensure we have the queued events server started. this is a noop if it is already started
+    ER.Subscriptions.QueuedEvents.Server.factory(subscription.id)
+
+    try do
+      events =
+        ER.Subscriptions.QueuedEvents.Server.unlocked_queued_events(
+          subscription_id: request.subscription_id,
+          event_ids: request.event_ids
+        )
+
+      topic_name = subscription.topic_name
+      topic_identifier = subscription.topic_identifier
+      full_topic = ER.Events.Topic.build_topic(topic_name, topic_identifier)
+      events = Enum.map(events, &build_event(&1, full_topic))
+
+      UnLockQueuedEventsResponse.new(events: events)
     rescue
       e in ER.Filter.BadFieldError ->
         raise GRPC.RPCError,

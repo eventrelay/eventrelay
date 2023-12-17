@@ -263,11 +263,24 @@ end
 defmodule ERWeb.Grpc.Eventrelay.PullQueuedEventsRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :subscription_id, 3, type: :string, json_name: "subscriptionId"
+  field :subscription_id, 1, type: :string, json_name: "subscriptionId"
   field :batch_size, 2, type: :int32, json_name: "batchSize"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PullQueuedEventsResponse do
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
+
+  field :events, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Event
+end
+
+defmodule ERWeb.Grpc.Eventrelay.UnLockQueuedEventsRequest do
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
+
+  field :subscription_id, 1, type: :string, json_name: "subscriptionId"
+  field :event_ids, 2, repeated: true, type: :string, json_name: "eventIds"
+end
+
+defmodule ERWeb.Grpc.Eventrelay.UnLockQueuedEventsResponse do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :events, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Event
@@ -500,6 +513,12 @@ defmodule ERWeb.Grpc.Eventrelay.Events.Service do
     :PullQueuedEvents,
     ERWeb.Grpc.Eventrelay.PullQueuedEventsRequest,
     ERWeb.Grpc.Eventrelay.PullQueuedEventsResponse
+  )
+
+  rpc(
+    :UnLockQueuedEvents,
+    ERWeb.Grpc.Eventrelay.UnLockQueuedEventsRequest,
+    ERWeb.Grpc.Eventrelay.UnLockQueuedEventsResponse
   )
 end
 

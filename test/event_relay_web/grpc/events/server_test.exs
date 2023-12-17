@@ -9,7 +9,8 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
     PublishEventsRequest,
     NewEvent,
     PullEventsRequest,
-    PullQueuedEventsRequest
+    PullQueuedEventsRequest,
+    UnLockQueuedEventsRequest
   }
 
   setup do
@@ -184,6 +185,83 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       result = Server.pull_events(request, nil)
 
       assert result.total_count == 1
+    end
+  end
+
+  describe "unlock_queued_events/2" do
+    setup do
+      {:ok, topic} = Events.create_topic(%{name: "jobs"})
+      subscription = insert(:subscription, topic: topic)
+
+      # spin up the subscription servers
+      ER.Subscriptions.Server.factory(subscription.id)
+
+      {:ok, subscription: subscription, topic: topic}
+    end
+
+    test "unlocks events", %{
+      topic: topic,
+      subscription: subscription
+    } do
+      original_events =
+        Enum.map(1..10, fn i ->
+          attrs =
+            params_for(:event,
+              topic: topic,
+              offset: i
+            )
+
+          {:ok, event} = Events.create_event_for_topic(attrs)
+          event
+        end)
+
+      events_to_unlock = Enum.take(original_events, 2)
+      events_to_unlock_ids = Enum.map(events_to_unlock, & &1.id)
+
+      request = %PullQueuedEventsRequest{
+        batch_size: 10,
+        subscription_id: subscription.id
+      }
+
+      result = Server.pull_queued_events(request, nil)
+
+      assert Enum.count(result.events) == 10
+
+      request = %PullQueuedEventsRequest{
+        batch_size: 10,
+        subscription_id: subscription.id
+      }
+
+      result = Server.pull_queued_events(request, nil)
+
+      assert Enum.count(result.events) == 0
+
+      request = %UnLockQueuedEventsRequest{
+        subscription_id: subscription.id,
+        event_ids: events_to_unlock_ids
+      }
+
+      result = Server.unlock_queued_events(request, nil)
+      # we should have unlocked two events
+      assert Enum.count(result.events) == 2
+
+      request = %PullQueuedEventsRequest{
+        batch_size: 10,
+        subscription_id: subscription.id
+      }
+
+      result = Server.pull_queued_events(request, nil)
+      # we should have unlocked two events
+      assert Enum.count(result.events) == 2
+
+      request = %PullQueuedEventsRequest{
+        batch_size: 10,
+        subscription_id: subscription.id
+      }
+
+      result = Server.pull_queued_events(request, nil)
+      # now we should have 0
+      assert Enum.count(result.events) == 0
     end
   end
 

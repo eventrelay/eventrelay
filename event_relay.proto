@@ -13,6 +13,7 @@ service Events {
   rpc PublishEvents(PublishEventsRequest) returns (PublishEventsResponse) {}
   rpc PullEvents(PullEventsRequest) returns (PullEventsResponse) {}
   rpc PullQueuedEvents(PullQueuedEventsRequest) returns (PullQueuedEventsResponse) {}
+  rpc UnLockQueuedEvents(UnLockQueuedEventsRequest) returns (UnLockQueuedEventsResponse) {}
 }
 
 service Metrics {
@@ -204,12 +205,21 @@ message PullEventsResponse {
 }
 
 message PullQueuedEventsRequest {
-  string subscription_id = 3;
+  string subscription_id = 1;
   // max batchSize is 1000, if not specified, defaults to 100
   int32 batch_size = 2;
 }
 
 message PullQueuedEventsResponse {
+  repeated Event events = 1;
+}
+
+message UnLockQueuedEventsRequest {
+  string subscription_id = 1;
+  repeated string event_ids = 2;
+}
+
+message UnLockQueuedEventsResponse {
   repeated Event events = 1;
 }
 
