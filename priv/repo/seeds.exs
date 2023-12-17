@@ -14,7 +14,6 @@ alias ER.Repo
 
 alias ER.Accounts.User
 alias ER.Events.Topic
-alias ER.Events.Event
 alias ER.Accounts.ApiKey
 alias ER.Accounts
 
@@ -34,7 +33,7 @@ uuid = Faker.UUID.v4()
 websocket_subscription =
   %ER.Subscriptions.Subscription{
     name: "app1_websocket",
-    subscription_type: "websocket",
+    subscription_type: :websocket,
     topic_name: "users"
   }
   |> Repo.insert!()
@@ -42,7 +41,7 @@ websocket_subscription =
 webhook_subscription =
   %ER.Subscriptions.Subscription{
     name: "app1_webhook",
-    subscription_type: "webhook",
+    subscription_type: :webhook,
     topic_name: "users",
     config: %{"endpoint_url" => "http://localhost:5006/api/webhook"}
   }

@@ -16,6 +16,8 @@ defmodule ER.Events.Event do
           topic_identifier: String.t(),
           data_json: String.t(),
           data: map(),
+          data_schema_json: String.t(),
+          data_schema: map(),
           user_id: integer(),
           anonymous_id: String.t(),
           occurred_at: DateTime.t(),
@@ -38,6 +40,7 @@ defmodule ER.Events.Event do
              :topic_identifier,
              :name,
              :data,
+             :data_schema,
              :user_id,
              :anonymous_id,
              :occurred_at,
@@ -79,6 +82,9 @@ defmodule ER.Events.Event do
     # An array of all the subscriptions that have locked this event. This is used with queued events to ensure deliver once functionality through the API
     field :subscription_locks, {:array, :binary_id}, default: []
 
+    field :data_schema, :map
+    field :data_schema_json, :string, virtual: true
+
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
     timestamps(type: :utc_datetime)
@@ -103,10 +109,14 @@ defmodule ER.Events.Event do
       :topic_identifier,
       :user_id,
       :anonymous_id,
-      :subscription_locks
+      :subscription_locks,
+      :data_schema,
+      :data_schema_json
     ])
     |> decode_context()
     |> decode_data()
+    |> decode_data_schema()
+    |> validate_data_schema()
     # |> decode_occurred_at()
     |> assoc_constraint(:topic)
     |> foreign_key_constraint(:topic_name, name: :events_topic_name_fkey)
@@ -116,6 +126,24 @@ defmodule ER.Events.Event do
       :data,
       :topic_name
     ])
+  end
+
+  def validate_data_schema(changeset) do
+    data_schema = get_field(changeset, :data_schema)
+
+    if data_schema do
+      validate_change(changeset, :data, fn _, data ->
+        case ExJsonSchema.Validator.validate(data_schema, data) do
+          :ok ->
+            []
+
+          {:error, _errors} ->
+            [{:data, "does not validate against the schema"}]
+        end
+      end)
+    else
+      changeset
+    end
   end
 
   def decode_context(%Ecto.Changeset{changes: %{context_json: context}} = changeset) do
@@ -150,6 +178,22 @@ defmodule ER.Events.Event do
     changeset
   end
 
+  def decode_data_schema(%Ecto.Changeset{changes: %{data_schema_json: data}} = changeset) do
+    case Jason.decode(data) do
+      {:ok, decoded} ->
+        changeset
+        |> put_change(:data_schema, decoded)
+
+      {:error, _} ->
+        changeset
+        |> add_error(:data_schema, "is invalid JSON")
+    end
+  end
+
+  def decode_data_schema(changeset) do
+    changeset
+  end
+
   def decode_occurred_at(%Ecto.Changeset{changes: %{occurred_at: occurred_at}} = changeset) do
     # handle the default GRPC value for a string
     if occurred_at in ["", nil] do
@@ -178,6 +222,10 @@ defmodule ER.Events.Event do
 
   def data_json(event) do
     Jason.encode!(event.data)
+  end
+
+  def data_schema_json(event) do
+    Jason.encode!(event.data_schema)
   end
 
   @doc """

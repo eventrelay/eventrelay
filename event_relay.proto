@@ -158,6 +158,8 @@ message NewEvent {
   string anonymous_id = 8;
   string occurred_at = 9;
   map<string, string> context = 10; // single level key-value pairs
+  // JSON Schema for the event data
+  string data_schema = 11;
 }
 
 message Event {
@@ -175,6 +177,8 @@ message Event {
   map<string, string> context = 12; // single level key-value pairs
   int32 offset = 13;
   repeated string errors = 14; // list of strings representing errors
+  // JSON Schema for the event data
+  string data_schema = 15;
 }
 
 message PublishEventsRequest {

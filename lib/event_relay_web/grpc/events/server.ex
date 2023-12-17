@@ -39,7 +39,8 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
                  anonymous_id: Map.get(event, :anonymous_id),
                  durable: request.durable,
                  topic_name: topic_name,
-                 topic_identifier: topic_identifier
+                 topic_identifier: topic_identifier,
+                 data_schema_json: Map.get(event, :data_schema)
                }) do
             {:ok, %Event{} = event} ->
               build_event(event, topic)
@@ -181,7 +182,8 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
       offset: event.offset,
       user_id: event.user_id,
       anonymous_id: event.anonymous_id,
-      errors: event.errors
+      errors: event.errors,
+      data_schema: Event.data_schema_json(event)
     )
   end
 end
