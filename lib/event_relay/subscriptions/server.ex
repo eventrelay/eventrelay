@@ -7,7 +7,6 @@ defmodule ER.Subscriptions.Server do
   use ER.Server
   alias Phoenix.PubSub
   alias ER.Subscriptions.Subscription
-  alias ER.Events
 
   def handle_continue(:load_state, %{"id" => id} = state) do
     subscription = ER.Subscriptions.get_subscription!(id)

@@ -107,7 +107,8 @@ defmodule ER.MixProject do
       {:flamel, github: "themusicman/flamel", branch: "main"},
 
       # Certificate Authority/TLS 
-      {:x509, "~> 0.8"}
+      {:x509, "~> 0.8"},
+      {:ex_json_schema, "~> 0.10.2"}
     ]
   end
 

@@ -311,6 +311,51 @@ defmodule ER.EventsTest do
       ER.Events.Event.drop_table!(topic)
     end
 
+    test "create_event_for_topic/1 with data that is invalid according to the event data_schema creates a event in the dead letter events table" do
+      topic = insert(:topic, name: "test")
+      ER.Events.Event.create_table!(topic)
+
+      event = %{
+        context: %{},
+        data: %{
+          "first_name" => 123
+        },
+        data_schema: %{
+          "$schema" => "http://json-schema.org/draft-06/schema#",
+          "$id" => "https://eventrelay.org/json-schemas/person",
+          "$ref" => "#/definitions/Person",
+          "definitions" => %{
+            "Person" => %{
+              "type" => "object",
+              "additionalProperties" => false,
+              "properties" => %{
+                "first_name" => %{
+                  "type" => "string"
+                }
+              },
+              "required" => [
+                "first_name"
+              ],
+              "title" => "Person"
+            }
+          }
+        },
+        name: "some name",
+        occurred_at: DateTime.to_iso8601(~U[2022-12-21 18:27:00Z]),
+        source: "some source",
+        topic_name: topic.name
+      }
+
+      assert capture_log(fn ->
+               assert {:error, event} = Events.create_event_for_topic(event)
+
+               assert Ecto.get_meta(event, :source) ==
+                        "dead_letter_events"
+             end) =~ "Invalid changeset for event"
+
+      ER.Events.Event.drop_table!(topic)
+    end
+
     test "update_event/2 with valid data updates the event" do
       event = insert(:event)
       topic = insert(:topic)
