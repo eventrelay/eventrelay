@@ -300,6 +300,22 @@ defmodule ER.Events do
     |> Repo.update_all([])
   end
 
+  def unlock_subscription_events(_subscription_id, []) do
+    nil
+  end
+
+  def unlock_subscription_events(subscription_id, events) do
+    event = List.first(events)
+    event_ids = Enum.map(events, & &1.id)
+    source = Ecto.get_meta(event, :source)
+
+    from(e in {source, Event},
+      where: e.id in ^event_ids,
+      update: [pull: [subscription_locks: ^subscription_id]]
+    )
+    |> Repo.update_all([])
+  end
+
   def list_events do
     from_events() |> Repo.all()
   end
