@@ -20,7 +20,6 @@ defmodule ERWeb.Grpc.EventRelay.Subscriptions.Server do
       topic_name: request.subscription.topic_name,
       topic_identifier: request.subscription.topic_identifier,
       config: request.subscription.config,
-      push: request.subscription.push,
       subscription_type: request.subscription.subscription_type,
       group_key: request.subscription.group_key
     }
@@ -106,7 +105,6 @@ defmodule ERWeb.Grpc.EventRelay.Subscriptions.Server do
       name: subscription.name,
       topic_name: subscription.topic_name,
       topic_identifier: subscription.topic_identifier,
-      push: subscription.push,
       config: subscription.config,
       subscription_type: subscription.subscription_type,
       group_key: subscription.group_key

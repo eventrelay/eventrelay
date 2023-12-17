@@ -7,19 +7,16 @@ defmodule ERWeb.SubscriptionLiveTest do
 
   @create_attrs %{
     name: "some_name",
-    push: true,
     topic_name: "test",
     subscription_type: "webhook"
   }
   @update_attrs %{
     name: "some_updated_name",
-    push: false,
     topic_name: "test",
     subscription_type: "webhook"
   }
   @invalid_attrs %{
     name: nil,
-    push: false,
     topic_name: nil,
     subscription_type: nil
   }

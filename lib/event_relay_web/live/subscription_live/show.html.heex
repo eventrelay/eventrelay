@@ -11,7 +11,6 @@
 <.list>
   <:item title="Name"><%= @subscription.name %></:item>
   <:item title="Topic name"><%= @subscription.topic_name %></:item>
-  <:item title="Push"><%= @subscription.push %></:item>
   <:item title="Signing Secret"><%= @subscription.signing_secret %></:item>
   <:item title="Config">
     <div
@@ -37,6 +36,7 @@
     title={@page_title}
     action={@live_action}
     subscription={@subscription}
+    topic_options={@topic_options}
     navigate={~p"/subscriptions/#{@subscription}"}
   />
 </.modal>

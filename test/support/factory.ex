@@ -23,7 +23,6 @@ defmodule ER.Factory do
     %ER.Subscriptions.Subscription{
       name: Faker.Lorem.word(),
       ordered: false,
-      push: true,
       paused: false,
       config: %{},
       topic: build(:topic),
