@@ -183,7 +183,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
       user_id: event.user_id,
       anonymous_id: event.anonymous_id,
       errors: event.errors,
-      data_schema: event.data_schema
+      data_schema: Event.data_schema_json(event)
     )
   end
 end

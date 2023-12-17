@@ -48,6 +48,69 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert Enum.count(events) == 1
     end
 
+    test "publishes events with a data_schema", %{topic: topic} do
+      event_name = "entry.created"
+      group_key = "groupkey"
+
+      data_schema = %{
+        "$schema" => "http://json-schema.org/draft-06/schema#",
+        "$id" => "https://eventrelay.org/json-schemas/person",
+        "$ref" => "#/definitions/Person",
+        "definitions" => %{
+          "Person" => %{
+            "type" => "object",
+            "additionalProperties" => false,
+            "properties" => %{
+              "first_name" => %{
+                "type" => "string"
+              }
+            },
+            "required" => [
+              "first_name"
+            ],
+            "title" => "Person"
+          }
+        }
+      }
+
+      data = %{
+        "first_name" => "Jerry"
+      }
+
+      request = %PublishEventsRequest{
+        topic: topic.name,
+        durable: true,
+        events: [
+          %NewEvent{
+            name: event_name,
+            data: Jason.encode!(data),
+            source: "test",
+            group_key: group_key,
+            data_schema: Jason.encode!(data_schema)
+          }
+        ]
+      }
+
+      result = Server.publish_events(request, nil)
+
+      [event | _] = result.events
+
+      assert event.name == event_name
+      assert event.group_key == group_key
+      assert Jason.decode!(event.data) == data
+      assert Jason.decode!(event.data_schema) == data_schema
+
+      events = Events.list_events_for_topic(topic_name: topic.name)
+      assert Enum.count(events) == 1
+
+      event = List.first(events)
+
+      assert event.name == event_name
+      assert event.group_key == group_key
+      assert event.data == data
+      assert event.data_schema == data_schema
+    end
+
     test "raise RPCError if no topic is provided" do
       event_name = "entry.created"
       group_key = "groupkey"

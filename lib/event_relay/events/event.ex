@@ -110,7 +110,8 @@ defmodule ER.Events.Event do
       :user_id,
       :anonymous_id,
       :subscription_locks,
-      :data_schema
+      :data_schema,
+      :data_schema_json
     ])
     |> decode_context()
     |> decode_data()
@@ -221,6 +222,10 @@ defmodule ER.Events.Event do
 
   def data_json(event) do
     Jason.encode!(event.data)
+  end
+
+  def data_schema_json(event) do
+    Jason.encode!(event.data_schema)
   end
 
   @doc """
