@@ -21,8 +21,20 @@ defmodule ERWeb.ApiKeyLive.FormComponent do
         phx-submit="save"
       >
         <.input field={f[:name]} type="text" label="Name" />
-        <.input field={f[:status]} type="text" label="Status" />
-        <.input field={f[:type]} type="text" label="Type" />
+        <.input
+          field={f[:status]}
+          prompt="Pick a status"
+          type="select"
+          options={[{"Active", "active"}, {"Revoked", "revoked"}]}
+          label="Status"
+        />
+        <.input
+          field={f[:type]}
+          prompt="Pick a type"
+          type="select"
+          options={[{"Admin", "admin"}, {"Producer", "producer"}, {"Consumer", "consumer"}]}
+          label="Type"
+        />
         <.input field={f[:group_key]} type="text" label="Group Key" />
         <.input field={f[:tls_hostname]} type="text" label="TLS Hostname" />
         <:actions>
