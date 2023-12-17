@@ -72,6 +72,7 @@ defmodule ERWeb.EventLive.Index do
     socket =
       socket
       |> assign(:search_form, build_search_form(query))
+      |> assign(:offset, 0)
       |> assign_events(query)
 
     {:noreply,
