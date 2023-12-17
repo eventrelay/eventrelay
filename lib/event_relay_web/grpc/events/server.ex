@@ -102,7 +102,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     subscription =
       ER.Subscriptions.get_subscription!(request.subscription_id)
 
-    # ensure we have the subscription server started. this is a noop if it is already started
+    # ensure we have the queued events server started. this is a noop if it is already started
     ER.Subscriptions.QueuedEvents.Server.factory(subscription.id)
 
     batch_size = if request.batch_size == 0, do: 100, else: request.batch_size
@@ -135,7 +135,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     subscription =
       ER.Subscriptions.get_subscription!(request.subscription_id)
 
-    # ensure we have the subscription server started. this is a noop if it is already started
+    # ensure we have the queued events server started. this is a noop if it is already started
     ER.Subscriptions.QueuedEvents.Server.factory(subscription.id)
 
     try do

@@ -36,7 +36,7 @@ defmodule ER.Subscriptions.QueuedEvents.Server do
     )
   end
 
-  # We are retrieving events through to subscription genserver to force the calls to be queued to allow use to properly update the subscription locks to enforce a deliver once constraint via the API.  
+  # We are retrieving events through to queued events genserver to force the calls to be queued to allow use to properly update the subscription locks to enforce a deliver once constraint via the API.  
   def handle_call(
         {:pull_queued_events, batch_size},
         _from,
@@ -58,7 +58,7 @@ defmodule ER.Subscriptions.QueuedEvents.Server do
     {:reply, events, state}
   end
 
-  # We are unlocking events through to subscription genserver to force the calls to be queued to allow use to properly update the subscription locks.  
+  # We are unlocking events through to queued events genserver to force the calls to be queued to allow use to properly update the subscription locks.  
   def handle_call(
         {:unlocked_queued_events, event_ids},
         _from,
