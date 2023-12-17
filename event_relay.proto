@@ -93,11 +93,10 @@ message NewSubscription {
   string name = 1;
   string topic_name = 2;
   string topic_identifier = 3;
-  bool push = 4;
-  map<string, string> config = 6;
-  bool paused = 7;
-  string subscription_type = 8;
-  string group_key = 9;
+  map<string, string> config = 4;
+  bool paused = 5;
+  string subscription_type = 6;
+  string group_key = 7;
 }
 
 message Subscription {
@@ -105,11 +104,9 @@ message Subscription {
   string name = 2;
   string topic_name = 3;
   string topic_identifier = 4;
-  bool push = 5;
-  map<string, string> config = 7;
-  bool paused = 8;
-  string subscription_type = 9;
-  string group_key = 10;
+  map<string, string> config = 5;
+  string subscription_type = 6;
+  string group_key = 7;
 }
 
 message ListSubscriptionsRequest {

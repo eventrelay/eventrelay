@@ -6,7 +6,14 @@ defmodule ERWeb.SubscriptionLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :subscriptions, list_subscriptions())}
+    topic_options = ER.Events.list_topics() |> Enum.map(fn topic -> {topic.name, topic.name} end)
+
+    socket =
+      socket
+      |> assign(:subscriptions, list_subscriptions())
+      |> assign(:topic_options, topic_options)
+
+    {:ok, socket}
   end
 
   @impl true

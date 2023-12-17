@@ -12,7 +12,6 @@ defmodule ER.Subscriptions.Subscription do
              :offset,
              :ordered,
              :subscription_type,
-             :push,
              :paused,
              :config,
              :group_key
@@ -23,8 +22,7 @@ defmodule ER.Subscriptions.Subscription do
     field :name, :string
     field :offset, :integer
     field :ordered, :boolean, default: false
-    field :subscription_type, :string
-    field :push, :boolean, default: false
+    field(:subscription_type, Ecto.Enum, values: [:api, :webhook, :websocket, :s3])
     field :paused, :boolean, default: false
     field :config, :map, default: %{}
     field :config_json, :string, virtual: true
@@ -45,7 +43,6 @@ defmodule ER.Subscriptions.Subscription do
       :name,
       :offset,
       :topic_name,
-      :push,
       :ordered,
       :paused,
       :config,
@@ -56,14 +53,14 @@ defmodule ER.Subscriptions.Subscription do
       :signing_secret,
       :query
     ])
-    |> validate_required([:name, :topic_name, :push, :subscription_type])
+    |> validate_required([:name, :topic_name, :subscription_type])
     |> validate_length(:name, min: 3, max: 255)
     |> unique_constraint(:name)
     |> decode_config()
     |> put_signing_secret()
     |> ER.Schema.normalize_name()
     |> assoc_constraint(:topic)
-    |> validate_inclusion(:subscription_type, ["s3", "webhook", "websocket", "api"])
+    |> validate_inclusion(:subscription_type, [:s3, :webhook, :websocket, :api])
   end
 
   def decode_config(%Ecto.Changeset{changes: %{config_json: context}} = changeset) do
@@ -95,29 +92,25 @@ defmodule ER.Subscriptions.Subscription do
     end
   end
 
-  def api?(subscription) do
-    subscription.push == false && subscription.subscription_type == "api"
-  end
+  def api?(%{subscription_type: "api"}), do: true
+  def api?(_), do: false
 
-  def websocket?(subscription) do
-    subscription.push && subscription.subscription_type == "websocket"
-  end
+  def websocket?(%{subscription_type: "websocket"}), do: true
+  def websocket?(_), do: false
+
+  def webhook?(%{subscription_type: "webhook"}), do: true
+  def webhook?(_), do: false
+
+  def s3?(%{subscription_type: "s3"}), do: true
+  def s3?(_), do: false
 
   def push_to_websocket?(subscription) do
     websocket?(subscription) &&
       subscription.paused != true && ER.Container.channel_cache().any_sockets?(subscription.id)
   end
 
-  def webhook?(subscription) do
-    subscription.push && subscription.subscription_type == "webhook"
-  end
-
   def push_to_webhook?(subscription) do
     webhook?(subscription) && subscription.paused != true
-  end
-
-  def s3?(subscription) do
-    subscription.push && subscription.subscription_type == "s3"
   end
 
   def push_to_s3?(subscription) do

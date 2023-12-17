@@ -35,7 +35,6 @@ websocket_subscription =
   %ER.Subscriptions.Subscription{
     name: "app1_websocket",
     subscription_type: "websocket",
-    push: true,
     topic_name: "users"
   }
   |> Repo.insert!()
@@ -44,7 +43,6 @@ webhook_subscription =
   %ER.Subscriptions.Subscription{
     name: "app1_webhook",
     subscription_type: "webhook",
-    push: true,
     topic_name: "users",
     config: %{"endpoint_url" => "http://localhost:5006/api/webhook"}
   }

@@ -22,11 +22,22 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
         phx-submit="save"
       >
         <.input field={f[:name]} type="text" label="Name" />
-        <.input field={f[:subscription_type]} type="text" label="Type" />
-        <.input field={f[:topic_name]} type="text" label="Topic Name" />
+        <.input
+          field={f[:subscription_type]}
+          prompt="Pick a type"
+          type="select"
+          options={Ecto.Enum.mappings(ER.Subscriptions.Subscription, :subscription_type)}
+          label="Type"
+        />
+        <.input
+          prompt="Pick a topic"
+          field={f[:topic_name]}
+          type="select"
+          options={@topic_options}
+          label="Topic Name"
+        />
         <.input field={f[:topic_identifier]} type="text" label="Topic Identifier" />
         <.input field={f[:group_key]} type="text" label="Group Key" />
-        <.input field={f[:push]} type="checkbox" label="Push?" />
         <.input field={f[:config_json]} type="textarea" label="Config" />
         <.input field={f[:query]} type="textarea" label="Query" />
         <:actions>
