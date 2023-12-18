@@ -243,7 +243,7 @@ defmodule ER.Events.Event do
 
   def signature(value, opts) when is_binary(value) do
     opts = Keyword.put(opts, :value, value)
-    ER.Auth.signature(opts)
+    ER.Auth.hmac(opts)
   end
 
   def signature(%Event{} = event, opts) do

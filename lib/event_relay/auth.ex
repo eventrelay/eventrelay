@@ -14,8 +14,9 @@ defmodule ER.Auth do
     |> binary_part(0, @secret_size)
   end
 
-  def signature(value: value, signing_secret: signing_secret) do
+  def hmac(value: value, signing_secret: signing_secret) do
     :crypto.mac(:hmac, :sha256, signing_secret, value)
-    |> Base.encode64()
+    |> Base.encode16()
+    |> String.downcase()
   end
 end
