@@ -26,6 +26,11 @@ defmodule ER.BootServer do
         {ER.Subscriptions.Manager.Server, [name: "subscriptions_manager"]}
       )
 
+      Horde.DynamicSupervisor.start_child(
+        ER.Horde.Supervisor,
+        {ER.Pruners.Manager.Server, [name: "pruners_manager"]}
+      )
+
       # TODO: improve supervision
       ER.Ingestors.list_ingestors()
       |> Enum.each(fn ingestor ->

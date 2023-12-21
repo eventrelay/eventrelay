@@ -12,4 +12,8 @@ defmodule ERWeb.LiveViewHelpers do
     api_key_subscriptions = Enum.map(api_key.subscriptions, & &1.id)
     subscription.id in api_key_subscriptions
   end
+
+  def topics_to_select_options(topics) do
+    Enum.map(topics, fn topic -> {topic.name, topic.name} end)
+  end
 end

@@ -5,6 +5,157 @@ defmodule ER.EventsTest do
   import ER.Factory
   import ExUnit.CaptureLog
 
+  describe "delete_events_for_topic_before/3" do
+    setup do
+      {:ok, topic} = ER.Events.create_topic(%{name: "metrics"})
+
+      max_age = 900
+
+      pruner =
+        insert(:pruner,
+          topic: topic,
+          query: "group_key == 'target_group'",
+          config: %{"max_age" => max_age},
+          type: :time
+        )
+
+      {:ok, topic: topic, pruner: pruner, max_age: max_age}
+    end
+
+    test "deletes events that are older than the max_age and that match the query filter", %{
+      topic: topic,
+      pruner: %{query: query, config: %{"max_age" => max_age}}
+    } do
+      datetime = DateTime.utc_now()
+
+      before = DateTime.add(datetime, max_age * -1, :second)
+
+      occurred_at_to_prune =
+        DateTime.add(datetime, (max_age + 600) * -1, :second) |> DateTime.to_iso8601()
+
+      # event to delete
+      attrs =
+        params_for(:event,
+          topic: topic,
+          name: "user.updated",
+          group_key: "target_group",
+          source: "app",
+          offset: 1,
+          occurred_at: occurred_at_to_prune,
+          data: %{"first_name" => "Thomas"}
+        )
+
+      Events.create_event_for_topic(attrs)
+
+      # event to keep
+      attrs =
+        params_for(:event,
+          topic: topic,
+          name: "user.created",
+          source: "app",
+          group_key: "not_target_group",
+          offset: 2,
+          occurred_at: occurred_at_to_prune,
+          data: %{"first_name" => "Thomas"}
+        )
+
+      {:ok, to_keep_1} = Events.create_event_for_topic(attrs)
+
+      # event to keep
+      attrs =
+        params_for(:event,
+          topic: topic,
+          name: "user.updated",
+          group_key: "target_group",
+          source: "grpc",
+          offset: 3,
+          occurred_at: DateTime.to_iso8601(datetime),
+          data: %{"first_name" => "Thomas"}
+        )
+
+      {:ok, to_keep_2} = Events.create_event_for_topic(attrs)
+
+      {deleted_count, _} = Events.delete_events_for_topic_before(topic.name, before, query)
+      assert deleted_count == 1
+
+      events = Events.list_events_for_topic(topic_name: topic.name, topic_identifier: nil)
+      assert Enum.map(events, & &1.id) == [to_keep_1.id, to_keep_2.id]
+    end
+  end
+
+  describe "delete_events_for_topic_over/3" do
+    setup do
+      {:ok, topic} = ER.Events.create_topic(%{name: "metrics"})
+
+      max_count = 1
+
+      pruner =
+        insert(:pruner,
+          topic: topic,
+          query: "group_key == 'target_group'",
+          config: %{"max_count" => max_count},
+          type: :count
+        )
+
+      {:ok, topic: topic, pruner: pruner}
+    end
+
+    test "deletes events that are not the newest x events and that match the query filter", %{
+      topic: topic,
+      pruner: %{query: query, config: %{"max_count" => max_count}}
+    } do
+      datetime = DateTime.utc_now()
+
+      # event to keep
+      attrs =
+        params_for(:event,
+          topic: topic,
+          name: "user.updated",
+          group_key: "target_group",
+          source: "app",
+          offset: 1,
+          occurred_at: DateTime.add(datetime, 600 * -1, :second) |> DateTime.to_iso8601(),
+          data: %{"first_name" => "Thomas"}
+        )
+
+      {:ok, to_keep_1} = Events.create_event_for_topic(attrs)
+
+      # event to keep
+      attrs =
+        params_for(:event,
+          topic: topic,
+          name: "user.created",
+          source: "app",
+          group_key: "not_target_group",
+          offset: 2,
+          occurred_at: DateTime.add(datetime, 600 * -1, :second) |> DateTime.to_iso8601(),
+          data: %{"first_name" => "Thomas"}
+        )
+
+      {:ok, to_keep_2} = Events.create_event_for_topic(attrs)
+
+      # event to delete
+      attrs =
+        params_for(:event,
+          topic: topic,
+          name: "user.updated",
+          group_key: "target_group",
+          source: "grpc",
+          offset: 3,
+          occurred_at: DateTime.add(datetime, 800 * -1, :second) |> DateTime.to_iso8601(),
+          data: %{"first_name" => "Thomas"}
+        )
+
+      {:ok, _event} = Events.create_event_for_topic(attrs)
+
+      {deleted_count, _} = Events.delete_events_for_topic_over(topic.name, max_count, query)
+      assert deleted_count == 1
+
+      events = Events.list_events_for_topic(topic_name: topic.name, topic_identifier: nil)
+      assert Enum.map(events, & &1.id) == [to_keep_1.id, to_keep_2.id]
+    end
+  end
+
   describe "list_events_for_topic/1" do
     setup do
       {:ok, topic} = ER.Events.create_topic(%{name: "metrics"})

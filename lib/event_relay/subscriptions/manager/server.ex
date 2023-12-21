@@ -35,6 +35,7 @@ defmodule ER.Subscriptions.Manager.Server do
 
   def init(args) do
     PubSub.subscribe(ER.PubSub, "subscription:created")
+    PubSub.subscribe(ER.PubSub, "subscription:updated")
     PubSub.subscribe(ER.PubSub, "subscription:deleted")
     {:ok, args, {:continue, :load_state}}
   end
@@ -64,6 +65,16 @@ defmodule ER.Subscriptions.Manager.Server do
       "#{__MODULE__}.handle_info({:subscription_created, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
+    ER.Subscriptions.Server.factory(subscription_id)
+    {:noreply, state}
+  end
+
+  def handle_info({:subscription_updated, subscription_id}, state) do
+    Logger.debug(
+      "#{__MODULE__}.handle_info({:subscription_updated, #{inspect(subscription_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
+    )
+
+    ER.Subscriptions.Server.stop(subscription_id)
     ER.Subscriptions.Server.factory(subscription_id)
     {:noreply, state}
   end

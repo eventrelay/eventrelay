@@ -55,7 +55,7 @@ defmodule ER.Accounts.ApiKey do
     |> put_secret(api_key)
     |> put_tls_key(api_key)
     |> put_tls_crt(api_key)
-    |> validate_required([:name, :key, :secret, :status, :type, :tls_key, :tls_crt, :tls_hostname])
+    |> validate_required([:name, :key, :secret, :status, :type])
     |> unique_constraint(:key_secret_status_type_unique,
       name: :api_keys_key_secret_status_type_index
     )
@@ -132,7 +132,12 @@ defmodule ER.Accounts.ApiKey do
   end
 
   def build(name, tls_hostname, type, status \\ :active) do
-    {key, crt} = generate_tls(name, tls_hostname)
+    {key, crt} =
+      if ER.Env.use_grpc_tls?() do
+        generate_tls(name, tls_hostname)
+      else
+        {nil, nil}
+      end
 
     %ApiKey{
       name: name,

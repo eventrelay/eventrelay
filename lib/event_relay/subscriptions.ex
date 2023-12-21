@@ -55,6 +55,15 @@ defmodule ER.Subscriptions do
     result
   end
 
+  def publish_subscription_updated({:ok, subscription}) do
+    PubSub.broadcast(ER.PubSub, "subscription:updated", {:subscription_updated, subscription.id})
+    {:ok, subscription}
+  end
+
+  def publish_subscription_updated(result) do
+    result
+  end
+
   def publish_subscription_deleted({:ok, subscription}) do
     PubSub.broadcast(ER.PubSub, "subscription:deleted", {:subscription_deleted, subscription.id})
     {:ok, subscription}
@@ -80,6 +89,7 @@ defmodule ER.Subscriptions do
     subscription
     |> Subscription.changeset(attrs)
     |> Repo.update()
+    |> publish_subscription_updated()
   end
 
   @doc """
