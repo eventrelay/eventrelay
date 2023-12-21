@@ -100,6 +100,13 @@ defmodule ERWeb.Router do
 
       live "/metrics/:id", MetricLive.Show, :show
       live "/metrics/:id/show/edit", MetricLive.Show, :edit
+
+      live "/pruners", PrunerLive.Index, :index
+      live "/pruners/new", PrunerLive.Index, :new
+      live "/pruners/:id/edit", PrunerLive.Index, :edit
+
+      live "/pruners/:id", PrunerLive.Show, :show
+      live "/pruners/:id/show/edit", PrunerLive.Show, :edit
     end
   end
 

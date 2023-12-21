@@ -2,6 +2,7 @@ defmodule ER.Subscriptions.Subscription do
   use Ecto.Schema
   import Ecto.Changeset
   alias ER.Events.Topic
+  import ER.Config
 
   @derive {Jason.Encoder,
            only: [
@@ -61,26 +62,6 @@ defmodule ER.Subscriptions.Subscription do
     |> ER.Schema.normalize_name()
     |> assoc_constraint(:topic)
     |> validate_inclusion(:subscription_type, [:s3, :webhook, :websocket, :api])
-  end
-
-  def decode_config(%Ecto.Changeset{changes: %{config_json: context}} = changeset) do
-    case Jason.decode(context) do
-      {:ok, decoded} ->
-        changeset
-        |> put_change(:config, decoded)
-
-      {:error, _} ->
-        changeset
-        |> add_error(:config, "is invalid JSON")
-    end
-  end
-
-  def decode_config(changeset) do
-    changeset
-  end
-
-  def config_json(subscription) do
-    Jason.encode!(subscription.config)
   end
 
   def put_signing_secret(changeset) do

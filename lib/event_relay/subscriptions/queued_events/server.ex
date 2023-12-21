@@ -91,4 +91,9 @@ defmodule ER.Subscriptions.QueuedEvents.Server do
   def name(id) do
     "queued_events:" <> id
   end
+
+  @spec tick_interval() :: integer()
+  def tick_interval do
+    900_000
+  end
 end

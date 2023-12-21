@@ -97,4 +97,14 @@ defmodule ER.Factory do
       field_path: "data.cart.total"
     }
   end
+
+  def pruner_factory do
+    %ER.Pruners.Pruner{
+      name: Faker.Lorem.word(),
+      topic: build(:topic),
+      query: "",
+      config: %{},
+      type: :count
+    }
+  end
 end

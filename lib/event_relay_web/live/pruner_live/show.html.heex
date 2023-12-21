@@ -1,0 +1,37 @@
+<.header>
+  Pruner <%= @pruner.id %>
+  <:subtitle>This is a pruner record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/pruners/#{@pruner}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit pruner</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Name"><%= @pruner.name %></:item>
+  <:item title="Config">
+    <div id={"#{@pruner.id}-config"} phx-hook="JsonView" data-json={Jason.encode!(@pruner.config)}>
+    </div>
+  </:item>
+  <:item title="Query"><%= @pruner.query %></:item>
+</.list>
+
+<.back navigate={~p"/pruners"}>Back to pruners</.back>
+
+<.modal
+  :if={@live_action == :edit}
+  id="pruner-modal"
+  show
+  on_cancel={JS.patch(~p"/pruners/#{@pruner}")}
+>
+  <.live_component
+    module={ERWeb.PrunerLive.FormComponent}
+    id={@pruner.id}
+    title={@page_title}
+    action={@live_action}
+    topics={@topics}
+    pruner={@pruner}
+    patch={~p"/pruners/#{@pruner}"}
+  />
+</.modal>

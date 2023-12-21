@@ -516,6 +516,49 @@ defmodule ER.Events do
     end
   end
 
+  def delete_events_for_topic_before(topic_name, datetime, query_filter) do
+    predicates = ER.Predicates.to_predicates(query_filter)
+
+    query =
+      from_events_for_topic(topic_name: topic_name)
+      |> where(as(:events).occurred_at < ^datetime)
+
+    query =
+      if Flamel.present?(predicates) do
+        conditions = apply_predicates(predicates, nil, nil)
+        from query, where: ^conditions
+      else
+        query
+      end
+
+    Repo.delete_all(query)
+  end
+
+  def delete_events_for_topic_over(topic_name, max_count, query_filter) do
+    predicates = ER.Predicates.to_predicates(query_filter)
+
+    subquery =
+      from(e in from_events_for_topic(topic_name: topic_name),
+        order_by: [desc: e.occurred_at],
+        limit: ^max_count,
+        select: e.id
+      )
+
+    query =
+      from_events_for_topic(topic_name: topic_name)
+      |> where([events: events], events.id not in subquery(subquery))
+
+    query =
+      if Flamel.present?(predicates) do
+        conditions = apply_predicates(predicates, nil, nil)
+        from query, where: ^conditions
+      else
+        query
+      end
+
+    Repo.delete_all(query)
+  end
+
   def delete_events_for_topic!(%Topic{} = topic) do
     from_events_for_topic(topic_name: topic.name)
     |> Repo.delete_all()

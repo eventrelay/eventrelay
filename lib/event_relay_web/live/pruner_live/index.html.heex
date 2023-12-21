@@ -1,0 +1,50 @@
+<.header>
+  Listing Pruners
+  <:actions>
+    <.link patch={~p"/pruners/new"}>
+      <.button>New Pruner</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="pruners" rows={@streams.pruners}>
+  <:col :let={{_id, pruner}} label="Name"><%= pruner.name %></:col>
+  <:col :let={{_id, pruner}} label="Type"><%= pruner.type %></:col>
+  <:col :let={{_id, pruner}} label="Topic"><%= pruner.topic_name %></:col>
+  <:col :let={{_id, pruner}} label="Config">
+    <div id={"#{pruner.id}-config"} phx-hook="JsonView" data-json={Jason.encode!(pruner.config)}>
+    </div>
+  </:col>
+  <:col :let={{_id, pruner}} label="Query"><%= pruner.query %></:col>
+  <:action :let={{_id, pruner}}>
+    <div class="sr-only">
+      <.link navigate={~p"/pruners/#{pruner}"}>Show</.link>
+    </div>
+    <.link patch={~p"/pruners/#{pruner}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, pruner}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: pruner.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="pruner-modal"
+  show
+  on_cancel={JS.patch(~p"/pruners")}
+>
+  <.live_component
+    module={ERWeb.PrunerLive.FormComponent}
+    id={@pruner.id || :new}
+    title={@page_title}
+    action={@live_action}
+    topics={@topics}
+    pruner={@pruner}
+    patch={~p"/pruners"}
+  />
+</.modal>

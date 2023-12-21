@@ -2,7 +2,6 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
   use ERWeb, :live_component
 
   alias ER.Subscriptions
-  alias ER.Subscriptions.Subscription
 
   @impl true
   def render(assigns) do
@@ -33,13 +32,13 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
           prompt="Pick a topic"
           field={f[:topic_name]}
           type="select"
-          options={@topic_options}
+          options={topics_to_select_options(@topics)}
           label="Topic Name"
         />
         <.input field={f[:topic_identifier]} type="text" label="Topic Identifier" />
         <.input field={f[:group_key]} type="text" label="Group Key" />
         <.input field={f[:config_json]} type="textarea" label="Config" />
-        <.input field={f[:query]} type="textarea" label="Query" />
+        <.input field={f[:query]} type="textarea" label="Query Filter" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Subscription</.button>
         </:actions>
@@ -50,7 +49,7 @@ defmodule ERWeb.SubscriptionLive.FormComponent do
 
   @impl true
   def update(%{subscription: subscription} = assigns, socket) do
-    subscription = %{subscription | config_json: Subscription.config_json(subscription)}
+    subscription = %{subscription | config_json: ER.Config.config_json(subscription)}
     changeset = Subscriptions.change_subscription(subscription)
 
     {:ok,

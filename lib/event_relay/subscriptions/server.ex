@@ -93,6 +93,11 @@ defmodule ER.Subscriptions.Server do
     # TODO: save state to redis if needed or delete it if this is a good termination
   end
 
+  @spec tick_interval() :: integer()
+  def tick_interval do
+    ER.to_integer(System.get_env("ER_SUBSCRIPTION_SERVER_TICK_INTERVAL") || "5000")
+  end
+
   @spec name(binary()) :: binary()
   def name(id) do
     "subscription:" <> id
