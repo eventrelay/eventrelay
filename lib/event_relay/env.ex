@@ -36,10 +36,14 @@ defmodule ER.Env do
   end
 
   def hammer_backend do
-    Application.get_env(:event_relay, :hammer_backend, "ETS") |> trim()
+    Application.get_env(:event_relay, :hammer_backend, "ETS")
+    |> trim()
+    |> String.downcase()
   end
 
   defp trim(value) do
-    value |> to_string() |> String.trim()
+    value
+    |> to_string()
+    |> String.trim()
   end
 end
