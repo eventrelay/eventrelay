@@ -28,14 +28,14 @@ defmodule ER.IngestorsTest do
     test "create_ingestor/1 with valid data creates a ingestor", %{topic: topic} do
       valid_attrs = %{
         config: %{},
-        type: :google_pubsub,
+        type: :webhook,
         topic_name: topic.name,
-        source: "GooglePubSub"
+        source: "Webhook"
       }
 
       assert {:ok, %Ingestor{} = ingestor} = Ingestors.create_ingestor(valid_attrs)
       assert ingestor.config == %{}
-      assert ingestor.type == :google_pubsub
+      assert ingestor.type == :webhook
     end
 
     test "create_ingestor/1 with invalid data returns error changeset" do
@@ -44,11 +44,11 @@ defmodule ER.IngestorsTest do
 
     test "update_ingestor/2 with valid data updates the ingestor" do
       ingestor = insert(:ingestor)
-      update_attrs = %{config: %{}, type: :google_pubsub}
+      update_attrs = %{config: %{}, type: :webhook}
 
       assert {:ok, %Ingestor{} = ingestor} = Ingestors.update_ingestor(ingestor, update_attrs)
       assert ingestor.config == %{}
-      assert ingestor.type == :google_pubsub
+      assert ingestor.type == :webhook
     end
 
     test "update_ingestor/2 with invalid data returns error changeset" do

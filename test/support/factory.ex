@@ -82,11 +82,23 @@ defmodule ER.Factory do
   end
 
   def ingestor_factory do
+    key =
+      :crypto.strong_rand_bytes(42)
+      |> Base.url_encode64()
+      |> binary_part(0, 42)
+
+    secret =
+      :crypto.strong_rand_bytes(42)
+      |> Base.url_encode64()
+      |> binary_part(0, 42)
+
     %ER.Ingestors.Ingestor{
-      config: %{"subscription" => "test"},
-      type: :google_pubsub,
-      source: "GooglePubSub",
-      topic: build(:topic)
+      config: %{},
+      type: :webhook,
+      source: "webhook",
+      topic: build(:topic),
+      key: key,
+      secret: secret
     }
   end
 

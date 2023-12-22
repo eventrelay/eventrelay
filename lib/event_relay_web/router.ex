@@ -9,6 +9,7 @@ defmodule ERWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, {ERWeb.Layouts, :root}
     plug :protect_from_forgery
+    plug ERWeb.CurrentHost
     plug :put_secure_browser_headers
     plug :fetch_current_user
   end
@@ -18,16 +19,25 @@ defmodule ERWeb.Router do
     plug ERWeb.APIAuth
   end
 
+  pipeline :webhook do
+    plug :accepts, ["json"]
+    plug ERWeb.WebhookAuth
+  end
+
   scope "/", ERWeb do
     pipe_through :browser
 
     get "/", PageController, :home
   end
 
-  # Other scopes may use custom stacks.
   scope "/api", ERWeb do
     pipe_through [:api, :authenticate_api_token]
     post "/events", EventController, :publish
+  end
+
+  scope "/webhooks", ERWeb do
+    pipe_through [:webhook, :authenticate_webhook_request]
+    post "/ingest/:ingestor_id", WebhookController, :ingest
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
@@ -67,7 +77,7 @@ defmodule ERWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [{ERWeb.UserAuth, :ensure_authenticated}] do
+      on_mount: [{ERWeb.UserAuth, :ensure_authenticated}, {ERWeb.CurrentHost, :ensure_host}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
@@ -107,6 +117,13 @@ defmodule ERWeb.Router do
 
       live "/pruners/:id", PrunerLive.Show, :show
       live "/pruners/:id/show/edit", PrunerLive.Show, :edit
+
+      live "/ingestors", IngestorLive.Index, :index
+      live "/ingestors/new", IngestorLive.Index, :new
+      live "/ingestors/:id/edit", IngestorLive.Index, :edit
+
+      live "/ingestors/:id", IngestorLive.Show, :show
+      live "/ingestors/:id/show/edit", IngestorLive.Show, :edit
     end
   end
 

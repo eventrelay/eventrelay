@@ -28,6 +28,7 @@ defmodule ERWeb do
       import Phoenix.Controller
       import Phoenix.LiveView.Router
       import ERWeb.APIAuth, only: [authenticate_api_token: 2]
+      import ERWeb.WebhookAuth, only: [authenticate_webhook_request: 2]
     end
   end
 

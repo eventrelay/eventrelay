@@ -51,7 +51,7 @@ defmodule ER.Ingestors do
   """
   def create_ingestor(attrs \\ %{}) do
     %Ingestor{}
-    |> Ingestor.changeset(attrs)
+    |> Ingestor.create_changeset(attrs)
     |> Repo.insert()
   end
 

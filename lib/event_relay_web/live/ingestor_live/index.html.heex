@@ -1,0 +1,51 @@
+<.header>
+  Listing Ingestors
+  <:actions>
+    <.link patch={~p"/ingestors/new"}>
+      <.button>New Ingestor</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="ingestors" rows={@streams.ingestors}>
+  <:col :let={{_id, ingestor}} label="Type"><%= ingestor.type %></:col>
+  <:col :let={{_id, ingestor}} label="Topic"><%= ingestor.topic_name %></:col>
+  <:col :let={{_id, ingestor}} label="Config">
+    <div
+      id={"#{ingestor.id}-config"}
+      phx-hook="JsonView"
+      data-json={Jason.encode!(ingestor.config)}
+    >
+    </div>
+  </:col>
+  <:col :let={{_id, ingestor}} label="Source"><%= ingestor.source %></:col>
+  <:action :let={{_id, ingestor}}>
+    <.link navigate={~p"/ingestors/#{ingestor}"}>Show</.link>
+    <.link patch={~p"/ingestors/#{ingestor}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, ingestor}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: ingestor.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="ingestor-modal"
+  show
+  on_cancel={JS.patch(~p"/ingestors")}
+>
+  <.live_component
+    module={ERWeb.IngestorLive.FormComponent}
+    id={@ingestor.id || :new}
+    title={@page_title}
+    action={@live_action}
+    topics={@topics}
+    ingestor={@ingestor}
+    patch={~p"/ingestors"}
+  />
+</.modal>

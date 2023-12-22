@@ -3,25 +3,51 @@ defmodule ER.Ingestors.Ingestor do
   import Ecto.Changeset
   alias ER.Transformers.Transformer
   alias ER.Events.Topic
+  import ER.Config
   alias __MODULE__
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "ingestors" do
-    field :config, :map
-    field(:type, Ecto.Enum, values: [:google_pubsub])
+    field :config, :map, default: %{}
+    field :config_json, :string, virtual: true
+    # field(:type, Ecto.Enum, values: [:google_pubsub])
+    field(:type, Ecto.Enum, values: [:webhook])
+    # TODO: rething the Transformers
     has_one(:transformer, Transformer)
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
     field :source, :string
+    field :key, :string
+    field :secret, :string
 
     timestamps()
   end
 
   @doc false
+  def create_changeset(ingestor, attrs) do
+    immutable_attrs = %{
+      key: ER.Auth.generate_key(),
+      secret: ER.Auth.generate_secret()
+    }
+
+    ingestor
+    |> cast(Map.merge(attrs, immutable_attrs), [
+      :type,
+      :config,
+      :topic_name,
+      :source,
+      :key,
+      :secret
+    ])
+    |> validate_required([:type, :topic_name, :source, :key, :secret])
+    |> decode_config()
+  end
+
   def changeset(ingestor, attrs) do
     ingestor
     |> cast(attrs, [:type, :config, :topic_name, :source])
     |> validate_required([:type, :topic_name, :source])
+    |> decode_config()
   end
 
   def get_broadway_producer(%Ingestor{type: :google_pubsub}) do
