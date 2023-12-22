@@ -23,6 +23,7 @@ defmodule ER.Events.Event do
           occurred_at: DateTime.t(),
           offset: integer(),
           source: String.t(),
+          verified: String.t(),
           context: map(),
           errors: list(),
           durable: boolean(),
@@ -46,6 +47,7 @@ defmodule ER.Events.Event do
              :occurred_at,
              :offset,
              :source,
+             :verified,
              :context,
              :errors,
              :group_key,
@@ -67,6 +69,7 @@ defmodule ER.Events.Event do
     field :occurred_at, :utc_datetime
     field :offset, :integer, read_after_writes: true
     field :source, :string
+    field :verified, :boolean, default: false
 
     # This can be used to segment events. For instance, it can store a tenant, account, or organization id
     field :group_key, :string
@@ -111,7 +114,8 @@ defmodule ER.Events.Event do
       :anonymous_id,
       :subscription_locks,
       :data_schema,
-      :data_schema_json
+      :data_schema_json,
+      :verified
     ])
     |> decode_context()
     |> decode_data()

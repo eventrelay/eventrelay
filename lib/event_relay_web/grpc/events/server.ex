@@ -22,6 +22,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     events = request.events
     topic = request.topic
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
+    verified = true
 
     if topic_name do
       events =
@@ -38,6 +39,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
                  user_id: Map.get(event, :user_id),
                  anonymous_id: Map.get(event, :anonymous_id),
                  durable: request.durable,
+                 verified: verified,
                  topic_name: topic_name,
                  topic_identifier: topic_identifier,
                  data_schema_json: Map.get(event, :data_schema)

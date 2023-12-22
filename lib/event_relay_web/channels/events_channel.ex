@@ -42,6 +42,7 @@ defmodule ERWeb.EventsChannel do
         response = %{status: "ok"}
         {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
         durable = unless ER.boolean?(durable), do: false, else: to_boolean(durable)
+        verified = true
 
         Enum.map(events, fn event ->
           case ER.Events.produce_event_for_topic(%{
@@ -53,6 +54,7 @@ defmodule ERWeb.EventsChannel do
                  user_id: Map.get(event, "user_id"),
                  anonymous_id: Map.get(event, "anonymous_id"),
                  durable: durable,
+                 verified: verified,
                  topic_name: topic_name,
                  topic_identifier: topic_identifier
                }) do
