@@ -7,6 +7,10 @@ defmodule ER.Env do
     Flamel.to_boolean(System.get_env("ER_USE_GRPC_TLS") || true) == true
   end
 
+  def use_redis? do
+    hammer_backend() == "redis"
+  end
+
   def grpc_port do
     Application.get_env(:event_relay, :grpc_port, 50051)
   end
@@ -29,6 +33,10 @@ defmodule ER.Env do
 
   def ca_crt do
     Application.get_env(:event_relay, :ca_crt) |> trim()
+  end
+
+  def hammer_backend do
+    Application.get_env(:event_relay, :hammer_backend, "ETS") |> trim()
   end
 
   defp trim(value) do

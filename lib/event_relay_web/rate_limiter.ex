@@ -1,10 +1,9 @@
 defmodule ERWeb.RateLimiter do
   def check_rate(type, context \\ []) do
-    {key, time_frame, max_req} = rate(type, context)
-
-    case Hammer.check_rate(key, time_frame, max_req) do
-      {:allow, count} -> {:allow, count}
-      {:deny, _} -> {:deny, type, time_frame, max_req}
+    if ER.Env.use_redis?() do
+      check_rate_redis(type, context)
+    else
+      check_rate_ets(type, context)
     end
   end
 
@@ -22,6 +21,30 @@ defmodule ERWeb.RateLimiter do
 
       _ ->
         {"request:#{type}", 1_000, 10_000}
+    end
+  end
+
+  defp check_rate_redis(type, context) do
+    {key, time_frame, max_req} = rate(type, context)
+
+    case Hammer.check_rate(:redis, key, time_frame, max_req) do
+      {:allow, count} ->
+        {:allow, count}
+
+      {:deny, _} ->
+        {:deny, type, time_frame, max_req}
+    end
+  end
+
+  defp check_rate_ets(type, context) do
+    {key, time_frame, max_req} = rate(type, context)
+
+    case Hammer.check_rate(:ets, key, time_frame, max_req) do
+      {:allow, count} ->
+        {:allow, count}
+
+      {:deny, _} ->
+        {:deny, type, time_frame, max_req}
     end
   end
 end

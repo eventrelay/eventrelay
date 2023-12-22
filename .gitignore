@@ -36,3 +36,6 @@ event_relay-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# IDE configs
+.vscode
+
