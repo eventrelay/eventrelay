@@ -5,6 +5,26 @@ defmodule ER.EventsTest do
   import ER.Factory
   import ExUnit.CaptureLog
 
+  describe "from_events_for_topic/1" do
+    test "returns lower case topic events ecto query when topic name contains uppercase" do
+      {:ok, _topic} = ER.Events.create_topic(%{name: "Metrics"})
+
+      expected =
+        "#Ecto.Query<from e0 in {\"metrics_events\", ER.Events.Event}, as: :events>"
+
+      assert expected == inspect(Events.from_events_for_topic(topic_name: "Metrics"))
+    end
+
+    test "returns lower case topic events ecto query when topic name is lowercase" do
+      {:ok, _topic} = ER.Events.create_topic(%{name: "metrics"})
+
+      expected =
+        "#Ecto.Query<from e0 in {\"metrics_events\", ER.Events.Event}, as: :events>"
+
+      assert expected == inspect(Events.from_events_for_topic(topic_name: "Metrics"))
+    end
+  end
+
   describe "delete_events_for_topic_before/3" do
     setup do
       {:ok, topic} = ER.Events.create_topic(%{name: "metrics"})
@@ -158,7 +178,7 @@ defmodule ER.EventsTest do
 
   describe "list_events_for_topic/1" do
     setup do
-      {:ok, topic} = ER.Events.create_topic(%{name: "metrics"})
+      {:ok, topic} = ER.Events.create_topic(%{name: "Metrics"})
 
       {:ok, topic: topic}
     end
