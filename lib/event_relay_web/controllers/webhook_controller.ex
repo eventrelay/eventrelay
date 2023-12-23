@@ -63,7 +63,6 @@ defmodule ERWeb.WebhookController do
   end
 
   defp log(ctx) do
-    IO.inspect(ctx: ctx)
     ctx
   end
 end

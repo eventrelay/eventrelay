@@ -384,17 +384,7 @@ defmodule ER.Events do
       if ER.empty?(occurred_at) do
         Map.put(attrs, :occurred_at, DateTime.truncate(DateTime.now!("Etc/UTC"), :second))
       else
-        case DateTime.from_iso8601(occurred_at) do
-          {:ok, datetime, _} ->
-            Map.put(attrs, :occurred_at, DateTime.truncate(datetime, :second))
-
-          _ ->
-            Logger.error(
-              "create_event_for_topic failed to parse occurred_at value=#{inspect(occurred_at)}"
-            )
-
-            Map.put(attrs, :occurred_at, nil)
-        end
+        Map.put(attrs, :occurred_at, Flamel.Moment.to_datetime(occurred_at))
       end
 
     try do

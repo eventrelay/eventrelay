@@ -70,6 +70,9 @@ defmodule ER.Subscriptions.Server do
       Subscription.push_to_s3?(subscription) ->
         Enum.map(events, &ER.Subscriptions.Delivery.S3.push(subscription, &1))
 
+      Subscription.push_to_topic?(subscription) ->
+        Enum.map(events, &ER.Subscriptions.Delivery.Topic.push(subscription, &1))
+
       true ->
         Logger.debug("Not pushing event=#{inspect(event)} subscription=#{inspect(subscription)}")
     end
