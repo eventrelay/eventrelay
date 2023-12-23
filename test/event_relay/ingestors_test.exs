@@ -13,7 +13,7 @@ defmodule ER.IngestorsTest do
 
     alias ER.Ingestors.Ingestor
 
-    @invalid_attrs %{config: nil, type: nil}
+    @invalid_attrs %{"config" => nil, "type" => nil}
 
     test "list_ingestors/0 returns all ingestors" do
       ingestor = insert(:ingestor)
@@ -27,10 +27,10 @@ defmodule ER.IngestorsTest do
 
     test "create_ingestor/1 with valid data creates a ingestor", %{topic: topic} do
       valid_attrs = %{
-        config: %{},
-        type: :webhook,
-        topic_name: topic.name,
-        source: "Webhook"
+        "config" => %{},
+        "type" => :webhook,
+        "topic_name" => topic.name,
+        "source" => "Webhook"
       }
 
       assert {:ok, %Ingestor{} = ingestor} = Ingestors.create_ingestor(valid_attrs)
@@ -44,7 +44,11 @@ defmodule ER.IngestorsTest do
 
     test "update_ingestor/2 with valid data updates the ingestor" do
       ingestor = insert(:ingestor)
-      update_attrs = %{config: %{}, type: :webhook}
+
+      update_attrs = %{
+        "config" => %{},
+        "type" => :webhook
+      }
 
       assert {:ok, %Ingestor{} = ingestor} = Ingestors.update_ingestor(ingestor, update_attrs)
       assert ingestor.config == %{}

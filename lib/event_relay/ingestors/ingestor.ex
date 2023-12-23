@@ -26,8 +26,8 @@ defmodule ER.Ingestors.Ingestor do
   @doc false
   def create_changeset(ingestor, attrs) do
     immutable_attrs = %{
-      key: ER.Auth.generate_key(),
-      secret: ER.Auth.generate_secret()
+      "key" => ER.Auth.generate_key(),
+      "secret" => ER.Auth.generate_secret()
     }
 
     ingestor
