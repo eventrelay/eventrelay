@@ -59,23 +59,8 @@ defmodule ER.Subscriptions.Server do
         events
       end
 
-    cond do
-      Subscription.push_to_websocket?(subscription) ->
-        Enum.map(events, &ER.Subscriptions.Delivery.Websocket.push(subscription, &1))
-
-      Subscription.push_to_webhook?(subscription) ->
-        # TODO implement a queue and rate limiting
-        Enum.map(events, &ER.Subscriptions.Delivery.Webhook.push(subscription, &1))
-
-      Subscription.push_to_s3?(subscription) ->
-        Enum.map(events, &ER.Subscriptions.Delivery.S3.push(subscription, &1))
-
-      Subscription.push_to_topic?(subscription) ->
-        Enum.map(events, &ER.Subscriptions.Delivery.Topic.push(subscription, &1))
-
-      true ->
-        Logger.debug("Not pushing event=#{inspect(event)} subscription=#{inspect(subscription)}")
-    end
+    push_subscription = ER.Subscriptions.Push.Factory.build(subscription)
+    Enum.map(events, &ER.Subscriptions.Push.Subscription.push(push_subscription, &1))
 
     {:noreply, state}
   end

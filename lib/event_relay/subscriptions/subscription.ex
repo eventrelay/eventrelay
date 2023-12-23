@@ -73,19 +73,19 @@ defmodule ER.Subscriptions.Subscription do
     end
   end
 
-  def api?(%{subscription_type: "api"}), do: true
+  def api?(%{subscription_type: :api}), do: true
   def api?(_), do: false
 
-  def websocket?(%{subscription_type: "websocket"}), do: true
+  def websocket?(%{subscription_type: :websocket}), do: true
   def websocket?(_), do: false
 
-  def webhook?(%{subscription_type: "webhook"}), do: true
+  def webhook?(%{subscription_type: :webhook}), do: true
   def webhook?(_), do: false
 
-  def s3?(%{subscription_type: "s3"}), do: true
+  def s3?(%{subscription_type: :s3}), do: true
   def s3?(_), do: false
 
-  def topic?(%{subscription_type: "topic"}), do: true
+  def topic?(%{subscription_type: :topic}), do: true
   def topic?(_), do: false
 
   def push_to_websocket?(subscription) do
