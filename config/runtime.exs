@@ -26,18 +26,22 @@ config :ex_aws, :s3,
   port: System.get_env("ER_S3_PORT", "9000")
 
 config :hammer,
-  backend:
-    {Hammer.Backend.Redis,
-     [
-       delete_buckets_timeout: 10_0000,
-       expiry_ms: 60_000 * 60 * 2,
-       redis_url: System.get_env("ER_REDIS_URL")
-     ]}
+  backend: [
+    ets: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]},
+    redis:
+      {Hammer.Backend.Redis,
+       [
+         delete_buckets_timeout: 10_0000,
+         expiry_ms: 60_000 * 60 * 2,
+         redis_url: System.get_env("ER_REDIS_URL")
+       ]}
+  ]
 
 config :event_relay, :ca_key, System.get_env("ER_CA_KEY")
 config :event_relay, :ca_crt, System.get_env("ER_CA_CRT")
 config :event_relay, :grpc_server_key, System.get_env("ER_GRPC_SERVER_KEY")
 config :event_relay, :grpc_server_crt, System.get_env("ER_GRPC_SERVER_CRT")
+config :event_relay, :hammer_backend, System.get_env("ER_HAMMER_BACKEND")
 
 if config_env() == :dev do
   database_url =

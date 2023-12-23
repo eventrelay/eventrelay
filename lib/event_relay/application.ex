@@ -32,32 +32,36 @@ defmodule ER.Application do
     #   ]
     # ]
 
-    children = [
-      # Start the Telemetry supervisor
-      ERWeb.Telemetry,
-      # Start the Ecto repository
-      ER.Repo,
-      # Start the PubSub system
-      {Phoenix.PubSub, name: ER.PubSub},
-      # Start the Endpoint (http/https)
-      ERWeb.Endpoint,
-      {GRPC.Server.Supervisor, grpc_start_args()},
-      # {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
-      ER.Redix,
-      {ER.Events.ChannelCache, []},
-      ER.NodeListener,
-      {ER.Horde.Registry, [name: ER.Horde.Registry, shutdown: 60_000, keys: :unique]},
-      {ER.Horde.Supervisor,
-       [name: ER.Horde.Supervisor, shutdown: 60_000, strategy: :one_for_one]},
-      {ER.ChannelMonitor, :events},
-      ER.BootServer
-    ]
+    children =
+      [
+        # Start the Telemetry supervisor
+        ERWeb.Telemetry,
+        # Start the Ecto repository
+        ER.Repo,
+        # Start the PubSub system
+        {Phoenix.PubSub, name: ER.PubSub},
+        # Start the Endpoint (http/https)
+        ERWeb.Endpoint,
+        {GRPC.Server.Supervisor, grpc_start_args()},
+        # {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
+        {ER.Events.ChannelCache, []},
+        ER.NodeListener,
+        {ER.Horde.Registry, [name: ER.Horde.Registry, shutdown: 60_000, keys: :unique]},
+        {ER.Horde.Supervisor,
+         [name: ER.Horde.Supervisor, shutdown: 60_000, strategy: :one_for_one]},
+        {ER.ChannelMonitor, :events},
+        ER.BootServer
+      ]
+      |> maybe_add_child(ER.Env.use_redis?(), ER.Redix)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: ER.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  defp maybe_add_child(children, true, child), do: children ++ [child]
+  defp maybe_add_child(children, false, _child), do: children
 
   defp grpc_start_args() do
     opts = [endpoint: ERWeb.Grpc.Endpoint, port: ER.Env.grpc_port()]

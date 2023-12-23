@@ -106,7 +106,7 @@ defmodule ER.MixProject do
       # {:predicated, path: "/home/tbrewer/projects/predicated"},
       {:flamel, github: "themusicman/flamel", branch: "main"},
 
-      # Certificate Authority/TLS 
+      # Certificate Authority/TLS
       {:x509, "~> 0.8"},
       {:ex_json_schema, "~> 0.10.2"}
     ]

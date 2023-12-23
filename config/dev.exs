@@ -75,7 +75,7 @@ config :phoenix, :plug_init_mode, :runtime
 config :swoosh, :api_client, false
 
 # config :hammer,
-#   backend: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]}
+#   ets: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]}
 
 config :event_relay, :grpc_port, 50051
 

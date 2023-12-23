@@ -12,15 +12,17 @@ services:
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7.2.3-alpine
-    restart: always
-    ports:
-      - '7379:6379'
-    command: redis-server --save 20 1 --loglevel warning 
-    volumes: 
-      - redis_data:/data
+  # Uncomment if you'd like to use redis for rate limiting (Hammer)
+  # as well as event_relay.depends_on and volumes.redis_data below
+  # Also change environment.ER_HAMMER_BACKEND from "ETS" to "redis"
+  # redis:
+  #   image: redis:7.2.3-alpine
+  #   restart: always
+  #   ports:
+  #     - '7379:6379'
+  #   command: redis-server --save 20 1 --loglevel warning
+  #   volumes:
+  #     - redis_data:/data
   event_relay:
     build:
       context: .
@@ -36,7 +38,7 @@ services:
         target: /tmp/iex_history
     depends_on:
       - postgres
-      - redis
+      # - redis
     environment:
       ERL_AFLAGS: -kernel shell_history enabled -kernel shell_history_path '"/tmp/iex_history"'
       ER_DATABASE_URL: postgres://postgres@postgres:5432/event_relay_dev
@@ -47,6 +49,8 @@ services:
       # authentication for the GRPC API
       ER_SKIP_GRPC_AUTH: FALSE 
       ER_USE_GRPC_TLS: TRUE
+      # Set ER_HAMMER_BACKEND to "redis" will use redis for rate limiting
+      ER_HAMMER_BACKEND: "ETS"
 
       # DO NOT USE THESE IN PRODUCTION
       # See the wiki for how to generate your own CA
@@ -232,8 +236,8 @@ services:
 volumes:
   postgres_data:
     driver: local
-  redis_data:
-    driver: local
+  # redis_data:
+  #   driver: local
   event_relay_build:
     driver: local
   shell_history:
