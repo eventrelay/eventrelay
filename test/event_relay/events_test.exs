@@ -7,21 +7,23 @@ defmodule ER.EventsTest do
 
   describe "from_events_for_topic/1" do
     test "returns lower case topic events ecto query when topic name contains uppercase" do
-      {:ok, _topic} = ER.Events.create_topic(%{name: "Metrics"})
+      topic_name = "Metrics"
+      {:ok, _topic} = ER.Events.create_topic(%{name: topic_name})
 
       expected =
         "#Ecto.Query<from e0 in {\"metrics_events\", ER.Events.Event}, as: :events>"
 
-      assert expected == inspect(Events.from_events_for_topic(topic_name: "Metrics"))
+      assert expected == inspect(Events.from_events_for_topic(topic_name: topic_name))
     end
 
     test "returns lower case topic events ecto query when topic name is lowercase" do
-      {:ok, _topic} = ER.Events.create_topic(%{name: "metrics"})
+      topic_name = "users"
+      {:ok, _topic} = ER.Events.create_topic(%{name: topic_name})
 
       expected =
-        "#Ecto.Query<from e0 in {\"metrics_events\", ER.Events.Event}, as: :events>"
+        "#Ecto.Query<from e0 in {\"users_events\", ER.Events.Event}, as: :events>"
 
-      assert expected == inspect(Events.from_events_for_topic(topic_name: "Metrics"))
+      assert expected == inspect(Events.from_events_for_topic(topic_name: topic_name))
     end
   end
 
