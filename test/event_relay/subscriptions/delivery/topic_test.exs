@@ -1,6 +1,5 @@
 defmodule ER.Subscriptions.Delivery.TopicTest do
   use ER.DataCase
-  alias ER.Subscriptions.Delivery
   alias ER.Events.Event
   alias ER.Events
   alias ER.Repo
@@ -17,7 +16,11 @@ defmodule ER.Subscriptions.Delivery.TopicTest do
     data = %{"" => ""}
 
     subscription =
-      insert(:subscription, topic: from_topic, config: %{"topic_name" => to_topic.name})
+      insert(:subscription,
+        subscription_type: :topic,
+        topic: from_topic,
+        config: %{"topic_name" => to_topic.name}
+      )
 
     event_params = params_for(:event, topic_name: from_topic.name, data: data, context: context)
 
@@ -39,7 +42,8 @@ defmodule ER.Subscriptions.Delivery.TopicTest do
       to_topic: to_topic,
       from_topic: from_topic
     } do
-      {:ok, new_event} = Delivery.Topic.push(subscription, old_event)
+      push_subscription = ER.Subscriptions.Push.Factory.build(subscription)
+      {:ok, new_event} = ER.Subscriptions.Push.Subscription.push(push_subscription, old_event)
 
       refute new_event.topic_name == from_topic.name
       assert new_event.topic_name == to_topic.name

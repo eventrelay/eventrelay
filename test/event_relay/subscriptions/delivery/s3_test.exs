@@ -9,7 +9,7 @@ defmodule ER.Subscriptions.Delivery.S3Test do
   import ER.Factory
 
   setup do
-    subscription = insert(:subscription)
+    subscription = insert(:subscription, subscription_type: :s3)
     topic = insert(:topic, name: "test")
     Event.create_table!(topic)
     Delivery.create_table!(topic)
@@ -26,7 +26,8 @@ defmodule ER.Subscriptions.Delivery.S3Test do
 
   describe "push/2" do
     test "creates pending delivery", %{subscription: subscription, event: event} do
-      {:ok, delivery} = Delivery.S3.push(subscription, event)
+      push_subscription = ER.Subscriptions.Push.Factory.build(subscription)
+      {:ok, delivery} = ER.Subscriptions.Push.Subscription.push(push_subscription, event)
 
       assert delivery.status == :pending
       assert delivery.subscription_id == subscription.id

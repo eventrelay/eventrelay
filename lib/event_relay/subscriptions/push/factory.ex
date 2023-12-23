@@ -3,7 +3,8 @@ defmodule ER.Subscriptions.Push.Factory do
     TopicSubscription,
     S3Subscription,
     WebhookSubscription,
-    WebsocketSubscription
+    WebsocketSubscription,
+    NoopSubscription
   }
 
   def build(%{subscription_type: :topic} = subscription) do
@@ -20,5 +21,9 @@ defmodule ER.Subscriptions.Push.Factory do
 
   def build(%{subscription_type: :websocket} = subscription) do
     %WebsocketSubscription{subscription: subscription}
+  end
+
+  def build(subscription) do
+    %NoopSubscription{subscription: subscription}
   end
 end
