@@ -93,7 +93,7 @@ defmodule ER.Subscriptions.QueuedEvents.Server do
   end
 
   @spec tick_interval() :: integer()
-  def tick_interval do
-    900_000
+  def tick_interval(tick_interval \\ nil) do
+    tick_interval || 900_000
   end
 end

@@ -31,7 +31,7 @@ defmodule ERWeb.Grpc.EventRelay.Interceptors.RateLimiter do
   end
 
   defp get_context(%ERWeb.Grpc.Eventrelay.PublishEventsRequest{} = request) do
-    durable = if ER.boolean?(request.durable), do: false, else: request.durable
+    durable = if Flamel.boolean?(request.durable), do: request.durable, else: false
     [durable: durable]
   end
 

@@ -686,7 +686,13 @@ defmodule ER.Events do
       end
     rescue
       e in Postgrex.Error ->
-        {:error, e.postgres.message}
+        msg = e.postgres.message
+
+        if String.contains?(msg, "does not exist") do
+          {:ok, topic}
+        else
+          {:error, msg}
+        end
 
       e ->
         Logger.error("Error creating topic: #{inspect(e)}")

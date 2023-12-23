@@ -94,8 +94,9 @@ defmodule ER.Subscriptions.Server do
   end
 
   @spec tick_interval() :: integer()
-  def tick_interval do
-    ER.to_integer(System.get_env("ER_SUBSCRIPTION_SERVER_TICK_INTERVAL") || "5000")
+  def tick_interval(tick_interval \\ nil) do
+    tick_interval ||
+      ER.to_integer(System.get_env("ER_SUBSCRIPTION_SERVER_TICK_INTERVAL") || "5000")
   end
 
   @spec name(binary()) :: binary()

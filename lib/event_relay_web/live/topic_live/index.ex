@@ -29,9 +29,14 @@ defmodule ERWeb.TopicLive.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     topic = Events.get_topic!(id)
-    {:ok, _} = Events.delete_topic(topic)
 
-    {:noreply, assign(socket, :topics, list_topics())}
+    case Events.delete_topic(topic) do
+      {:ok, _} ->
+        {:noreply, assign(socket, :topics, list_topics())}
+
+      {:error, msg} ->
+        socket |> put_flash(:error, msg) |> push_navigate(to: socket.assigns.navigate)
+    end
   end
 
   defp list_topics do

@@ -73,8 +73,8 @@ defmodule ER.Server do
         handle_terminate(reason, state)
       end
 
-      def schedule_next_tick() do
-        Process.send_after(self(), :tick, tick_interval())
+      def schedule_next_tick(time_interval \\ nil) do
+        Process.send_after(self(), :tick, tick_interval(time_interval))
       end
 
       def via(id) do

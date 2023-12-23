@@ -6,8 +6,7 @@ defmodule ER.Pruners.Server do
   use GenServer
   use ER.Server
 
-  # @default_tick_interval 5 * 60 * 1_000
-  @default_tick_interval 1_000
+  @default_tick_interval 5 * 60 * 1_000
 
   def handle_continue(:load_state, %{"id" => id} = state) do
     pruner = ER.Pruners.get_pruner!(id)
@@ -29,27 +28,47 @@ defmodule ER.Pruners.Server do
   end
 
   # No worker task so lets create one
-  def handle_info(:tick, %{pruner: pruner, worker_task: nil} = state) do
+  def handle_info(:tick, %{pruner: %{config: config} = pruner, worker_task: nil} = state) do
     worker_task =
       Task.async(fn ->
         prune_events(pruner)
       end)
 
-    timer = schedule_next_tick()
+    timer =
+      config
+      |> get_time_interval()
+      |> schedule_next_tick()
 
     {:noreply, %{state | timer: timer, worker_task: worker_task}}
   end
 
   # We will be here if the worker task has not completed is work
   # So we just schedule the next tick
-  def handle_info(:tick, state) do
-    timer = schedule_next_tick()
+  def handle_info(:tick, %{pruner: %{config: config}} = state) do
+    timer =
+      config
+      |> get_time_interval()
+      |> schedule_next_tick()
 
     {:noreply, %{state | timer: timer}}
   end
 
   def handle_info(_, state) do
     {:noreply, state}
+  end
+
+  def get_time_interval(%{"time_interval" => time_interval}) do
+    time_interval = Flamel.to_integer(time_interval)
+
+    if time_interval == 0 do
+      nil
+    else
+      time_interval
+    end
+  end
+
+  def get_time_interval(_) do
+    nil
   end
 
   def prune_events(
@@ -83,8 +102,8 @@ defmodule ER.Pruners.Server do
     end
   end
 
-  def tick_interval() do
-    @default_tick_interval
+  def tick_interval(tick_interval \\ nil) do
+    tick_interval || @default_tick_interval
   end
 
   @spec name(binary()) :: binary()
