@@ -16,10 +16,7 @@ defmodule ER.Events do
   end
 
   def from_events_for_topic(topic_name: topic_name) do
-    table_name =
-      topic_name
-      |> ER.Events.Event.table_name()
-      |> String.downcase()
+    table_name = ER.Events.Event.table_name(topic_name)
 
     from(e in {table_name, Event}, as: :events)
   end
@@ -403,11 +400,10 @@ defmodule ER.Events do
 
     try do
       # First attempt to insert it in the proper topic events table
-      topic_name = String.downcase(attrs[:topic_name])
 
       event =
         %Event{}
-        |> ER.Events.Event.put_ecto_source(topic_name)
+        |> ER.Events.Event.put_ecto_source(attrs[:topic_name])
         |> Event.changeset(attrs)
         |> Repo.insert!()
 

@@ -5,6 +5,13 @@ defmodule ER.Events.EventTest do
   alias ER.Events.Event
   import ER.Factory
 
+  describe "table_name/1" do
+    test "returns lowercase event table_name from on topic name" do
+      assert "metrics_events" == ER.Events.Event.table_name("metrics")
+      assert "metrics_events" == ER.Events.Event.table_name("Metrics")
+    end
+  end
+
   describe "signature/2" do
     test "returns a valid SHA256 HMAC for an event" do
       expected_hmac = "13ff62e206fe61ff15774a87bf10e8da5931f55426ef27735ee18ff44227b3d9"
