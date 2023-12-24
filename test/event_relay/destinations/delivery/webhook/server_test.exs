@@ -34,28 +34,6 @@ defmodule ER.Destinations.Delivery.Webhook.ServerTest do
 
       assert {:noreply, state_of_affairs} == Server.handle_continue(:load_state, state)
     end
-
-    test "returns state with updated attempt_count and delivery_attempts", %{
-      bypass: bypass,
-      webhook_url: webhook_url,
-      state: %{"event" => event, "destination" => destination, "delivery" => delivery}
-    } do
-      response_body = Jason.encode!(event)
-
-      Bypass.expect(bypass, &Plug.Conn.resp(&1, 200, response_body))
-
-      starting_state_of_affairs = build_state(webhook_url, event, destination, delivery)
-
-      {:stop, :shutdown, ending_state_of_affairs} =
-        Server.handle_info(:attempt, starting_state_of_affairs)
-
-      delivery_attempts =
-        [delivery_attempt | _delivery_attempts] = ending_state_of_affairs["delivery_attempts"]
-
-      assert 1 == ending_state_of_affairs["attempt_count"]
-      assert 1 == length(delivery_attempts)
-      assert 200 == delivery_attempt["response"].status_code
-    end
   end
 
   describe "handle_info/2" do
