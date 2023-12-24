@@ -5,8 +5,8 @@ defmodule ERWeb.EventsChannel do
   import ER, only: [atomize_map: 1, to_boolean: 1]
 
   @impl true
-  def join("events:" <> subscription_id, payload, socket) do
-    ER.Container.channel_cache().register_socket(self(), subscription_id)
+  def join("events:" <> destination_id, payload, socket) do
+    ER.Container.channel_cache().register_socket(self(), destination_id)
 
     case authorized?(payload) do
       {:ok, {producer_claims, consumer_claims}} ->
@@ -15,7 +15,7 @@ defmodule ERWeb.EventsChannel do
 
         socket =
           socket
-          |> assign(:subscription_id, subscription_id)
+          |> assign(:destination_id, destination_id)
           |> assign(:producer_claims, producer_claims)
           |> assign(:producer_api_key, producer_api_key)
           |> assign(:consumer_claims, consumer_claims)

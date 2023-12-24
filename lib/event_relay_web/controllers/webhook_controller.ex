@@ -7,17 +7,17 @@ defmodule ERWeb.WebhookController do
   action_fallback ERWeb.FallbackController
 
   def ingest(conn, params) do
-    ingestor = conn.assigns[:ingestor]
+    source = conn.assigns[:source]
 
-    data = Map.drop(params, ["ingestor_id"])
-    topic_name = ingestor.topic_name
+    data = Map.drop(params, ["source_id"])
+    topic_name = source.topic_name
     verified = false
     durable = true
 
     Context.new(%{
       event: %{
         name: "webhook.inbound",
-        source: ingestor.source,
+        source: source.source,
         data: data,
         durable: durable,
         verified: verified,
@@ -63,7 +63,6 @@ defmodule ERWeb.WebhookController do
   end
 
   defp log(ctx) do
-    IO.inspect(ctx: ctx)
     ctx
   end
 end

@@ -13,13 +13,13 @@ defmodule ERWeb.WebhookAuth do
     |> get_key_and_secret()
     |> verify_key_and_secret(conn)
     |> case do
-      {:ok, ingestor} -> assign(conn, :ingestor, ingestor)
-      _unauthorized -> assign(conn, :ingestor, nil)
+      {:ok, source} -> assign(conn, :source, source)
+      _unauthorized -> assign(conn, :source, nil)
     end
   end
 
   def authenticate_webhook_request(conn, _opts) do
-    if Map.get(conn.assigns, :ingestor) do
+    if Map.get(conn.assigns, :source) do
       conn
     else
       conn
@@ -32,11 +32,11 @@ defmodule ERWeb.WebhookAuth do
 
   def verify_key_and_secret({key, secret}, conn) do
     try do
-      ingestor_id = conn.params["ingestor_id"]
-      ingestor = ER.Ingestors.get_ingestor!(ingestor_id)
+      source_id = conn.params["source_id"]
+      source = ER.Sources.get_source!(source_id)
 
-      if ingestor.key == key && ingestor.secret == secret do
-        {:ok, ingestor}
+      if source.key == key && source.secret == secret do
+        {:ok, source}
       else
         nil
       end

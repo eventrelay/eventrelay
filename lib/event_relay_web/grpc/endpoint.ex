@@ -17,7 +17,7 @@ defmodule ERWeb.Grpc.Endpoint do
     ]
   )
 
-  run(ERWeb.Grpc.EventRelay.Subscriptions.Server,
+  run(ERWeb.Grpc.EventRelay.Destinations.Server,
     interceptors: [
       GRPC.Server.Interceptors.Logger,
       ERWeb.Grpc.EventRelay.Interceptors.RateLimiter,

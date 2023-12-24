@@ -254,17 +254,17 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
   describe "unlock_queued_events/2" do
     setup do
       {:ok, topic} = Events.create_topic(%{name: "jobs"})
-      subscription = insert(:subscription, topic: topic)
+      destination = insert(:destination, topic: topic)
 
-      # spin up the subscription servers
-      ER.Subscriptions.Server.factory(subscription.id)
+      # spin up the destination servers
+      ER.Destinations.Server.factory(destination.id)
 
-      {:ok, subscription: subscription, topic: topic}
+      {:ok, destination: destination, topic: topic}
     end
 
     test "unlocks events", %{
       topic: topic,
-      subscription: subscription
+      destination: destination
     } do
       original_events =
         Enum.map(1..10, fn i ->
@@ -283,7 +283,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PullQueuedEventsRequest{
         batch_size: 10,
-        subscription_id: subscription.id
+        destination_id: destination.id
       }
 
       result = Server.pull_queued_events(request, nil)
@@ -292,7 +292,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PullQueuedEventsRequest{
         batch_size: 10,
-        subscription_id: subscription.id
+        destination_id: destination.id
       }
 
       result = Server.pull_queued_events(request, nil)
@@ -300,7 +300,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert Enum.count(result.events) == 0
 
       request = %UnLockQueuedEventsRequest{
-        subscription_id: subscription.id,
+        destination_id: destination.id,
         event_ids: events_to_unlock_ids
       }
 
@@ -310,7 +310,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PullQueuedEventsRequest{
         batch_size: 10,
-        subscription_id: subscription.id
+        destination_id: destination.id
       }
 
       result = Server.pull_queued_events(request, nil)
@@ -319,7 +319,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PullQueuedEventsRequest{
         batch_size: 10,
-        subscription_id: subscription.id
+        destination_id: destination.id
       }
 
       result = Server.pull_queued_events(request, nil)
@@ -331,23 +331,23 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
   describe "pull_queued_events/2" do
     setup do
       {:ok, topic} = Events.create_topic(%{name: "jobs"})
-      subscription = insert(:subscription, topic: topic)
-      subscription_without_locks = insert(:subscription, topic: topic)
+      destination = insert(:destination, topic: topic)
+      destination_without_locks = insert(:destination, topic: topic)
 
-      # spin up the subscription servers
-      ER.Subscriptions.Server.factory(subscription.id)
-      ER.Subscriptions.Server.factory(subscription_without_locks.id)
+      # spin up the destination servers
+      ER.Destinations.Server.factory(destination.id)
+      ER.Destinations.Server.factory(destination_without_locks.id)
 
       {:ok,
-       subscription: subscription,
-       subscription_without_locks: subscription_without_locks,
+       destination: destination,
+       destination_without_locks: destination_without_locks,
        topic: topic}
     end
 
     test "returns events", %{
       topic: topic,
-      subscription: subscription,
-      subscription_without_locks: subscription_without_locks
+      destination: destination,
+      destination_without_locks: destination_without_locks
     } do
       Enum.map(1..20, fn i ->
         attrs =
@@ -362,14 +362,14 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PullQueuedEventsRequest{
         batch_size: 10,
-        subscription_id: subscription.id
+        destination_id: destination.id
       }
 
       first_result = Server.pull_queued_events(request, nil)
 
       request = %PullQueuedEventsRequest{
         batch_size: 10,
-        subscription_id: subscription.id
+        destination_id: destination.id
       }
 
       second_result = Server.pull_queued_events(request, nil)
@@ -391,10 +391,10 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert first_event.offset == 11
       assert last_event.offset == 20
 
-      # now pull events for a subscription without locks
+      # now pull events for a destination without locks
       request = %PullQueuedEventsRequest{
         batch_size: 10,
-        subscription_id: subscription_without_locks.id
+        destination_id: destination_without_locks.id
       }
 
       result = Server.pull_queued_events(request, nil)
@@ -403,17 +403,17 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert Enum.count(events) == 10
       first_event = List.first(events)
       last_event = List.last(events)
-      # we should be starting at the beginning again with the subscription that has no locks
+      # we should be starting at the beginning again with the destination that has no locks
       assert first_event.offset == 1
       assert last_event.offset == 10
 
       request = %PullQueuedEventsRequest{
         batch_size: 10,
-        subscription_id: subscription.id
+        destination_id: destination.id
       }
 
       result = Server.pull_queued_events(request, nil)
-      # we should have no results for this subscription since they are all locked
+      # we should have no results for this destination since they are all locked
       assert Enum.count(result.events) == 0
     end
   end

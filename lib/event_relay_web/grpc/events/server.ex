@@ -102,24 +102,24 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
   @spec pull_queued_events(PullQueuedEventsRequest.t(), GRPC.Server.Stream.t()) ::
           PullEventsResponse.t()
   def pull_queued_events(request, _stream) do
-    subscription =
-      ER.Subscriptions.get_subscription!(request.subscription_id)
+    destination =
+      ER.Destinations.get_destination!(request.destination_id)
 
     # ensure we have the queued events server started. this is a noop if it is already started
-    ER.Subscriptions.QueuedEvents.Server.factory(subscription.id)
+    ER.Destinations.QueuedEvents.Server.factory(destination.id)
 
     batch_size = if request.batch_size == 0, do: 100, else: request.batch_size
     batch_size = if batch_size > 1000, do: 100, else: batch_size
 
     try do
       events =
-        ER.Subscriptions.QueuedEvents.Server.pull_queued_events(
-          subscription_id: request.subscription_id,
+        ER.Destinations.QueuedEvents.Server.pull_queued_events(
+          destination_id: request.destination_id,
           batch_size: batch_size
         )
 
-      topic_name = subscription.topic_name
-      topic_identifier = subscription.topic_identifier
+      topic_name = destination.topic_name
+      topic_identifier = destination.topic_identifier
       full_topic = ER.Events.Topic.build_topic(topic_name, topic_identifier)
       events = Enum.map(events, &build_event(&1, full_topic))
 
@@ -135,21 +135,21 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
   @spec unlock_queued_events(UnLockQueuedEventsRequest.t(), GRPC.Server.Stream.t()) ::
           UnLockQueuedEventsResponse.t()
   def unlock_queued_events(request, _stream) do
-    subscription =
-      ER.Subscriptions.get_subscription!(request.subscription_id)
+    destination =
+      ER.Destinations.get_destination!(request.destination_id)
 
     # ensure we have the queued events server started. this is a noop if it is already started
-    ER.Subscriptions.QueuedEvents.Server.factory(subscription.id)
+    ER.Destinations.QueuedEvents.Server.factory(destination.id)
 
     try do
       events =
-        ER.Subscriptions.QueuedEvents.Server.unlocked_queued_events(
-          subscription_id: request.subscription_id,
+        ER.Destinations.QueuedEvents.Server.unlocked_queued_events(
+          destination_id: request.destination_id,
           event_ids: request.event_ids
         )
 
-      topic_name = subscription.topic_name
-      topic_identifier = subscription.topic_identifier
+      topic_name = destination.topic_name
+      topic_identifier = destination.topic_identifier
       full_topic = ER.Events.Topic.build_topic(topic_name, topic_identifier)
       events = Enum.map(events, &build_event(&1, full_topic))
 

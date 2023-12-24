@@ -1,0 +1,41 @@
+<.header>
+  Source <%= @source.id %>
+  <:subtitle>This is a source record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/sources/#{@source}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit source</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item :if={@source.type == :webhook} title="Webhook URL"><%= @webhook_url %></:item>
+  <:item title="Config">
+    <div id={"#{@source.id}-config"} phx-hook="JsonView" data-json={Jason.encode!(@source.config)}>
+    </div>
+  </:item>
+  <:item title="Type"><%= @source.type %></:item>
+  <:item title="Topic"><%= @source.topic_name %></:item>
+  <:item title="Source"><%= @source.source %></:item>
+  <:item title="Key"><%= @source.key %></:item>
+  <:item title="Secret"><%= @source.secret %></:item>
+</.list>
+
+<.back navigate={~p"/sources"}>Back to sources</.back>
+
+<.modal
+  :if={@live_action == :edit}
+  id="source-modal"
+  show
+  on_cancel={JS.patch(~p"/sources/#{@source}")}
+>
+  <.live_component
+    module={ERWeb.SourceLive.FormComponent}
+    id={@source.id}
+    title={@page_title}
+    action={@live_action}
+    topics={@topics}
+    source={@source}
+    patch={~p"/sources/#{@source}"}
+  />
+</.modal>

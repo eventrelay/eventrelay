@@ -10,29 +10,29 @@ defmodule ERWeb.EventsChannelTest do
     producer_api_key = insert(:api_key, type: :producer)
     consumer_api_key = insert(:api_key)
     topic = insert(:topic)
-    subscription = insert(:subscription, topic: topic)
-    insert(:api_key_subscription, api_key: producer_api_key, subscription: subscription)
+    destination = insert(:destination, topic: topic)
+    insert(:api_key_destination, api_key: producer_api_key, destination: destination)
     insert(:api_key_topic, api_key: producer_api_key, topic: topic)
 
     {:ok, producer_token} = ER.JWT.Token.build(producer_api_key)
     {:ok, consumer_token} = ER.JWT.Token.build(consumer_api_key)
 
-    expect(ER.Events.ChannelCacheBehaviorMock, :register_socket, fn _pid, _subscription_id ->
+    expect(ER.Events.ChannelCacheBehaviorMock, :register_socket, fn _pid, _destination_id ->
       1
     end)
 
     ER.Events.Event.create_table!(topic)
-    ER.Subscriptions.Delivery.create_table!(topic)
+    ER.Destinations.Delivery.create_table!(topic)
 
     {:ok, _, socket} =
       ERWeb.UserSocket
       |> socket("user_id", %{some: :assign})
-      |> subscribe_and_join(ERWeb.EventsChannel, "events:#{subscription.id}", %{
+      |> subscribe_and_join(ERWeb.EventsChannel, "events:#{destination.id}", %{
         "producer_token" => producer_token,
         "consumer_token" => consumer_token
       })
 
-    %{socket: socket, topic: topic, subscription: subscription}
+    %{socket: socket, topic: topic, destination: destination}
   end
 
   test "publishes events", %{socket: socket, topic: topic} do

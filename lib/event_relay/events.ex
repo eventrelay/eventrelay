@@ -247,22 +247,22 @@ defmodule ER.Events do
         batch_size: batch_size,
         topic_name: topic_name,
         topic_identifier: topic_identifier,
-        subscription_id: subscription_id
+        destination_id: destination_id
       ) do
-    subscription = ER.Subscriptions.get_subscription!(subscription_id)
-    subscription_id = Ecto.UUID.dump!(subscription_id)
+    destination = ER.Destinations.get_destination!(destination_id)
+    destination_id = Ecto.UUID.dump!(destination_id)
 
     query =
       from_events_for_topic(topic_name: topic_name)
       |> where(as(:events).topic_name == ^topic_name)
       |> where(not is_nil(as(:events).occurred_at))
-      |> where(^subscription_id not in as(:events).subscription_locks)
+      |> where(^destination_id not in as(:events).destination_locks)
       |> limit(^batch_size)
       |> order_by(as(:events).offset)
 
     query =
-      if Flamel.present?(subscription.query) do
-        predicates = Predicated.Query.new(subscription.query)
+      if Flamel.present?(destination.query) do
+        predicates = Predicated.Query.new(destination.query)
 
         if Flamel.present?(predicates) do
           conditions = apply_predicates(predicates, nil, nil)
@@ -285,34 +285,34 @@ defmodule ER.Events do
     Repo.all(query)
   end
 
-  def lock_subscription_events(_subscription_id, []) do
+  def lock_destination_events(_destination_id, []) do
     nil
   end
 
-  def lock_subscription_events(subscription_id, events) do
+  def lock_destination_events(destination_id, events) do
     event = List.first(events)
     event_ids = Enum.map(events, & &1.id)
     source = Ecto.get_meta(event, :source)
 
     from(e in {source, Event},
       where: e.id in ^event_ids,
-      update: [push: [subscription_locks: ^subscription_id]]
+      update: [push: [destination_locks: ^destination_id]]
     )
     |> Repo.update_all([])
   end
 
-  def unlock_subscription_events(_subscription_id, []) do
+  def unlock_destination_events(_destination_id, []) do
     nil
   end
 
-  def unlock_subscription_events(subscription_id, events) do
+  def unlock_destination_events(destination_id, events) do
     event = List.first(events)
     event_ids = Enum.map(events, & &1.id)
     source = Ecto.get_meta(event, :source)
 
     from(e in {source, Event},
       where: e.id in ^event_ids,
-      update: [pull: [subscription_locks: ^subscription_id]]
+      update: [pull: [destination_locks: ^destination_id]]
     )
     |> Repo.update_all([])
   end
@@ -385,17 +385,7 @@ defmodule ER.Events do
       if ER.empty?(occurred_at) do
         Map.put(attrs, :occurred_at, DateTime.truncate(DateTime.now!("Etc/UTC"), :second))
       else
-        case DateTime.from_iso8601(occurred_at) do
-          {:ok, datetime, _} ->
-            Map.put(attrs, :occurred_at, DateTime.truncate(datetime, :second))
-
-          _ ->
-            Logger.error(
-              "create_event_for_topic failed to parse occurred_at value=#{inspect(occurred_at)}"
-            )
-
-            Map.put(attrs, :occurred_at, nil)
-        end
+        Map.put(attrs, :occurred_at, Flamel.Moment.to_datetime(occurred_at))
       end
 
     try do
@@ -627,7 +617,7 @@ defmodule ER.Events do
                |> Repo.insert!()
 
              ER.Events.Event.create_table!(topic)
-             ER.Subscriptions.Delivery.create_table!(topic)
+             ER.Destinations.Delivery.create_table!(topic)
              topic
            end) do
         {:ok, topic} ->
@@ -677,7 +667,7 @@ defmodule ER.Events do
              {:ok, topic} = Repo.delete(topic)
 
              ER.Events.Event.drop_table!(topic)
-             ER.Subscriptions.Delivery.drop_table!(topic)
+             ER.Destinations.Delivery.drop_table!(topic)
              topic
            end) do
         {:ok, topic} ->

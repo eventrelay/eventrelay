@@ -7,10 +7,10 @@ defmodule ERWeb.LiveViewHelpers do
     topic.id in api_key_topics
   end
 
-  def api_key_has_subscription?(api_key, subscription) do
-    api_key = Repo.preload(api_key, :subscriptions)
-    api_key_subscriptions = Enum.map(api_key.subscriptions, & &1.id)
-    subscription.id in api_key_subscriptions
+  def api_key_has_destination?(api_key, destination) do
+    api_key = Repo.preload(api_key, :destinations)
+    api_key_destinations = Enum.map(api_key.destinations, & &1.id)
+    destination.id in api_key_destinations
   end
 
   def topics_to_select_options(topics) do

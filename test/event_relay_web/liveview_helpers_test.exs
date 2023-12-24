@@ -30,27 +30,27 @@ defmodule ERWeb.LiveViewHelpersTest do
     end
   end
 
-  describe "api_key_has_subscription?/2" do
+  describe "api_key_has_destination?/2" do
     setup do
-      subscription = insert(:subscription)
+      destination = insert(:destination)
 
       api_key = insert(:api_key)
-      {:ok, subscription: subscription, api_key: api_key}
+      {:ok, destination: destination, api_key: api_key}
     end
 
-    test "return true if the api_key has a subscription associated with it", %{
+    test "return true if the api_key has a destination associated with it", %{
       api_key: api_key,
-      subscription: subscription
+      destination: destination
     } do
-      ER.Accounts.create_api_key_subscription(api_key, subscription)
-      assert Helpers.api_key_has_subscription?(api_key, subscription) == true
+      ER.Accounts.create_api_key_destination(api_key, destination)
+      assert Helpers.api_key_has_destination?(api_key, destination) == true
     end
 
-    test "return false if the api_key does not have a subscription associated with it", %{
+    test "return false if the api_key does not have a destination associated with it", %{
       api_key: api_key,
-      subscription: subscription
+      destination: destination
     } do
-      assert Helpers.api_key_has_subscription?(api_key, subscription) == false
+      assert Helpers.api_key_has_destination?(api_key, destination) == false
     end
   end
 end

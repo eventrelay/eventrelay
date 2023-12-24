@@ -6,8 +6,8 @@
 #    secret: "y7XN9MIChpxHyERA-dc8IFpDTkCWSstv1AKrvQs9guIbo5DOt1w5kg-qmT56kYZs",
 #    status: :active,
 #    type: :producer,
-#    api_key_subscriptions: #Ecto.Association.NotLoaded<association :api_key_subscriptions is not loaded>,
-#    subscriptions: #Ecto.Association.NotLoaded<association :subscriptions is not loaded>,
+#    api_key_destinations: #Ecto.Association.NotLoaded<association :api_key_destinations is not loaded>,
+#    destinations: #Ecto.Association.NotLoaded<association :destinations is not loaded>,
 #    inserted_at: ~U[2023-01-07 09:49:55Z],
 #    updated_at: ~U[2023-01-07 09:49:55Z]
 #  }}

@@ -19,22 +19,22 @@ defmodule ER.Factory do
     }
   end
 
-  def subscription_factory do
-    %ER.Subscriptions.Subscription{
+  def destination_factory do
+    %ER.Destinations.Destination{
       name: Faker.Lorem.word(),
       ordered: false,
       paused: false,
       config: %{},
       topic: build(:topic),
-      subscription_type: "webhook",
+      destination_type: "webhook",
       signing_secret: ER.Auth.generate_secret()
     }
   end
 
   def delivery_factory do
-    %ER.Subscriptions.Delivery{
+    %ER.Destinations.Delivery{
       attempts: [],
-      subscription: build(:subscription),
+      destination: build(:destination),
       status: :pending
     }
   end
@@ -60,10 +60,10 @@ defmodule ER.Factory do
     }
   end
 
-  def api_key_subscription_factory do
-    %ER.Accounts.ApiKeySubscription{
+  def api_key_destination_factory do
+    %ER.Accounts.ApiKeyDestination{
       api_key: build(:api_key),
-      subscription: build(:subscription)
+      destination: build(:destination)
     }
   end
 
@@ -77,11 +77,11 @@ defmodule ER.Factory do
   def transformer_factory do
     %ER.Transformers.Transformer{
       script: "return { event = 2}",
-      ingestor: build(:ingestor)
+      source: build(:source)
     }
   end
 
-  def ingestor_factory do
+  def source_factory do
     key =
       :crypto.strong_rand_bytes(42)
       |> Base.url_encode64()
@@ -92,7 +92,7 @@ defmodule ER.Factory do
       |> Base.url_encode64()
       |> binary_part(0, 42)
 
-    %ER.Ingestors.Ingestor{
+    %ER.Sources.Source{
       config: %{},
       type: :webhook,
       source: "webhook",
