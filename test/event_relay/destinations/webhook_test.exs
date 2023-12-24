@@ -37,12 +37,12 @@ defmodule ER.Destinations.WebhookTest do
         Plug.Conn.resp(conn, 200, response_body)
       end)
 
-      assert {:ok,
-              %HTTPoison.Response{
-                status_code: 200,
-                body: ^response_body,
-                request_url: ^webhook_url
-              }} = webhook_request(webhook_url, event, destination)
+      {:ok, %HTTPoison.Response{status_code: status_code, body: body, request_url: request_url}} =
+        webhook_request(webhook_url, event, destination)
+
+      assert 200 == status_code
+      assert response_body == body
+      assert webhook_url == request_url
     end
 
     test "returns econnrefused error when unexpected outage", %{
@@ -53,7 +53,7 @@ defmodule ER.Destinations.WebhookTest do
     } do
       Bypass.down(bypass)
 
-      assert {:error, %HTTPoison.Error{reason: :econnrefused, id: nil}} =
+      assert {:error, %HTTPoison.Error{reason: :econnrefused, id: nil}} ==
                webhook_request(webhook_url, event, destination)
     end
 
@@ -69,8 +69,10 @@ defmodule ER.Destinations.WebhookTest do
         Plug.Conn.resp(conn, 500, "")
       end)
 
-      assert {:ok, %HTTPoison.Response{body: "", request_url: ^webhook_url, status_code: 500}} =
-               webhook_request(webhook_url, event, destination)
+      {:ok, %HTTPoison.Response{status_code: status_code}} =
+        webhook_request(webhook_url, event, destination)
+
+      assert 500 == status_code
     end
 
     test "returns HTTP 2xx error", %{
@@ -85,8 +87,10 @@ defmodule ER.Destinations.WebhookTest do
         Plug.Conn.resp(conn, 200, "")
       end)
 
-      assert {:ok, %HTTPoison.Response{body: "", request_url: ^webhook_url, status_code: 200}} =
-               webhook_request(webhook_url, event, destination)
+      {:ok, %HTTPoison.Response{status_code: status_code}} =
+        webhook_request(webhook_url, event, destination)
+
+      assert 200 == status_code
     end
   end
 
