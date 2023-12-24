@@ -4,8 +4,8 @@ defmodule ER.Accounts.ApiKey do
   """
   use Ecto.Schema
   import Ecto.Changeset
-  alias ER.Accounts.ApiKeySubscription
-  alias ER.Subscriptions.Subscription
+  alias ER.Accounts.ApiKeyDestination
+  alias ER.Destinations.Destination
   alias ER.Accounts.ApiKeyTopic
   alias ER.Events.Topic
   alias __MODULE__
@@ -25,8 +25,8 @@ defmodule ER.Accounts.ApiKey do
     field(:tls_hostname, :string)
 
     # handles authorization for consumers
-    has_many(:api_key_subscriptions, ApiKeySubscription, on_delete: :delete_all)
-    many_to_many(:subscriptions, Subscription, join_through: ApiKeySubscription)
+    has_many(:api_key_destinations, ApiKeyDestination, on_delete: :delete_all)
+    many_to_many(:destinations, Destination, join_through: ApiKeyDestination)
 
     # handles authorization for producers
     has_many(:api_key_topics, ApiKeyTopic, on_delete: :delete_all)
@@ -101,8 +101,8 @@ defmodule ER.Accounts.ApiKey do
     end
   end
 
-  def allowed_subscription?(api_key, topic_name) do
-    if ER.Accounts.get_api_key_with_subscription_topic(api_key, topic_name) do
+  def allowed_destination?(api_key, topic_name) do
+    if ER.Accounts.get_api_key_with_destination_topic(api_key, topic_name) do
       true
     else
       false

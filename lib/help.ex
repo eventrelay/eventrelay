@@ -6,8 +6,8 @@ defmodule Help do
       alias ER.Repo
       alias ER.Events.{Event, Topic}
       alias ER.Accounts
-      alias ER.Accounts.{ApiKey, ApiKeyTopic, ApiKeySubscription}
-      alias ER.Ingestors.Ingestor
+      alias ER.Accounts.{ApiKey, ApiKeyTopic, ApiKeyDestination}
+      alias ER.Sources.Source
       alias ER.Transformers.Transformer
 
       :ok

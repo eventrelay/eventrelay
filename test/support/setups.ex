@@ -5,11 +5,11 @@ defmodule ER.Test.Setups do
 
   def setup_topic(_context) do
     topic = insert(:topic)
-    ER.Subscriptions.Delivery.create_table!(topic)
+    ER.Destinations.Delivery.create_table!(topic)
     ER.Events.Event.create_table!(topic)
 
     on_exit(fn ->
-      ER.Subscriptions.Delivery.drop_table!(topic)
+      ER.Destinations.Delivery.drop_table!(topic)
       ER.Events.Event.drop_table!(topic)
     end)
 
@@ -19,23 +19,23 @@ defmodule ER.Test.Setups do
   def setup_deliveries(context) do
     topic = context.topic
 
-    subscription = insert(:subscription)
+    destination = insert(:destination)
 
     {:ok, event} = ER.Events.create_event_for_topic(params_for(:event, topic: topic))
 
     pending_delivery_attrs =
-      params_for(:delivery, status: :pending, subscription: subscription, event: event)
+      params_for(:delivery, status: :pending, destination: destination, event: event)
 
     {:ok, pending_delivery} =
-      ER.Subscriptions.create_delivery_for_topic(topic.name, pending_delivery_attrs)
+      ER.Destinations.create_delivery_for_topic(topic.name, pending_delivery_attrs)
 
     {:ok, event_2} = ER.Events.create_event_for_topic(params_for(:event, topic: topic))
 
     pending_delivery_2_attrs =
-      params_for(:delivery, status: :pending, subscription: subscription, event: event_2)
+      params_for(:delivery, status: :pending, destination: destination, event: event_2)
 
     {:ok, pending_delivery_2} =
-      ER.Subscriptions.create_delivery_for_topic(topic.name, pending_delivery_2_attrs)
+      ER.Destinations.create_delivery_for_topic(topic.name, pending_delivery_2_attrs)
 
     {:ok, successful_delivery_event} =
       ER.Events.create_event_for_topic(params_for(:event, topic: topic))
@@ -43,12 +43,12 @@ defmodule ER.Test.Setups do
     successful_delivery_attrs =
       params_for(:delivery,
         status: :success,
-        subscription: subscription,
+        destination: destination,
         event: successful_delivery_event
       )
 
     {:ok, successful_delivery} =
-      ER.Subscriptions.create_delivery_for_topic(topic.name, successful_delivery_attrs)
+      ER.Destinations.create_delivery_for_topic(topic.name, successful_delivery_attrs)
 
     {:ok, failure_delivery_event} =
       ER.Events.create_event_for_topic(params_for(:event, topic: topic))
@@ -56,16 +56,16 @@ defmodule ER.Test.Setups do
     failure_delivery_attrs =
       params_for(:delivery,
         status: :failure,
-        subscription: subscription,
+        destination: destination,
         event: failure_delivery_event
       )
 
     {:ok, failure_delivery} =
-      ER.Subscriptions.create_delivery_for_topic(topic.name, failure_delivery_attrs)
+      ER.Destinations.create_delivery_for_topic(topic.name, failure_delivery_attrs)
 
     {:ok,
      topic: topic,
-     subscription: subscription,
+     destination: destination,
      pending_delivery: pending_delivery,
      pending_delivery_2: pending_delivery_2,
      successful_delivery: successful_delivery,

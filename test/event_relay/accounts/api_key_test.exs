@@ -26,7 +26,7 @@ defmodule ER.Accounts.ApiKeyTest do
     end
   end
 
-  describe "allowed_subscription?/2" do
+  describe "allowed_destination?/2" do
     setup do
       {:ok, topic} = ER.Events.create_topic(%{name: "log"})
       {:ok, topic: topic}
@@ -34,17 +34,17 @@ defmodule ER.Accounts.ApiKeyTest do
 
     test "return true when a topic is allowed", %{topic: topic} do
       api_key = insert(:api_key)
-      subscription = insert(:subscription, topic: topic)
+      destination = insert(:destination, topic: topic)
 
-      ER.Accounts.create_api_key_subscription(api_key, subscription)
+      ER.Accounts.create_api_key_destination(api_key, destination)
 
-      assert ApiKey.allowed_subscription?(api_key, topic.name) == true
+      assert ApiKey.allowed_destination?(api_key, topic.name) == true
     end
 
     test "return false when a topic is not allowed", %{topic: topic} do
       api_key = insert(:api_key)
 
-      assert ApiKey.allowed_subscription?(api_key, topic.name) == false
+      assert ApiKey.allowed_destination?(api_key, topic.name) == false
     end
   end
 end

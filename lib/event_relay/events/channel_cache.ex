@@ -20,36 +20,34 @@ defmodule ER.Events.ChannelCache do
   require Logger
 
   @impl true
-  def register_socket(pid, subscription_id, monitor_channel \\ true) do
-    Logger.debug(
-      "Registering socket #{inspect(pid)} for subscription #{inspect(subscription_id)}"
-    )
+  def register_socket(pid, destination_id, monitor_channel \\ true) do
+    Logger.debug("Registering socket #{inspect(pid)} for destination #{inspect(destination_id)}")
 
     if monitor_channel do
       :ok =
         ER.ChannelMonitor.monitor(
           :events,
           pid,
-          {__MODULE__, :deregister_socket, [subscription_id]}
+          {__MODULE__, :deregister_socket, [destination_id]}
         )
     end
 
-    incr(subscription_id)
+    incr(destination_id)
   end
 
   @impl true
-  def deregister_socket(subscription_id) do
-    Logger.debug("Deregistering socket for subscription #{subscription_id}")
-    decr(subscription_id)
+  def deregister_socket(destination_id) do
+    Logger.debug("Deregistering socket for destination #{destination_id}")
+    decr(destination_id)
   end
 
   @impl true
-  def get_socket_count(subscription_id) do
-    get(subscription_id) |> ER.to_integer()
+  def get_socket_count(destination_id) do
+    get(destination_id) |> ER.to_integer()
   end
 
   @impl true
-  def any_sockets?(subscription_id) do
-    get_socket_count(subscription_id) > 0
+  def any_sockets?(destination_id) do
+    get_socket_count(destination_id) > 0
   end
 end

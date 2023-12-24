@@ -38,7 +38,7 @@ defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.PullEventsRequest do
   def permitted?(resource, _action, %ApiKey{type: :consumer} = api_key, context, _options) do
     {topic_name, _topic_identifier} = ER.Events.Topic.parse_topic(resource.topic)
 
-    if ApiKey.allowed_subscription?(api_key, topic_name) do
+    if ApiKey.allowed_destination?(api_key, topic_name) do
       Context.permit(
         context,
         "Consumers are allowed to consume events for topic_name=#{topic_name}"
@@ -46,7 +46,7 @@ defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.PullEventsRequest do
     else
       Context.deny(
         context,
-        "ApiKey with id=#{api_key.id} is not associated with topic_name=#{topic_name} via a subscription"
+        "ApiKey with id=#{api_key.id} is not associated with topic_name=#{topic_name} via a destination"
       )
     end
   end
@@ -65,10 +65,10 @@ defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.PullQueuedEventsRequest do
   end
 
   def permitted?(resource, _action, %ApiKey{type: :consumer} = api_key, context, _options) do
-    subscription = ER.Subscriptions.get_subscription!(resource.subscription_id)
-    topic_name = subscription.topic_name
+    destination = ER.Destinations.get_destination!(resource.destination_id)
+    topic_name = destination.topic_name
 
-    if ApiKey.allowed_subscription?(api_key, topic_name) do
+    if ApiKey.allowed_destination?(api_key, topic_name) do
       Context.permit(
         context,
         "Consumers are allowed to consume events for topic_name=#{topic_name}"
@@ -76,7 +76,7 @@ defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.PullQueuedEventsRequest do
     else
       Context.deny(
         context,
-        "ApiKey with id=#{api_key.id} is not associated with topic_name=#{topic_name} via a subscription"
+        "ApiKey with id=#{api_key.id} is not associated with topic_name=#{topic_name} via a destination"
       )
     end
   end

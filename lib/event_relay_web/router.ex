@@ -37,7 +37,7 @@ defmodule ERWeb.Router do
 
   scope "/webhooks", ERWeb do
     pipe_through [:webhook, :authenticate_webhook_request]
-    post "/ingest/:ingestor_id", WebhookController, :ingest
+    post "/ingest/:source_id", WebhookController, :ingest
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
@@ -90,12 +90,12 @@ defmodule ERWeb.Router do
 
       live "/topics/:topic_id/events/:id", EventLive.Show, :show
 
-      live "/subscriptions", SubscriptionLive.Index, :index
-      live "/subscriptions/new", SubscriptionLive.Index, :new
-      live "/subscriptions/:id/edit", SubscriptionLive.Index, :edit
+      live "/destinations", DestinationLive.Index, :index
+      live "/destinations/new", DestinationLive.Index, :new
+      live "/destinations/:id/edit", DestinationLive.Index, :edit
 
-      live "/subscriptions/:id", SubscriptionLive.Show, :show
-      live "/subscriptions/:id/show/edit", SubscriptionLive.Show, :edit
+      live "/destinations/:id", DestinationLive.Show, :show
+      live "/destinations/:id/show/edit", DestinationLive.Show, :edit
 
       live "/api_keys", ApiKeyLive.Index, :index
       live "/api_keys/new", ApiKeyLive.Index, :new
@@ -118,12 +118,12 @@ defmodule ERWeb.Router do
       live "/pruners/:id", PrunerLive.Show, :show
       live "/pruners/:id/show/edit", PrunerLive.Show, :edit
 
-      live "/ingestors", IngestorLive.Index, :index
-      live "/ingestors/new", IngestorLive.Index, :new
-      live "/ingestors/:id/edit", IngestorLive.Index, :edit
+      live "/sources", SourceLive.Index, :index
+      live "/sources/new", SourceLive.Index, :new
+      live "/sources/:id/edit", SourceLive.Index, :edit
 
-      live "/ingestors/:id", IngestorLive.Show, :show
-      live "/ingestors/:id/show/edit", IngestorLive.Show, :edit
+      live "/sources/:id", SourceLive.Show, :show
+      live "/sources/:id/show/edit", SourceLive.Show, :edit
     end
   end
 

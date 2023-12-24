@@ -1,0 +1,51 @@
+<.header>
+  Listing Destinations
+  <:actions>
+    <.link patch={~p"/destinations/new"}>
+      <.button>New Destination</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="destinations"
+  rows={@destinations}
+  row_click={&JS.navigate(~p"/destinations/#{&1}")}
+  row_id={fn row -> "destinations-#{row.id}" end}
+>
+  <:col :let={destination} label="Name"><%= destination.name %></:col>
+  <:col :let={destination} label="Topic name"><%= destination.topic_name %></:col>
+  <:col :let={destination} label="Type"><%= destination.destination_type %></:col>
+
+  <:action :let={destination}>
+    <div class="sr-only">
+      <.link navigate={~p"/destinations/#{destination}"}>Show</.link>
+    </div>
+    <.link patch={~p"/destinations/#{destination}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={destination}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: destination.id})}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="destination-modal"
+  show
+  on_cancel={JS.navigate(~p"/destinations")}
+>
+  <.live_component
+    module={ERWeb.DestinationLive.FormComponent}
+    id={@destination.id || :new}
+    title={@page_title}
+    action={@live_action}
+    destination={@destination}
+    topics={@topics}
+    navigate={~p"/destinations"}
+  />
+</.modal>

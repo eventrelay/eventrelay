@@ -6,7 +6,7 @@ defmodule ER.Accounts do
   import Ecto.Query, warn: false
   alias ER.Repo
 
-  alias ER.Accounts.{User, UserToken, UserNotifier, ApiKey, ApiKeySubscription, ApiKeyTopic}
+  alias ER.Accounts.{User, UserToken, UserNotifier, ApiKey, ApiKeyDestination, ApiKeyTopic}
 
   ## Database getters
 
@@ -389,16 +389,16 @@ defmodule ER.Accounts do
     |> Repo.one()
   end
 
-  def get_api_key_with_subscription_topic(api_key, topic_name) do
+  def get_api_key_with_destination_topic(api_key, topic_name) do
     {:ok, api_key_id} = Ecto.UUID.dump(api_key.id)
 
     from_api_keys()
-    |> join(:left, [api_keys: a], as in assoc(a, :api_key_subscriptions),
-      as: :api_key_subscriptions
+    |> join(:left, [api_keys: a], as in assoc(a, :api_key_destinations),
+      as: :api_key_destinations
     )
-    |> join(:left, [api_key_subscriptions: as], s in assoc(as, :subscription), as: :subscriptions)
+    |> join(:left, [api_key_destinations: as], s in assoc(as, :destination), as: :destinations)
     |> where(as(:api_keys).id == ^api_key_id)
-    |> where(as(:subscriptions).topic_name == ^topic_name)
+    |> where(as(:destinations).topic_name == ^topic_name)
     |> Repo.one()
   end
 
@@ -418,7 +418,7 @@ defmodule ER.Accounts do
     |> where(as(:api_keys).key == ^key)
     |> where(as(:api_keys).secret == ^secret)
     |> where(as(:api_keys).status == "active")
-    |> preload([:subscriptions])
+    |> preload([:destinations])
     |> Repo.one()
   end
 
@@ -487,32 +487,32 @@ defmodule ER.Accounts do
   end
 
   @doc """
-  Get a api key subscription
+  Get a api key destination
   """
-  def get_api_key_subscription(api_key, subscription) do
-    from(a in ApiKeySubscription)
+  def get_api_key_destination(api_key, destination) do
+    from(a in ApiKeyDestination)
     |> where([a], a.api_key_id == ^api_key.id)
-    |> where([a], a.subscription_id == ^subscription.id)
+    |> where([a], a.destination_id == ^destination.id)
     |> Repo.one()
   end
 
   @doc """
-  Create an api key subscription
+  Create an api key destination
   """
-  def create_api_key_subscription(api_key, subscription) do
-    %ApiKeySubscription{
+  def create_api_key_destination(api_key, destination) do
+    %ApiKeyDestination{
       api_key_id: api_key.id,
-      subscription_id: subscription.id
+      destination_id: destination.id
     }
-    |> ApiKeySubscription.changeset(%{})
+    |> ApiKeyDestination.changeset(%{})
     |> Repo.insert()
   end
 
   @doc """
-  Delete an api key subscription
+  Delete an api key destination
   """
-  def delete_api_key_subscription(api_key_subscription) do
-    Repo.delete(api_key_subscription)
+  def delete_api_key_destination(api_key_destination) do
+    Repo.delete(api_key_destination)
   end
 
   @doc """

@@ -28,7 +28,7 @@ defmodule ER.TransformersTest do
 
   describe "run/3" do
     test "returns data for an event" do
-      ingestor = insert(:ingestor)
+      source = insert(:source)
 
       message = %{
         "event_data" => %{"user" => "themusicman"},
@@ -44,7 +44,7 @@ defmodule ER.TransformersTest do
         insert(:transformer,
           script:
             "return {event = { topic_name = context.topic_name, data = message.event_data, name = message.event_name, source = context.source}}",
-          ingestor: ingestor,
+          source: source,
           return_type: :map
         )
 
