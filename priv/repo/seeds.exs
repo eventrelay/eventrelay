@@ -60,22 +60,20 @@ uuid = Faker.UUID.v4()
 #
 # destinations = [websocket_destination, webhook_destination]
 
-api_destination =
-  %ER.Destinations.Destination{
+{:ok, api_destination} =
+  ER.Destinations.create_destination(%{
     name: "users_api_destination",
     destination_type: :api,
     topic_name: "users"
-  }
-  |> Repo.insert!()
+  })
 
-topic_destination =
-  %ER.Destinations.Destination{
+{:ok, topic_destination} =
+  ER.Destinations.create_destination(%{
     name: "actions_topic_destination",
     destination_type: :topic,
     topic_name: "users",
     config: %{topic_name: "actions"}
-  }
-  |> Repo.insert!()
+  })
 
 destinations = [api_destination, topic_destination]
 
