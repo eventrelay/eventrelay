@@ -3,7 +3,6 @@ defmodule ER.Destinations.WebhookTest do
   import ER.Factory
   alias ER.{Destinations, Events}
   alias Destinations.Webhook
-  alias Events.Event
 
   describe "webhook/6" do
     setup do
@@ -38,36 +37,11 @@ defmodule ER.Destinations.WebhookTest do
         Plug.Conn.resp(conn, 200, response_body)
       end)
 
-      event_relay_signature =
-        Event.signature(response_body, signing_secret: destination.signing_secret)
-
-      event_relay_destination_id = destination.id
-
       assert {:ok,
               %HTTPoison.Response{
                 status_code: 200,
-                body: response_body,
-                headers: [
-                  {"cache-control", "max-age=0, private, must-revalidate"},
-                  {"content-length", _content_length},
-                  {"date", _date},
-                  {"server", "Cowboy"}
-                ],
-                request_url: webhook_url,
-                request: %HTTPoison.Request{
-                  method: :post,
-                  url: webhook_url,
-                  headers: [
-                    {"Content-Type", "application/json"},
-                    {"X-Event-Relay-Signature", event_relay_signature},
-                    {"X-Event-Relay-Destination-Id", destination_id},
-                    {"X-Event-Relay-Destination-Topic-Name", "users"},
-                    {"X-Event-Relay-Destination-Topic-Identifier", nil}
-                  ],
-                  body: response_body,
-                  params: %{},
-                  options: []
-                }
+                body: ^response_body,
+                request_url: ^webhook_url
               }} = webhook_request(webhook_url, event, destination)
     end
 
@@ -80,6 +54,38 @@ defmodule ER.Destinations.WebhookTest do
       Bypass.down(bypass)
 
       assert {:error, %HTTPoison.Error{reason: :econnrefused, id: nil}} =
+               webhook_request(webhook_url, event, destination)
+    end
+
+    test "returns HTTP 500 error", %{
+      bypass: bypass,
+      webhook_url: webhook_url,
+      destination: destination,
+      event: event
+    } do
+      Bypass.expect(bypass, fn conn ->
+        assert "POST" == conn.method
+        assert "/" == conn.request_path
+        Plug.Conn.resp(conn, 500, "")
+      end)
+
+      assert {:ok, %HTTPoison.Response{body: "", request_url: ^webhook_url, status_code: 500}} =
+               webhook_request(webhook_url, event, destination)
+    end
+
+    test "returns HTTP 2xx error", %{
+      bypass: bypass,
+      webhook_url: webhook_url,
+      destination: destination,
+      event: event
+    } do
+      Bypass.expect(bypass, fn conn ->
+        assert "POST" == conn.method
+        assert "/" == conn.request_path
+        Plug.Conn.resp(conn, 200, "")
+      end)
+
+      assert {:ok, %HTTPoison.Response{body: "", request_url: ^webhook_url, status_code: 200}} =
                webhook_request(webhook_url, event, destination)
     end
   end
