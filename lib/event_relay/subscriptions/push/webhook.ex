@@ -7,8 +7,11 @@ defimpl ER.Subscriptions.Push.Subscription, for: ER.Subscriptions.Push.WebhookSu
   alias ER.Events.Event
   alias ER.Subscriptions.Push.WebhookSubscription
 
-  def push(%WebhookSubscription{subscription: subscription}, %Event{} = event) do
-    Logger.debug("Pushing event to webhook #{inspect(subscription)}")
+  def push(%WebhookSubscription{subscription: %{paused: false} = subscription}, %Event{} = event) do
+    Logger.debug(
+      "#{__MODULE__}.push(#{inspect(subscription)}, #{inspect(event)}) on node=#{inspect(Node.self())}"
+    )
+
     topic_name = subscription.topic_name
 
     delivery = ER.Subscriptions.build_delivery_for_topic(topic_name)
@@ -20,5 +23,11 @@ defimpl ER.Subscriptions.Push.Subscription, for: ER.Subscriptions.Push.WebhookSu
       "subscription" => subscription,
       "event" => event
     })
+  end
+
+  def push(%WebhookSubscription{subscription: subscription}, %Event{} = event) do
+    Logger.debug(
+      "#{__MODULE__}.push(#{inspect(subscription)}, #{inspect(event)}) do not push on node=#{inspect(Node.self())}"
+    )
   end
 end

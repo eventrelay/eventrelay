@@ -88,25 +88,6 @@ defmodule ER.Subscriptions.Subscription do
   def topic?(%{subscription_type: :topic}), do: true
   def topic?(_), do: false
 
-  def push_to_websocket?(subscription) do
-    websocket?(subscription) &&
-      subscription.paused != true && ER.Container.channel_cache().any_sockets?(subscription.id)
-  end
-
-  def push_to_webhook?(subscription) do
-    webhook?(subscription) && subscription.paused != true
-  end
-
-  def push_to_s3?(subscription) do
-    s3?(subscription) &&
-      subscription.paused != true
-  end
-
-  def push_to_topic?(subscription) do
-    topic?(subscription) &&
-      subscription.paused != true
-  end
-
   def matches?(%{query: nil}, _event) do
     true
   end

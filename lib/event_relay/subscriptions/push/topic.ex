@@ -9,9 +9,12 @@ defimpl ER.Subscriptions.Push.Subscription, for: ER.Subscriptions.Push.TopicSubs
 
   @field_to_drop [:__meta__, :subscription_locks, :topic]
 
-  def push(%TopicSubscription{subscription: %{config: config} = subscription}, %Event{} = event) do
+  def push(
+        %TopicSubscription{subscription: %{paused: false, config: config} = subscription},
+        %Event{} = event
+      ) do
     Logger.debug(
-      "#{__MODULE__}.push_event(#{inspect(subscription)}, #{inspect(event)}) on node=#{inspect(Node.self())}"
+      "#{__MODULE__}.push(#{inspect(subscription)}, #{inspect(event)}) on node=#{inspect(Node.self())}"
     )
 
     topic_name = config["topic_name"]
@@ -24,5 +27,11 @@ defimpl ER.Subscriptions.Push.Subscription, for: ER.Subscriptions.Push.TopicSubs
       |> Map.drop(@field_to_drop)
 
     ER.Events.produce_event_for_topic(attrs)
+  end
+
+  def push(%TopicSubscription{subscription: subscription}, %Event{} = event) do
+    Logger.debug(
+      "#{__MODULE__}.push(#{inspect(subscription)}, #{inspect(event)}) do not push on node=#{inspect(Node.self())}"
+    )
   end
 end

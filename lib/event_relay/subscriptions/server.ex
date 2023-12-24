@@ -7,6 +7,7 @@ defmodule ER.Subscriptions.Server do
   use ER.Server
   alias Phoenix.PubSub
   alias ER.Subscriptions.Subscription
+  alias ER.Subscriptions.Push.Subscription, as: Pusher
 
   def handle_continue(:load_state, %{"id" => id} = state) do
     subscription = ER.Subscriptions.get_subscription!(id)
@@ -60,7 +61,7 @@ defmodule ER.Subscriptions.Server do
       end
 
     push_subscription = ER.Subscriptions.Push.Factory.build(subscription)
-    Enum.map(events, &ER.Subscriptions.Push.Subscription.push(push_subscription, &1))
+    Enum.map(events, &Pusher.push(push_subscription, &1))
 
     {:noreply, state}
   end
