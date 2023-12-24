@@ -76,6 +76,7 @@ defmodule ER.MixProject do
       {:ex_machina, "~> 2.7.0", only: :test},
       {:hammox, "~> 0.7", only: :test},
       {:excoveralls, "~> 0.10", only: :test},
+      {:bypass, "~> 2.1", only: :test},
       # Distributed Elixir
       {:horde, "~> 0.8.2"},
       {:libcluster, "~> 3.2"},

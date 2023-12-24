@@ -4,5 +4,5 @@ Application.put_env(:event_relay, :channel_cache, ER.Events.ChannelCacheBehavior
 
 ExUnit.start()
 Faker.start()
-{:ok, _} = Application.ensure_all_started(:ex_machina)
+{:ok, _} = Application.ensure_all_started([:ex_machina, :bypass])
 Ecto.Adapters.SQL.Sandbox.mode(ER.Repo, :manual)
