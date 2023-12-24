@@ -27,57 +27,57 @@ Repo.insert!(%Topic{name: "default"})
 
 topic = %Topic{name: "users"} |> Repo.insert!()
 ER.Events.Event.create_table!(topic)
-ER.Subscriptions.Delivery.create_table!(topic)
+ER.Destinations.Delivery.create_table!(topic)
 
 actions_topic = %Topic{name: "actions"} |> Repo.insert!()
 ER.Events.Event.create_table!(actions_topic)
-ER.Subscriptions.Delivery.create_table!(actions_topic)
+ER.Destinations.Delivery.create_table!(actions_topic)
 
 webhooks_topic = %Topic{name: "webhooks"} |> Repo.insert!()
 ER.Events.Event.create_table!(webhooks_topic)
-ER.Subscriptions.Delivery.create_table!(webhooks_topic)
+ER.Destinations.Delivery.create_table!(webhooks_topic)
 
 topics = [topic, actions_topic]
 
 uuid = Faker.UUID.v4()
 
-# websocket_subscription =
-#   %ER.Subscriptions.Subscription{
+# websocket_destination =
+#   %ER.Destinations.Destination{
 #     name: "app1_websocket",
-#     subscription_type: :websocket,
+#     destination_type: :websocket,
 #     topic_name: "users"
 #   }
 #   |> Repo.insert!()
 #
-# webhook_subscription =
-#   %ER.Subscriptions.Subscription{
+# webhook_destination =
+#   %ER.Destinations.Destination{
 #     name: "app1_webhook",
-#     subscription_type: :webhook,
+#     destination_type: :webhook,
 #     topic_name: "users",
 #     config: %{"endpoint_url" => "http://localhost:5006/api/webhook"}
 #   }
 #   |> Repo.insert!()
 #
-# subscriptions = [websocket_subscription, webhook_subscription]
+# destinations = [websocket_destination, webhook_destination]
 
-api_subscription =
-  %ER.Subscriptions.Subscription{
-    name: "users_api_subscription",
-    subscription_type: :api,
+api_destination =
+  %ER.Destinations.Destination{
+    name: "users_api_destination",
+    destination_type: :api,
     topic_name: "users"
   }
   |> Repo.insert!()
 
-topic_subscription =
-  %ER.Subscriptions.Subscription{
-    name: "actions_topic_subscription",
-    subscription_type: :topic,
+topic_destination =
+  %ER.Destinations.Destination{
+    name: "actions_topic_destination",
+    destination_type: :topic,
     topic_name: "users",
     config: %{topic_name: "actions"}
   }
   |> Repo.insert!()
 
-subscriptions = [api_subscription, topic_subscription]
+destinations = [api_destination, topic_destination]
 
 [:admin, :producer, :consumer]
 |> Enum.each(fn type ->
@@ -106,8 +106,8 @@ subscriptions = [api_subscription, topic_subscription]
       end)
 
     :consumer ->
-      Enum.each(subscriptions, fn subscription ->
-        ER.Accounts.create_api_key_subscription(api_key, subscription)
+      Enum.each(destinations, fn destination ->
+        ER.Accounts.create_api_key_destination(api_key, destination)
       end)
 
     _ ->
@@ -115,13 +115,13 @@ subscriptions = [api_subscription, topic_subscription]
   end
 end)
 
-ingestor =
-  ER.Ingestors.create_ingestor(%{
-    "name" => "wehbook_ingestor",
+source =
+  ER.Sources.create_source(%{
+    "name" => "wehbook_source",
     "config" => %{},
     "type" => :webhook,
     "topic_name" => webhooks_topic.name,
-    "source" = "somewhere"
+    "source" => "somewhere"
   })
 
 # events =
@@ -142,10 +142,10 @@ ingestor =
 # topic = %Topic{name: "dogs"} |> Repo.insert!()
 #
 # ER.Events.Event.create_table!(topic)
-# ER.Subscriptions.Delivery.create_table!(topic)
-# %ER.Subscriptions.Subscription{
+# ER.Destinations.Delivery.create_table!(topic)
+# %ER.Destinations.Destination{
 #   name: "dogs_webhook",
-#   subscription_type: "webhook",
+#   destination_type: "webhook",
 #   push: true,
 #   topic_name: "dogs",
 #   config: %{"endpoint_url" => "http://localhost:5000/api/webhooks"},

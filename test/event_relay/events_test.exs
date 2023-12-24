@@ -163,7 +163,7 @@ defmodule ER.EventsTest do
       {:ok, topic: topic}
     end
 
-    test "returns events that respect the subscription_locks", %{
+    test "returns events that respect the destination_locks", %{
       topic: topic
     } do
       attrs =
@@ -220,17 +220,17 @@ defmodule ER.EventsTest do
   describe "list_queued_events_for_topic/1" do
     setup do
       {:ok, topic} = ER.Events.create_topic(%{name: "jobs"})
-      subscription = insert(:subscription, topic: topic)
-      subscription_with_locks = insert(:subscription, topic: topic)
+      destination = insert(:destination, topic: topic)
+      destination_with_locks = insert(:destination, topic: topic)
 
       {:ok,
-       topic: topic, subscription: subscription, subscription_with_locks: subscription_with_locks}
+       topic: topic, destination: destination, destination_with_locks: destination_with_locks}
     end
 
-    test "returns events that respect the subscription_locks", %{
+    test "returns events that respect the destination_locks", %{
       topic: topic,
-      subscription: subscription,
-      subscription_with_locks: subscription_with_locks
+      destination: destination,
+      destination_with_locks: destination_with_locks
     } do
       lock_events =
         Enum.map(1..9, fn i ->
@@ -238,7 +238,7 @@ defmodule ER.EventsTest do
             params_for(:event,
               topic: topic,
               offset: i,
-              subscription_locks: [subscription_with_locks.id]
+              destination_locks: [destination_with_locks.id]
             )
 
           Events.create_event_for_topic(attrs)
@@ -249,13 +249,13 @@ defmodule ER.EventsTest do
           Events.create_event_for_topic(params_for(:event, topic: topic, offset: i))
         end)
 
-      # first lets attempt to get events for subscription that have some events locked
+      # first lets attempt to get events for destination that have some events locked
       events =
         Events.list_queued_events_for_topic(
           batch_size: 100,
           topic_name: topic.name,
           topic_identifier: nil,
-          subscription_id: subscription_with_locks.id
+          destination_id: destination_with_locks.id
         )
 
       assert Enum.count(events) == 10
@@ -272,7 +272,7 @@ defmodule ER.EventsTest do
           batch_size: 100,
           topic_name: topic.name,
           topic_identifier: nil,
-          subscription_id: subscription.id
+          destination_id: destination.id
         )
 
       # should return all events
@@ -284,7 +284,7 @@ defmodule ER.EventsTest do
       {:ok, last_locked_event} = List.last(lock_events)
 
       last_locked_event
-      |> Events.change_event(%{subscription_locks: []})
+      |> Events.change_event(%{destination_locks: []})
       |> Repo.update()
 
       events =
@@ -292,7 +292,7 @@ defmodule ER.EventsTest do
           batch_size: 100,
           topic_name: topic.name,
           topic_identifier: nil,
-          subscription_id: subscription_with_locks.id
+          destination_id: destination_with_locks.id
         )
 
       # we should have the original 10 plus the unlocked event
@@ -301,21 +301,21 @@ defmodule ER.EventsTest do
       # check that the first event is the last offset of the locked events
       assert event.offset == 9
 
-      Events.lock_subscription_events(subscription.id, events)
+      Events.lock_destination_events(destination.id, events)
     end
   end
 
-  describe "lock_subscription_events/2" do
+  describe "lock_destination_events/2" do
     setup do
       {:ok, topic} = ER.Events.create_topic(%{name: "jobs"})
-      subscription = insert(:subscription, topic: topic)
+      destination = insert(:destination, topic: topic)
 
-      {:ok, topic: topic, subscription: subscription}
+      {:ok, topic: topic, destination: destination}
     end
 
-    test "locks the events for that subscription", %{
+    test "locks the events for that destination", %{
       topic: topic,
-      subscription: subscription
+      destination: destination
     } do
       unlocked_events =
         Enum.map(1..10, fn i ->
@@ -329,14 +329,14 @@ defmodule ER.EventsTest do
           event
         end)
 
-      Events.lock_subscription_events(subscription.id, unlocked_events)
+      Events.lock_destination_events(destination.id, unlocked_events)
 
       events =
         Events.list_queued_events_for_topic(
           batch_size: 100,
           topic_name: topic.name,
           topic_identifier: nil,
-          subscription_id: subscription.id
+          destination_id: destination.id
         )
 
       # now that all the events are locked non should be found

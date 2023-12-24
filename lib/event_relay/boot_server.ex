@@ -23,7 +23,7 @@ defmodule ER.BootServer do
     unless Code.ensure_loaded?(IEx) and IEx.started?() do
       Horde.DynamicSupervisor.start_child(
         ER.Horde.Supervisor,
-        {ER.Subscriptions.Manager.Server, [name: "subscriptions_manager"]}
+        {ER.Destinations.Manager.Server, [name: "destinations_manager"]}
       )
 
       Horde.DynamicSupervisor.start_child(
@@ -32,9 +32,9 @@ defmodule ER.BootServer do
       )
 
       # TODO: improve supervision
-      ER.Ingestors.list_ingestors()
-      |> Enum.each(fn ingestor ->
-        ER.Ingestors.Ingestor.start_ingestor(ingestor)
+      ER.Sources.list_sources()
+      |> Enum.each(fn source ->
+        ER.Sources.Source.start_source(source)
       end)
     end
 

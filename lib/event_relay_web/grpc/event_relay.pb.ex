@@ -78,14 +78,14 @@ defmodule ERWeb.Grpc.Eventrelay.DeleteTopicResponse do
   field :topic, 1, type: ERWeb.Grpc.Eventrelay.Topic
 end
 
-defmodule ERWeb.Grpc.Eventrelay.NewSubscription.ConfigEntry do
+defmodule ERWeb.Grpc.Eventrelay.NewDestination.ConfigEntry do
   use Protobuf, map: true, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :key, 1, type: :string
   field :value, 2, type: :string
 end
 
-defmodule ERWeb.Grpc.Eventrelay.NewSubscription do
+defmodule ERWeb.Grpc.Eventrelay.NewDestination do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :name, 1, type: :string
@@ -94,89 +94,84 @@ defmodule ERWeb.Grpc.Eventrelay.NewSubscription do
 
   field :config, 4,
     repeated: true,
-    type: ERWeb.Grpc.Eventrelay.NewSubscription.ConfigEntry,
+    type: ERWeb.Grpc.Eventrelay.NewDestination.ConfigEntry,
     map: true
 
   field :paused, 5, type: :bool
-  field :subscription_type, 6, type: :string, json_name: "subscriptionType"
+  field :destination_type, 6, type: :string, json_name: "destinationType"
   field :group_key, 7, type: :string, json_name: "groupKey"
 end
 
-defmodule ERWeb.Grpc.Eventrelay.Subscription.ConfigEntry do
+defmodule ERWeb.Grpc.Eventrelay.Destination.ConfigEntry do
   use Protobuf, map: true, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :key, 1, type: :string
   field :value, 2, type: :string
 end
 
-defmodule ERWeb.Grpc.Eventrelay.Subscription do
+defmodule ERWeb.Grpc.Eventrelay.Destination do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
   field :name, 2, type: :string
   field :topic_name, 3, type: :string, json_name: "topicName"
   field :topic_identifier, 4, type: :string, json_name: "topicIdentifier"
-
-  field :config, 5,
-    repeated: true,
-    type: ERWeb.Grpc.Eventrelay.Subscription.ConfigEntry,
-    map: true
-
-  field :subscription_type, 6, type: :string, json_name: "subscriptionType"
+  field :config, 5, repeated: true, type: ERWeb.Grpc.Eventrelay.Destination.ConfigEntry, map: true
+  field :destination_type, 6, type: :string, json_name: "destinationType"
   field :group_key, 7, type: :string, json_name: "groupKey"
 end
 
-defmodule ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest do
+defmodule ERWeb.Grpc.Eventrelay.ListDestinationsRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :page, 1, type: :int32
   field :page_size, 2, type: :int32, json_name: "pageSize"
 end
 
-defmodule ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse do
+defmodule ERWeb.Grpc.Eventrelay.ListDestinationsResponse do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :subscriptions, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Subscription
+  field :destinations, 1, repeated: true, type: ERWeb.Grpc.Eventrelay.Destination
   field :total_count, 2, type: :int32, json_name: "totalCount"
   field :next_page, 3, type: :int32, json_name: "nextPage"
   field :previous_page, 4, type: :int32, json_name: "previousPage"
   field :total_pages, 5, type: :int32, json_name: "totalPages"
 end
 
-defmodule ERWeb.Grpc.Eventrelay.GetSubscriptionRequest do
+defmodule ERWeb.Grpc.Eventrelay.GetDestinationRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
 end
 
-defmodule ERWeb.Grpc.Eventrelay.GetSubscriptionResponse do
+defmodule ERWeb.Grpc.Eventrelay.GetDestinationResponse do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :subscription, 1, type: ERWeb.Grpc.Eventrelay.Subscription
+  field :destination, 1, type: ERWeb.Grpc.Eventrelay.Destination
 end
 
-defmodule ERWeb.Grpc.Eventrelay.CreateSubscriptionRequest do
+defmodule ERWeb.Grpc.Eventrelay.CreateDestinationRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :subscription, 1, type: ERWeb.Grpc.Eventrelay.NewSubscription
+  field :destination, 1, type: ERWeb.Grpc.Eventrelay.NewDestination
 end
 
-defmodule ERWeb.Grpc.Eventrelay.CreateSubscriptionResponse do
+defmodule ERWeb.Grpc.Eventrelay.CreateDestinationResponse do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :subscription, 1, type: ERWeb.Grpc.Eventrelay.Subscription
+  field :destination, 1, type: ERWeb.Grpc.Eventrelay.Destination
 end
 
-defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionRequest do
+defmodule ERWeb.Grpc.Eventrelay.DeleteDestinationRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
 end
 
-defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionResponse do
+defmodule ERWeb.Grpc.Eventrelay.DeleteDestinationResponse do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :subscription, 1, type: ERWeb.Grpc.Eventrelay.Subscription
+  field :destination, 1, type: ERWeb.Grpc.Eventrelay.Destination
 end
 
 defmodule ERWeb.Grpc.Eventrelay.NewEvent.ContextEntry do
@@ -265,7 +260,7 @@ end
 defmodule ERWeb.Grpc.Eventrelay.PullQueuedEventsRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :subscription_id, 1, type: :string, json_name: "subscriptionId"
+  field :destination_id, 1, type: :string, json_name: "destinationId"
   field :batch_size, 2, type: :int32, json_name: "batchSize"
 end
 
@@ -278,7 +273,7 @@ end
 defmodule ERWeb.Grpc.Eventrelay.UnLockQueuedEventsRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :subscription_id, 1, type: :string, json_name: "subscriptionId"
+  field :destination_id, 1, type: :string, json_name: "destinationId"
   field :event_ids, 2, repeated: true, type: :string, json_name: "eventIds"
 end
 
@@ -428,32 +423,32 @@ defmodule ERWeb.Grpc.Eventrelay.RevokeApiKeyResponse do
   field :api_key, 1, type: ERWeb.Grpc.Eventrelay.ApiKey, json_name: "apiKey"
 end
 
-defmodule ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyRequest do
+defmodule ERWeb.Grpc.Eventrelay.AddDestinationsToApiKeyRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
-  field :subscription_ids, 2, repeated: true, type: :string, json_name: "subscriptionIds"
+  field :destination_ids, 2, repeated: true, type: :string, json_name: "destinationIds"
 end
 
-defmodule ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyResponse do
+defmodule ERWeb.Grpc.Eventrelay.AddDestinationsToApiKeyResponse do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
-  field :subscription_ids, 2, repeated: true, type: :string, json_name: "subscriptionIds"
+  field :destination_ids, 2, repeated: true, type: :string, json_name: "destinationIds"
 end
 
-defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyRequest do
+defmodule ERWeb.Grpc.Eventrelay.DeleteDestinationsFromApiKeyRequest do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
-  field :subscription_ids, 2, repeated: true, type: :string, json_name: "subscriptionIds"
+  field :destination_ids, 2, repeated: true, type: :string, json_name: "destinationIds"
 end
 
-defmodule ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyResponse do
+defmodule ERWeb.Grpc.Eventrelay.DeleteDestinationsFromApiKeyResponse do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
   field :id, 1, type: :string
-  field :subscription_ids, 2, repeated: true, type: :string, json_name: "subscriptionIds"
+  field :destination_ids, 2, repeated: true, type: :string, json_name: "destinationIds"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyRequest do
@@ -588,36 +583,36 @@ defmodule ERWeb.Grpc.Eventrelay.Topics.Stub do
   use GRPC.Stub, service: ERWeb.Grpc.Eventrelay.Topics.Service
 end
 
-defmodule ERWeb.Grpc.Eventrelay.Subscriptions.Service do
-  use GRPC.Service, name: "eventrelay.Subscriptions", protoc_gen_elixir_version: "0.12.0"
+defmodule ERWeb.Grpc.Eventrelay.Destinations.Service do
+  use GRPC.Service, name: "eventrelay.Destinations", protoc_gen_elixir_version: "0.12.0"
 
   rpc(
-    :ListSubscriptions,
-    ERWeb.Grpc.Eventrelay.ListSubscriptionsRequest,
-    ERWeb.Grpc.Eventrelay.ListSubscriptionsResponse
+    :ListDestinations,
+    ERWeb.Grpc.Eventrelay.ListDestinationsRequest,
+    ERWeb.Grpc.Eventrelay.ListDestinationsResponse
   )
 
   rpc(
-    :GetSubscription,
-    ERWeb.Grpc.Eventrelay.GetSubscriptionRequest,
-    ERWeb.Grpc.Eventrelay.GetSubscriptionResponse
+    :GetDestination,
+    ERWeb.Grpc.Eventrelay.GetDestinationRequest,
+    ERWeb.Grpc.Eventrelay.GetDestinationResponse
   )
 
   rpc(
-    :CreateSubscription,
-    ERWeb.Grpc.Eventrelay.CreateSubscriptionRequest,
-    ERWeb.Grpc.Eventrelay.CreateSubscriptionResponse
+    :CreateDestination,
+    ERWeb.Grpc.Eventrelay.CreateDestinationRequest,
+    ERWeb.Grpc.Eventrelay.CreateDestinationResponse
   )
 
   rpc(
-    :DeleteSubscription,
-    ERWeb.Grpc.Eventrelay.DeleteSubscriptionRequest,
-    ERWeb.Grpc.Eventrelay.DeleteSubscriptionResponse
+    :DeleteDestination,
+    ERWeb.Grpc.Eventrelay.DeleteDestinationRequest,
+    ERWeb.Grpc.Eventrelay.DeleteDestinationResponse
   )
 end
 
-defmodule ERWeb.Grpc.Eventrelay.Subscriptions.Stub do
-  use GRPC.Stub, service: ERWeb.Grpc.Eventrelay.Subscriptions.Service
+defmodule ERWeb.Grpc.Eventrelay.Destinations.Stub do
+  use GRPC.Stub, service: ERWeb.Grpc.Eventrelay.Destinations.Service
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ApiKeys.Service do
@@ -636,15 +631,15 @@ defmodule ERWeb.Grpc.Eventrelay.ApiKeys.Service do
   )
 
   rpc(
-    :AddSubscriptionsToApiKey,
-    ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyRequest,
-    ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyResponse
+    :AddDestinationsToApiKey,
+    ERWeb.Grpc.Eventrelay.AddDestinationsToApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.AddDestinationsToApiKeyResponse
   )
 
   rpc(
-    :DeleteSubscriptionsFromApiKey,
-    ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyRequest,
-    ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyResponse
+    :DeleteDestinationsFromApiKey,
+    ERWeb.Grpc.Eventrelay.DeleteDestinationsFromApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.DeleteDestinationsFromApiKeyResponse
   )
 
   rpc(

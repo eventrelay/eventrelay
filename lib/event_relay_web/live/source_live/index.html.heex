@@ -1,0 +1,47 @@
+<.header>
+  Listing Sources
+  <:actions>
+    <.link patch={~p"/sources/new"}>
+      <.button>New Source</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="sources" rows={@streams.sources}>
+  <:col :let={{_id, source}} label="Type"><%= source.type %></:col>
+  <:col :let={{_id, source}} label="Topic"><%= source.topic_name %></:col>
+  <:col :let={{_id, source}} label="Config">
+    <div id={"#{source.id}-config"} phx-hook="JsonView" data-json={Jason.encode!(source.config)}>
+    </div>
+  </:col>
+  <:col :let={{_id, source}} label="Source"><%= source.source %></:col>
+  <:action :let={{_id, source}}>
+    <.link navigate={~p"/sources/#{source}"}>Show</.link>
+    <.link patch={~p"/sources/#{source}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, source}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: source.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="source-modal"
+  show
+  on_cancel={JS.patch(~p"/sources")}
+>
+  <.live_component
+    module={ERWeb.SourceLive.FormComponent}
+    id={@source.id || :new}
+    title={@page_title}
+    action={@live_action}
+    topics={@topics}
+    source={@source}
+    patch={~p"/sources"}
+  />
+</.modal>

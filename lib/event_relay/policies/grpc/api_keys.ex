@@ -24,7 +24,7 @@ defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.RevokeApiKeyRequest do
   end
 end
 
-defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyRequest do
+defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.AddDestinationsToApiKeyRequest do
   alias Bosun.Context
   alias ER.Accounts.ApiKey
 
@@ -37,7 +37,7 @@ defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.AddSubscriptionsToApiKeyRequest
   end
 end
 
-defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.DeleteSubscriptionsFromApiKeyRequest do
+defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.DeleteDestinationsFromApiKeyRequest do
   alias Bosun.Context
   alias ER.Accounts.ApiKey
 

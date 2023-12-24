@@ -5,10 +5,10 @@ defmodule ERWeb.WebhookControllerTest do
   import ER.Factory
 
   def setup_auth(%{conn: conn, topic: topic}) do
-    ingestor = insert(:ingestor, topic: topic)
-    creds = Base.encode64("#{ingestor.key}:#{ingestor.secret}")
+    source = insert(:source, topic: topic)
+    creds = Base.encode64("#{source.key}:#{source.secret}")
 
-    {:ok, conn: put_req_header(conn, "authorization", "Basic #{creds}"), ingestor: ingestor}
+    {:ok, conn: put_req_header(conn, "authorization", "Basic #{creds}"), source: source}
   end
 
   setup %{conn: conn} do
@@ -20,11 +20,11 @@ defmodule ERWeb.WebhookControllerTest do
   describe "ingest webhook" do
     setup [:setup_auth]
 
-    test "creates an event and renders 200", %{conn: conn, topic: topic, ingestor: ingestor} do
+    test "creates an event and renders 200", %{conn: conn, topic: topic, source: source} do
       data = %{"type" => "user.updated", "data" => %{"id" => 123, "name" => "Riley"}}
 
       conn =
-        post(conn, ~p"/webhooks/ingest/#{ingestor}", data)
+        post(conn, ~p"/webhooks/ingest/#{source}", data)
 
       assert text_response(conn, 200) == "OK"
 
@@ -32,11 +32,11 @@ defmodule ERWeb.WebhookControllerTest do
 
       event = List.last(events)
 
-      # TODO: move event name to ingestor 
+      # TODO: move event name to source 
       assert event.name == "webhook.inbound"
-      assert event.topic_name == ingestor.topic_name
+      assert event.topic_name == source.topic_name
       assert event.data == data
-      assert event.source == ingestor.source
+      assert event.source == source.source
     end
   end
 

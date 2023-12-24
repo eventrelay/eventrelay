@@ -43,19 +43,19 @@
   </.table>
 </div>
 <div :if={@api_key.type == :consumer} class="mt-8">
-  <h3>Subscriptions</h3>
-  <.table id="subscriptions" rows={@subscriptions}>
-    <:col :let={subscription} label="Name"><%= subscription.name %></:col>
-    <:action :let={subscription}>
+  <h3>Destinations</h3>
+  <.table id="destinations" rows={@destinations}>
+    <:col :let={destination} label="Name"><%= destination.name %></:col>
+    <:action :let={destination}>
       <.link
-        :if={!api_key_has_subscription?(@api_key, subscription)}
-        phx-click={JS.push("add_subscription", value: %{subscription_id: subscription.id})}
+        :if={!api_key_has_destination?(@api_key, destination)}
+        phx-click={JS.push("add_destination", value: %{destination_id: destination.id})}
       >
         Add
       </.link>
       <.link
-        :if={api_key_has_subscription?(@api_key, subscription)}
-        phx-click={JS.push("remove_subscription", value: %{subscription_id: subscription.id})}
+        :if={api_key_has_destination?(@api_key, destination)}
+        phx-click={JS.push("remove_destination", value: %{destination_id: destination.id})}
         data-confirm="Are you sure?"
       >
         Remove

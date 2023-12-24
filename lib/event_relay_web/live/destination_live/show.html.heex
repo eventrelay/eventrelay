@@ -1,0 +1,42 @@
+<.header>
+  Destination <%= @destination.id %>
+  <:subtitle>This is a destination record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/destinations/#{@destination}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit destination</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Name"><%= @destination.name %></:item>
+  <:item title="Topic name"><%= @destination.topic_name %></:item>
+  <:item title="Signing Secret"><%= @destination.signing_secret %></:item>
+  <:item title="Config">
+    <div
+      id={"#{@destination.id}-config"}
+      phx-hook="JsonView"
+      data-json={Jason.encode!(@destination.config)}
+    >
+    </div>
+  </:item>
+</.list>
+
+<.back navigate={~p"/destinations"}>Back to destinations</.back>
+
+<.modal
+  :if={@live_action == :edit}
+  id="destination-modal"
+  show
+  on_cancel={JS.patch(~p"/destinations/#{@destination}")}
+>
+  <.live_component
+    module={ERWeb.DestinationLive.FormComponent}
+    id={@destination.id}
+    title={@page_title}
+    action={@live_action}
+    destination={@destination}
+    topics={@topics}
+    navigate={~p"/destinations/#{@destination}"}
+  />
+</.modal>

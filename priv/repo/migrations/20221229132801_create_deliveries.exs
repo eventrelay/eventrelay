@@ -8,7 +8,7 @@ defmodule ER.Repo.Migrations.CreateDeliveries do
       add(:success, :boolean, default: false, null: false)
       add(:event_id, :binary_id)
 
-      add(:subscription_id, references(:subscriptions, type: :binary_id, on_delete: :delete_all),
+      add(:destination_id, references(:destinations, type: :binary_id, on_delete: :delete_all),
         null: false
       )
 
@@ -16,6 +16,6 @@ defmodule ER.Repo.Migrations.CreateDeliveries do
       add(:updated_at, :utc_datetime, default: fragment("NOW()"))
     end
 
-    create(unique_index(:deliveries, [:event_id, :subscription_id]))
+    create(unique_index(:deliveries, [:event_id, :destination_id]))
   end
 end

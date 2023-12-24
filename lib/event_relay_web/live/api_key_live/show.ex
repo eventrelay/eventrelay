@@ -7,8 +7,8 @@ defmodule ERWeb.ApiKeyLive.Show do
   @impl true
   def mount(_params, _session, socket) do
     topics = ER.Events.list_topics()
-    subscriptions = ER.Subscriptions.list_subscriptions()
-    socket = socket |> assign(:topics, topics) |> assign(:subscriptions, subscriptions)
+    destinations = ER.Destinations.list_destinations()
+    socket = socket |> assign(:topics, topics) |> assign(:destinations, destinations)
     {:ok, socket}
   end
 
@@ -57,10 +57,10 @@ defmodule ERWeb.ApiKeyLive.Show do
   end
 
   @impl true
-  def handle_event("add_subscription", %{"subscription_id" => subscription_id}, socket) do
-    subscription = ER.Subscriptions.get_subscription!(subscription_id)
+  def handle_event("add_destination", %{"destination_id" => destination_id}, socket) do
+    destination = ER.Destinations.get_destination!(destination_id)
     api_key = socket.assigns.api_key
-    {:ok, _} = ER.Accounts.create_api_key_subscription(api_key, subscription)
+    {:ok, _} = ER.Accounts.create_api_key_destination(api_key, destination)
 
     api_key = Repo.reload(api_key)
 
@@ -73,11 +73,11 @@ defmodule ERWeb.ApiKeyLive.Show do
   end
 
   @impl true
-  def handle_event("remove_subscription", %{"subscription_id" => subscription_id}, socket) do
-    subscription = ER.Subscriptions.get_subscription!(subscription_id)
+  def handle_event("remove_destination", %{"destination_id" => destination_id}, socket) do
+    destination = ER.Destinations.get_destination!(destination_id)
     api_key = socket.assigns.api_key
-    api_key_subscription = ER.Accounts.get_api_key_subscription(api_key, subscription)
-    {:ok, _} = ER.Accounts.delete_api_key_subscription(api_key_subscription)
+    api_key_destination = ER.Accounts.get_api_key_destination(api_key, destination)
+    {:ok, _} = ER.Accounts.delete_api_key_destination(api_key_destination)
     api_key = Repo.reload(api_key)
 
     socket =

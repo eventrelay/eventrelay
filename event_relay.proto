@@ -30,18 +30,18 @@ service Topics {
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {}
 }
 
-service Subscriptions {
-  rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse) {}
-  rpc GetSubscription(GetSubscriptionRequest) returns (GetSubscriptionResponse) {}
-  rpc CreateSubscription(CreateSubscriptionRequest) returns (CreateSubscriptionResponse) {}
-  rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse) {}
+service Destinations {
+  rpc ListDestinations(ListDestinationsRequest) returns (ListDestinationsResponse) {}
+  rpc GetDestination(GetDestinationRequest) returns (GetDestinationResponse) {}
+  rpc CreateDestination(CreateDestinationRequest) returns (CreateDestinationResponse) {}
+  rpc DeleteDestination(DeleteDestinationRequest) returns (DeleteDestinationResponse) {}
 }
 
 service ApiKeys {
   rpc CreateApiKey(CreateApiKeyRequest) returns (CreateApiKeyResponse) {}
   rpc RevokeApiKey(RevokeApiKeyRequest) returns (RevokeApiKeyResponse) {}
-  rpc AddSubscriptionsToApiKey(AddSubscriptionsToApiKeyRequest) returns (AddSubscriptionsToApiKeyResponse) {}
-  rpc DeleteSubscriptionsFromApiKey(DeleteSubscriptionsFromApiKeyRequest) returns (DeleteSubscriptionsFromApiKeyResponse) {}
+  rpc AddDestinationsToApiKey(AddDestinationsToApiKeyRequest) returns (AddDestinationsToApiKeyResponse) {}
+  rpc DeleteDestinationsFromApiKey(DeleteDestinationsFromApiKeyRequest) returns (DeleteDestinationsFromApiKeyResponse) {}
   rpc AddTopicsToApiKey(AddTopicsToApiKeyRequest) returns (AddTopicsToApiKeyResponse) {}
   rpc DeleteTopicsFromApiKey(DeleteTopicsFromApiKeyRequest) returns (DeleteTopicsFromApiKeyResponse) {}
 }
@@ -90,61 +90,61 @@ message DeleteTopicResponse {
   Topic topic = 1;
 }
 
-message NewSubscription {
+message NewDestination {
   string name = 1;
   string topic_name = 2;
   string topic_identifier = 3;
   map<string, string> config = 4;
   bool paused = 5;
-  string subscription_type = 6;
+  string destination_type = 6;
   string group_key = 7;
 }
 
-message Subscription {
+message Destination {
   string id = 1;
   string name = 2;
   string topic_name = 3;
   string topic_identifier = 4;
   map<string, string> config = 5;
-  string subscription_type = 6;
+  string destination_type = 6;
   string group_key = 7;
 }
 
-message ListSubscriptionsRequest {
+message ListDestinationsRequest {
   int32 page = 1;
   int32 page_size = 2;
 }
 
-message ListSubscriptionsResponse {
-  repeated Subscription subscriptions = 1;
+message ListDestinationsResponse {
+  repeated Destination destinations = 1;
   int32 total_count = 2;
   int32 next_page = 3;
   int32 previous_page = 4;
   int32 total_pages = 5;
 }
 
-message GetSubscriptionRequest {
+message GetDestinationRequest {
   string id = 1;
 }
 
-message GetSubscriptionResponse {
-  Subscription subscription = 1;
+message GetDestinationResponse {
+  Destination destination = 1;
 }
 
-message CreateSubscriptionRequest {
-  NewSubscription subscription = 1;
+message CreateDestinationRequest {
+  NewDestination destination = 1;
 }
 
-message CreateSubscriptionResponse {
-  Subscription subscription = 1;
+message CreateDestinationResponse {
+  Destination destination = 1;
 }
  
-message DeleteSubscriptionRequest {
+message DeleteDestinationRequest {
   string id = 1;
 }
 
-message DeleteSubscriptionResponse {
-  Subscription subscription = 1;
+message DeleteDestinationResponse {
+  Destination destination = 1;
 }
 
 message NewEvent {
@@ -209,7 +209,7 @@ message PullEventsResponse {
 }
 
 message PullQueuedEventsRequest {
-  string subscription_id = 1;
+  string destination_id = 1;
   // max batchSize is 1000, if not specified, defaults to 100
   int32 batch_size = 2;
 }
@@ -219,7 +219,7 @@ message PullQueuedEventsResponse {
 }
 
 message UnLockQueuedEventsRequest {
-  string subscription_id = 1;
+  string destination_id = 1;
   repeated string event_ids = 2;
 }
 
@@ -364,26 +364,26 @@ message RevokeApiKeyResponse {
   ApiKey api_key = 1;
 }
 
-message AddSubscriptionsToApiKeyRequest {
+message AddDestinationsToApiKeyRequest {
   string id = 1;
-  repeated string subscription_ids = 2;
+  repeated string destination_ids = 2;
 }
 
-message AddSubscriptionsToApiKeyResponse {
+message AddDestinationsToApiKeyResponse {
   string id = 1;
-  // list of subscription ids that were added
-  repeated string subscription_ids = 2;
+  // list of destination ids that were added
+  repeated string destination_ids = 2;
 }
  
-message DeleteSubscriptionsFromApiKeyRequest {
+message DeleteDestinationsFromApiKeyRequest {
   string id = 1;
-  repeated string subscription_ids = 2;
+  repeated string destination_ids = 2;
 }
 
- message DeleteSubscriptionsFromApiKeyResponse {
+ message DeleteDestinationsFromApiKeyResponse {
   string id = 1;
-  // list of subscription ids that were deleted
-  repeated string subscription_ids = 2;
+  // list of destination ids that were deleted
+  repeated string destination_ids = 2;
 }
 
 message AddTopicsToApiKeyRequest {
