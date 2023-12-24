@@ -239,6 +239,10 @@ defmodule ER.Destinations do
         Logger.debug("Postgrex error for delivery=#{inspect(attrs)} exception=#{inspect(e)}")
         {:error, e.postgres.message}
 
+      e in ArgumentError ->
+        Logger.error("Argument error for event: #{inspect(e)}")
+        {:error, e.message}
+
       e ->
         Logger.error("Unknown error for event: #{inspect(e)}")
         {:error, e.message}

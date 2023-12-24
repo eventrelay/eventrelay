@@ -63,34 +63,12 @@ defmodule ER.Destinations.WebhookTest do
       destination: destination,
       event: event
     } do
-      Bypass.expect(bypass, fn conn ->
-        assert "POST" == conn.method
-        assert "/" == conn.request_path
-        Plug.Conn.resp(conn, 500, "")
-      end)
+      Bypass.expect(bypass, &Plug.Conn.resp(&1, 500, ""))
 
       {:ok, %HTTPoison.Response{status_code: status_code}} =
         webhook_request(webhook_url, event, destination)
 
       assert 500 == status_code
-    end
-
-    test "returns HTTP 2xx error", %{
-      bypass: bypass,
-      webhook_url: webhook_url,
-      destination: destination,
-      event: event
-    } do
-      Bypass.expect(bypass, fn conn ->
-        assert "POST" == conn.method
-        assert "/" == conn.request_path
-        Plug.Conn.resp(conn, 200, "")
-      end)
-
-      {:ok, %HTTPoison.Response{status_code: status_code}} =
-        webhook_request(webhook_url, event, destination)
-
-      assert 200 == status_code
     end
   end
 

@@ -17,7 +17,7 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
           "delivery" => delivery
         } = state
       ) do
-    state =
+    updated_state =
       state
       |> Map.put("delivery_attempts", delivery.attempts)
       |> Map.put("destination_endpoint_url", destination.config["endpoint_url"])
@@ -35,7 +35,7 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
     Logger.debug("Delivery server started for #{inspect(delivery)}")
     Process.send(self(), :attempt, [])
 
-    {:noreply, state}
+    {:noreply, updated_state}
   end
 
   def handle_info(
@@ -65,15 +65,27 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
       )
       |> Webhook.handle_response()
 
-    delivery_attempts = [
-      %{"response" => unwrap(response), "attempted_at" => DateTime.utc_now()} | delivery_attempts
-    ]
-
-    state =
+    updated_state =
       state
-      |> Map.put("attempt_count", state["attempt_count"] + 1)
-      |> Map.put("delivery_attempts", delivery_attempts)
+      |> Map.put("attempt_count", increment_attempt_count(state))
+      |> Map.put("delivery_attempts", build_delivery_attempts(response, delivery_attempts))
 
+    handle_info_response(response, updated_state)
+  end
+
+  defp increment_attempt_count(state), do: state["attempt_count"] + 1
+
+  defp build_delivery_attempts(response, delivery_attempts) do
+    [
+      %{
+        "response" => unwrap(response),
+        "attempted_at" => DateTime.utc_now()
+      }
+      | delivery_attempts
+    ]
+  end
+
+  defp handle_info_response(response, state) do
     cond do
       success?(response) ->
         handle_success(state)
@@ -86,17 +98,16 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
     end
   end
 
-  def handle_success(
-        %{
-          "delivery_attempts" => delivery_attempts,
-          "destination_id" => destination_id,
-          "event" => event,
-          "id" => id,
-          "delivery" => delivery
-        } = state
-      ) do
+  defp handle_success(
+         %{
+           "delivery_attempts" => delivery_attempts,
+           "destination_id" => destination_id,
+           "event" => event,
+           "delivery" => delivery
+         } = state
+       ) do
     Logger.debug(
-      "Webhook destination=#{inspect(destination_id)} and delivery=#{inspect(id)} delivered successfully"
+      "Webhook destination=#{inspect(destination_id)} and delivery=#{inspect(delivery.id)} delivered successfully"
     )
 
     create_delivery_for_event(event, delivery, %{
@@ -109,16 +120,15 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
     {:stop, :shutdown, state}
   end
 
-  def handle_failure(
-        %{
-          "id" => id,
-          "destination_id" => destination_id,
-          "delivery_attempts" => delivery_attempts,
-          "event" => event,
-          "delivery" => delivery
-        } = state
-      ) do
-    Logger.debug("Webhook delivery #{inspect(id)} failed, not retrying")
+  defp handle_failure(
+         %{
+           "destination_id" => destination_id,
+           "delivery_attempts" => delivery_attempts,
+           "event" => event,
+           "delivery" => delivery
+         } = state
+       ) do
+    Logger.debug("Webhook delivery #{inspect(delivery.id)} failed, not retrying")
 
     create_delivery_for_event(event, delivery, %{
       event_id: event.id,
@@ -130,32 +140,27 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
     {:stop, :shutdown, state}
   end
 
-  def handle_retry(%{"destination_id" => destination_id, "retry_delay" => retry_delay} = state) do
+  defp handle_retry(%{"destination_id" => destination_id, "retry_delay" => retry_delay} = state) do
     retry_delay = retry_delay * 2
 
     Logger.debug("Webhook #{inspect(destination_id)} failed, retrying in #{retry_delay} seconds")
 
     state = state |> Map.put("retry_delay", retry_delay)
     Process.send_after(self(), :attempt, retry_delay, [])
+
     {:noreply, state}
   end
 
-  def success?({:ok, _}) do
-    true
-  end
-
-  def success?({:error, _}) do
-    false
-  end
+  # TODO: Add to Flamel
+  def success?({:ok, _}), do: true
+  def success?({:error, _}), do: false
 
   def retry?(%{"attempt_count" => attempt_count, "max_attempts" => max_attempts})
       when attempt_count < max_attempts do
     true
   end
 
-  def retry?(_) do
-    false
-  end
+  def retry?(_), do: false
 
   def create_delivery_for_event(%Event{topic_name: topic_name, durable: true}, delivery, attrs) do
     ER.Destinations.create_delivery_for_topic(
