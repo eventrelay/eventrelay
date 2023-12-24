@@ -112,7 +112,7 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
 
     create_delivery_for_event(event, delivery, %{
       event_id: event.id,
-      destination_id: destination_id,
+      # destination_id: destination_id,
       attempts: delivery_attempts,
       status: :success
     })
@@ -128,11 +128,13 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
            "delivery" => delivery
          } = state
        ) do
-    Logger.debug("Webhook delivery #{inspect(delivery.id)} failed, not retrying")
+    Logger.debug(
+      "Webhook destination=#{inspect(destination_id)} and delivery #{inspect(delivery.id)} failed, not retrying"
+    )
 
     create_delivery_for_event(event, delivery, %{
       event_id: event.id,
-      destination_id: destination_id,
+      # destination_id: destination_id,
       attempts: delivery_attempts,
       status: :failure
     })
