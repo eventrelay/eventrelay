@@ -7,7 +7,7 @@ defmodule ER.Subscriptions.Webhook.Delivery.Server do
   use ER.Server
   import ER, only: [unwrap: 1]
   alias ER.Events.Event
-  alias ER.Subscriptions.Delivery.Webhook
+  alias ER.Subscriptions.Webhook
 
   def handle_continue(
         :load_state,

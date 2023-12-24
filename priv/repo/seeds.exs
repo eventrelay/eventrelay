@@ -28,26 +28,56 @@ Repo.insert!(%Topic{name: "default"})
 topic = %Topic{name: "users"} |> Repo.insert!()
 ER.Events.Event.create_table!(topic)
 ER.Subscriptions.Delivery.create_table!(topic)
+
+actions_topic = %Topic{name: "actions"} |> Repo.insert!()
+ER.Events.Event.create_table!(actions_topic)
+ER.Subscriptions.Delivery.create_table!(actions_topic)
+
+webhooks_topic = %Topic{name: "webhooks"} |> Repo.insert!()
+ER.Events.Event.create_table!(webhooks_topic)
+ER.Subscriptions.Delivery.create_table!(webhooks_topic)
+
+topics = [topic, actions_topic]
+
 uuid = Faker.UUID.v4()
 
-websocket_subscription =
+# websocket_subscription =
+#   %ER.Subscriptions.Subscription{
+#     name: "app1_websocket",
+#     subscription_type: :websocket,
+#     topic_name: "users"
+#   }
+#   |> Repo.insert!()
+#
+# webhook_subscription =
+#   %ER.Subscriptions.Subscription{
+#     name: "app1_webhook",
+#     subscription_type: :webhook,
+#     topic_name: "users",
+#     config: %{"endpoint_url" => "http://localhost:5006/api/webhook"}
+#   }
+#   |> Repo.insert!()
+#
+# subscriptions = [websocket_subscription, webhook_subscription]
+
+api_subscription =
   %ER.Subscriptions.Subscription{
-    name: "app1_websocket",
-    subscription_type: :websocket,
+    name: "users_api_subscription",
+    subscription_type: :api,
     topic_name: "users"
   }
   |> Repo.insert!()
 
-webhook_subscription =
+topic_subscription =
   %ER.Subscriptions.Subscription{
-    name: "app1_webhook",
-    subscription_type: :webhook,
+    name: "actions_topic_subscription",
+    subscription_type: :topic,
     topic_name: "users",
-    config: %{"endpoint_url" => "http://localhost:5006/api/webhook"}
+    config: %{topic_name: "actions"}
   }
   |> Repo.insert!()
 
-subscriptions = [websocket_subscription, webhook_subscription]
+subscriptions = [api_subscription, topic_subscription]
 
 [:admin, :producer, :consumer]
 |> Enum.each(fn type ->
@@ -71,7 +101,9 @@ subscriptions = [websocket_subscription, webhook_subscription]
 
   case type do
     :producer ->
-      ER.Accounts.create_api_key_topic(api_key, topic)
+      Enum.each(topics, fn topic ->
+        ER.Accounts.create_api_key_topic(api_key, topic)
+      end)
 
     :consumer ->
       Enum.each(subscriptions, fn subscription ->
@@ -82,6 +114,15 @@ subscriptions = [websocket_subscription, webhook_subscription]
       nil
   end
 end)
+
+ingestor =
+  ER.Ingestors.create_ingestor(%{
+    "name" => "wehbook_ingestor",
+    "config" => %{},
+    "type" => :webhook,
+    "topic_name" => webhooks_topic.name,
+    "source" = "somewhere"
+  })
 
 # events =
 #   Enum.map(1..1000, fn _ ->
