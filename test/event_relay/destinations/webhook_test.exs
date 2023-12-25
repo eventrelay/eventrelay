@@ -45,6 +45,41 @@ defmodule ER.Destinations.WebhookTest do
       assert webhook_url == request_url
     end
 
+    test "returns expected response body", %{
+      bypass: bypass,
+      webhook_url: webhook_url,
+      destination: destination,
+      event: event
+    } do
+      Bypass.expect(bypass, &Plug.Conn.resp(&1, 200, Jason.encode!(event)))
+
+      {:ok, %HTTPoison.Response{body: body}} =
+        webhook_request(webhook_url, event, destination)
+
+      occurred_at = Flamel.Moment.to_iso8601(event.occurred_at)
+
+      # Manually testing map for future conversion to Standard Webhooks format
+      assert %{
+               "anonymous_id" => event.anonymous_id,
+               "context" => event.context,
+               "data" => event.data,
+               "data_schema" => event.data_schema,
+               "errors" => event.errors,
+               "group_key" => event.group_key,
+               "id" => event.id,
+               "name" => event.name,
+               "occurred_at" => occurred_at,
+               "offset" => event.offset,
+               "reference_key" => event.reference_key,
+               "source" => event.source,
+               "topic_identifier" => event.topic_identifier,
+               "topic_name" => event.topic_name,
+               "trace_key" => event.trace_key,
+               "user_id" => event.user_id,
+               "verified" => event.verified
+             } == Jason.decode!(body)
+    end
+
     test "returns econnrefused error when unexpected outage", %{
       bypass: bypass,
       webhook_url: webhook_url,

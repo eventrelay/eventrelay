@@ -8,22 +8,42 @@ defmodule ER.Destinations.Webhook do
         destination_id,
         destination_topic_name,
         destination_topic_identifier,
-        destination_signing_secret
+        signing_secret
       ) do
     body = Event.json_encode!(event)
 
-    HTTPoison.post(url, body, [
+    headers =
+      build_headers(
+        body,
+        signing_secret,
+        destination_id,
+        destination_topic_name,
+        destination_topic_identifier
+      )
+
+    HTTPoison.post(url, body, headers)
+  end
+
+  defp build_headers(
+         body,
+         signing_secret,
+         destination_id,
+         destination_topic_name,
+         destination_topic_identifier
+       ) do
+    event_relay_signature = Event.signature(body, signing_secret: signing_secret)
+
+    [
       {"Content-Type", "application/json"},
-      {"X-Event-Relay-Signature",
-       Event.signature(body, signing_secret: destination_signing_secret)},
+      {"X-Event-Relay-Signature", event_relay_signature},
       {"X-Event-Relay-Destination-Id", destination_id},
       {"X-Event-Relay-Destination-Topic-Name", destination_topic_name},
       {"X-Event-Relay-Destination-Topic-Identifier", destination_topic_identifier}
-    ])
+    ]
   end
 
-  def to_map(response) do
-    %{status_code: response.status_code, headers: headers_to_map(response.headers)}
+  def to_map(%{status_code: status_code, headers: headers}) do
+    %{status_code: status_code, headers: headers_to_map(headers)}
   end
 
   def headers_to_map(headers) do
