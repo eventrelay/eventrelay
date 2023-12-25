@@ -100,6 +100,7 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
 
   defp handle_success(
          %{
+           "id" => id,
            "delivery_attempts" => delivery_attempts,
            "destination_id" => destination_id,
            "event" => event,
@@ -110,18 +111,27 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
       "Webhook destination=#{inspect(destination_id)} and delivery=#{inspect(delivery.id)} delivered successfully"
     )
 
-    create_delivery_for_event(event, delivery, %{
-      event_id: event.id,
-      # destination_id: destination_id,
-      attempts: delivery_attempts,
-      status: :success
-    })
+    IO.inspect("handle_success")
+    IO.inspect(id: id)
+    IO.inspect(delivery_id: delivery.id)
+
+    create_delivery_for_event(
+      event,
+      delivery,
+      %{
+        event_id: event.id,
+        destination_id: destination_id,
+        attempts: delivery_attempts,
+        status: :success
+      }
+    )
 
     {:stop, :shutdown, state}
   end
 
   defp handle_failure(
          %{
+           "id" => id,
            "destination_id" => destination_id,
            "delivery_attempts" => delivery_attempts,
            "event" => event,
@@ -132,12 +142,20 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
       "Webhook destination=#{inspect(destination_id)} and delivery #{inspect(delivery.id)} failed, not retrying"
     )
 
-    create_delivery_for_event(event, delivery, %{
-      event_id: event.id,
-      # destination_id: destination_id,
-      attempts: delivery_attempts,
-      status: :failure
-    })
+    IO.inspect("handle_failure")
+    IO.inspect(id: id)
+    IO.inspect(delivery_id: delivery.id)
+
+    create_delivery_for_event(
+      event,
+      delivery,
+      %{
+        event_id: event.id,
+        destination_id: destination_id,
+        attempts: delivery_attempts,
+        status: :failure
+      }
+    )
 
     {:stop, :shutdown, state}
   end
@@ -165,6 +183,9 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
   def retry?(_), do: false
 
   def create_delivery_for_event(%Event{topic_name: topic_name, durable: true}, delivery, attrs) do
+    IO.inspect("create_delivery_for_event 1")
+    IO.inspect(attrs: attrs)
+
     ER.Destinations.create_delivery_for_topic(
       topic_name,
       attrs,
@@ -172,11 +193,9 @@ defmodule ER.Destinations.Webhook.Delivery.Server do
     )
   end
 
-  def create_delivery_for_event(
-        %Event{durable: false} = event,
-        delivery,
-        _attrs
-      ) do
+  def create_delivery_for_event(%Event{durable: false} = event, delivery, _attrs) do
+    IO.inspect("create_delivery_for_event 2")
+
     Logger.debug(
       "Not creating delivery for non-durable event #{inspect(event)} and delivery #{inspect(delivery)}"
     )

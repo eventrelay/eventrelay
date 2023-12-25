@@ -30,9 +30,9 @@ defmodule ER.Destinations.Delivery.Webhook.ServerTest do
       webhook_url: webhook_url,
       state: state = %{"event" => event, "destination" => destination, "delivery" => delivery}
     } do
-      state_of_affairs = build_state(webhook_url, event, destination, delivery)
+      ending_state = build_state(webhook_url, event, destination, delivery)
 
-      assert {:noreply, state_of_affairs} == Server.handle_continue(:load_state, state)
+      assert {:noreply, ending_state} == Server.handle_continue(:load_state, state)
     end
   end
 
@@ -46,15 +46,13 @@ defmodule ER.Destinations.Delivery.Webhook.ServerTest do
 
       Bypass.expect(bypass, &Plug.Conn.resp(&1, 200, response_body))
 
-      starting_state_of_affairs = build_state(webhook_url, event, destination, delivery)
+      starting_state = build_state(webhook_url, event, destination, delivery)
 
-      {:stop, :shutdown, ending_state_of_affairs} =
-        Server.handle_info(:attempt, starting_state_of_affairs)
+      {:stop, :shutdown, ending_state} = Server.handle_info(:attempt, starting_state)
 
-      delivery_attempts =
-        [delivery_attempt | _delivery_attempts] = ending_state_of_affairs["delivery_attempts"]
+      delivery_attempts = [delivery_attempt | _] = ending_state["delivery_attempts"]
 
-      assert 1 == ending_state_of_affairs["attempt_count"]
+      assert 1 == ending_state["attempt_count"]
       assert 1 == length(delivery_attempts)
       assert 200 == delivery_attempt["response"].status_code
     end
@@ -68,6 +66,7 @@ defmodule ER.Destinations.Delivery.Webhook.ServerTest do
          attempt_count \\ 0
        ) do
     %{
+      "id" => delivery.id,
       "attempt_count" => attempt_count,
       "delivery" => delivery,
       "delivery_attempts" => [],
