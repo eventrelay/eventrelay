@@ -26,12 +26,13 @@ defmodule ERWeb.EventController do
                      data: indifferent_get(event, :data),
                      context: indifferent_get(event, :context),
                      occurred_at: indifferent_get(event, :occurred_at),
-                     user_id: indifferent_get(event, :user_id),
-                     anonymous_id: indifferent_get(event, :anonymous_id),
+                     user_key: indifferent_get(event, :user_key),
+                     anonymous_key: indifferent_get(event, :anonymous_key),
                      durable: durable,
                      verified: verified,
                      topic_name: topic_name,
-                     topic_identifier: topic_identifier
+                     topic_identifier: topic_identifier,
+                     prev_id: indifferent_get(event, :prev_id)
                    }) do
                 {:ok, %Event{} = event} ->
                   event

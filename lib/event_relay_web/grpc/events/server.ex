@@ -36,13 +36,14 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
                  data_json: Map.get(event, :data),
                  context: Map.get(event, :context),
                  occurred_at: Map.get(event, :occurred_at),
-                 user_id: Map.get(event, :user_id),
-                 anonymous_id: Map.get(event, :anonymous_id),
+                 user_key: Map.get(event, :user_key),
+                 anonymous_key: Map.get(event, :anonymous_key),
                  durable: request.durable,
                  verified: verified,
                  topic_name: topic_name,
                  topic_identifier: topic_identifier,
-                 data_schema_json: Map.get(event, :data_schema)
+                 data_schema_json: Map.get(event, :data_schema),
+                 prev_id: Map.get(event, :prev_id)
                }) do
             {:ok, %Event{} = event} ->
               build_event(event, topic)
@@ -182,10 +183,11 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
       context: event.context,
       occurred_at: occurred_at,
       offset: event.offset,
-      user_id: event.user_id,
-      anonymous_id: event.anonymous_id,
+      user_key: event.user_key,
+      anonymous_key: event.anonymous_key,
       errors: event.errors,
-      data_schema: Event.data_schema_json(event)
+      data_schema: Event.data_schema_json(event),
+      prev_id: event.prev_id
     )
   end
 end

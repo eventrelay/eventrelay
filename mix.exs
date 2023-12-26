@@ -86,6 +86,7 @@ defmodule ER.MixProject do
       # Cache
       {:nebulex, "~> 2.4"},
       {:nebulex_adapters_horde, "~> 1.0.0"},
+      {:decorator, "~> 1.4"},
 
       # AWS
       {:ex_aws, "~> 2.0"},

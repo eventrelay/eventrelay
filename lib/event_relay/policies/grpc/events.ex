@@ -6,7 +6,8 @@ defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.PublishEventsRequest do
     Context.permit(context, "Admins are allowed to do anything")
   end
 
-  def permitted?(resource, _action, %ApiKey{type: :producer} = api_key, context, _options) do
+  def permitted?(resource, _action, %ApiKey{type: type} = api_key, context, _options)
+      when type in [:producer, :producer_consumer] do
     {topic_name, _topic_identifier} = ER.Events.Topic.parse_topic(resource.topic)
 
     if ApiKey.allowed_topic?(api_key, topic_name) do
@@ -35,7 +36,8 @@ defimpl Bosun.Policy, for: ERWeb.Grpc.Eventrelay.PullEventsRequest do
     Context.permit(context, "Admins are allowed to do anything")
   end
 
-  def permitted?(resource, _action, %ApiKey{type: :consumer} = api_key, context, _options) do
+  def permitted?(resource, _action, %ApiKey{type: type} = api_key, context, _options)
+      when type in [:consumer, :producer_consumer] do
     {topic_name, _topic_identifier} = ER.Events.Topic.parse_topic(resource.topic)
 
     if ApiKey.allowed_destination?(api_key, topic_name) do

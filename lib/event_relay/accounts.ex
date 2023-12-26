@@ -2,11 +2,14 @@ defmodule ER.Accounts do
   @moduledoc """
   The Accounts context.
   """
-
+  use Nebulex.Caching
   import Ecto.Query, warn: false
-  alias ER.Repo
 
+  alias ER.Accounts.ApiKeyCache, as: ApiKeyCache
+  alias ER.Repo
   alias ER.Accounts.{User, UserToken, UserNotifier, ApiKey, ApiKeyDestination, ApiKeyTopic}
+
+  @ttl :timer.hours(1)
 
   ## Database getters
 
@@ -376,7 +379,7 @@ defmodule ER.Accounts do
   Gets a single api_key.
   """
   def get_api_key(id) do
-    from_api_keys() |> Repo.get(id)
+    from_api_keys() |> preload([:topics, :destinations]) |> Repo.get(id)
   end
 
   def get_api_key_with_topic(api_key, topic_name) do
@@ -412,13 +415,14 @@ defmodule ER.Accounts do
   @doc """
   Gets a single api_key by the key and secret and active 
   """
+  @decorate cacheable(cache: ApiKeyCache, key: {ApiKey, key}, opts: [ttl: @ttl])
   def get_active_api_key_by_key_and_secret(key, secret) do
     # TODO write test for this
     from_api_keys()
     |> where(as(:api_keys).key == ^key)
     |> where(as(:api_keys).secret == ^secret)
     |> where(as(:api_keys).status == "active")
-    |> preload([:destinations])
+    |> preload([:destinations, :topics])
     |> Repo.one()
   end
 

@@ -154,12 +154,13 @@ message NewEvent {
   string group_key = 4;
   string reference_key = 5;
   string trace_key = 6;
-  string user_id = 7;
-  string anonymous_id = 8;
+  string user_key = 7;
+  string anonymous_key = 8;
   string occurred_at = 9;
   map<string, string> context = 10; // single level key-value pairs
   // JSON Schema for the event data
-  string data_schema = 11;
+  string data_schema = 11; // stringified JSON
+  string prev_id = 12;
 }
 
 message Event {
@@ -171,14 +172,15 @@ message Event {
   string group_key = 6;
   string reference_key = 7;
   string trace_key = 8;
-  string user_id = 9;
-  string anonymous_id = 10;
+  string user_key = 9;
+  string anonymous_key = 10;
   string occurred_at = 11;
   map<string, string> context = 12; // single level key-value pairs
   int32 offset = 13;
   repeated string errors = 14; // list of strings representing errors
   // JSON Schema for the event data
-  string data_schema = 15;
+  string data_schema = 15; // stringified JSON
+  string prev_id = 16;
 }
 
 message PublishEventsRequest {

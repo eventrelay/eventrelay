@@ -18,7 +18,7 @@ defmodule ER.Accounts.ApiKey do
     field(:key, :string)
     field(:secret, :string)
     field(:status, Ecto.Enum, values: [:active, :revoked])
-    field(:type, Ecto.Enum, values: [:admin, :producer, :consumer])
+    field(:type, Ecto.Enum, values: [:admin, :producer, :consumer, :producer_consumer])
     field(:group_key, :string)
     field(:tls_key, :string)
     field(:tls_crt, :string)
@@ -94,7 +94,9 @@ defmodule ER.Accounts.ApiKey do
   end
 
   def allowed_topic?(api_key, topic_name) do
-    if ER.Accounts.get_api_key_with_topic(api_key, topic_name) do
+    allowed_topic_names = Enum.map(api_key.topics, & &1.name)
+
+    if topic_name in allowed_topic_names do
       true
     else
       false
@@ -102,7 +104,9 @@ defmodule ER.Accounts.ApiKey do
   end
 
   def allowed_destination?(api_key, topic_name) do
-    if ER.Accounts.get_api_key_with_destination_topic(api_key, topic_name) do
+    allowed_destination_topic_names = Enum.map(api_key.destinations, & &1.topic_name)
+
+    if topic_name in allowed_destination_topic_names do
       true
     else
       false

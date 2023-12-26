@@ -51,12 +51,13 @@ defmodule ERWeb.EventsChannel do
                  data_json: Map.get(event, "data"),
                  context: Map.get(event, "context"),
                  occurred_at: Map.get(event, "occurred_at"),
-                 user_id: Map.get(event, "user_id"),
-                 anonymous_id: Map.get(event, "anonymous_id"),
+                 user_key: Map.get(event, "user_key"),
+                 anonymous_key: Map.get(event, "anonymous_key"),
                  durable: durable,
                  verified: verified,
                  topic_name: topic_name,
-                 topic_identifier: topic_identifier
+                 topic_identifier: topic_identifier,
+                 prev_id: Map.get(event, "prev_id")
                }) do
             {:ok, %Event{} = event} ->
               Logger.debug("Published event: #{inspect(event)}")

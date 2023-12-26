@@ -45,6 +45,7 @@ defmodule ER.Application do
         {GRPC.Server.Supervisor, grpc_start_args()},
         # {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
         {ER.Events.ChannelCache, []},
+        {ER.Accounts.ApiKeyCache, []},
         ER.NodeListener,
         {ER.Horde.Registry, [name: ER.Horde.Registry, shutdown: 60_000, keys: :unique]},
         {ER.Horde.Supervisor,
