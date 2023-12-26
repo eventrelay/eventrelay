@@ -38,12 +38,24 @@ defmodule ER.JWT.Token do
 
   def merge_api_key_claims(claims, %ApiKey{type: :consumer} = api_key) do
     destination_ids = Repo.preload(api_key, :destinations).destinations |> Enum.map(& &1.id)
-    Map.merge(claims, %{sub_ids: destination_ids}) |> merge_default_api_key_claims(api_key)
+
+    Map.merge(claims, %{destination_ids: destination_ids})
+    |> merge_default_api_key_claims(api_key)
   end
 
   def merge_api_key_claims(claims, %ApiKey{type: :producer} = api_key) do
     topic_names = Repo.preload(api_key, :topics).topics |> Enum.map(& &1.name)
     Map.merge(claims, %{topic_names: topic_names}) |> merge_default_api_key_claims(api_key)
+  end
+
+  def merge_api_key_claims(claims, %ApiKey{type: :producer_consumer} = api_key) do
+    destination_ids = Repo.preload(api_key, :destinations).destinations |> Enum.map(& &1.id)
+    topic_names = Repo.preload(api_key, :topics).topics |> Enum.map(& &1.name)
+
+    claims
+    |> Map.merge(%{destination_ids: destination_ids})
+    |> Map.merge(%{topic_names: topic_names})
+    |> merge_default_api_key_claims(api_key)
   end
 
   def merge_api_key_claims(claims, %ApiKey{type: :admin} = api_key) do

@@ -7,15 +7,13 @@ defmodule ERWeb.EventsChannelTest do
   setup :verify_on_exit!
 
   setup do
-    producer_api_key = insert(:api_key, type: :producer)
-    consumer_api_key = insert(:api_key)
+    api_key = insert(:api_key, type: :producer_consumer)
     topic = insert(:topic)
     destination = insert(:destination, topic: topic)
-    insert(:api_key_destination, api_key: producer_api_key, destination: destination)
-    insert(:api_key_topic, api_key: producer_api_key, topic: topic)
+    insert(:api_key_destination, api_key: api_key, destination: destination)
+    insert(:api_key_topic, api_key: api_key, topic: topic)
 
-    {:ok, producer_token} = ER.JWT.Token.build(producer_api_key)
-    {:ok, consumer_token} = ER.JWT.Token.build(consumer_api_key)
+    {:ok, token} = ER.JWT.Token.build(api_key)
 
     expect(ER.Events.ChannelCacheBehaviorMock, :register_socket, fn _pid, _destination_id ->
       1
@@ -28,8 +26,7 @@ defmodule ERWeb.EventsChannelTest do
       ERWeb.UserSocket
       |> socket("user_id", %{some: :assign})
       |> subscribe_and_join(ERWeb.EventsChannel, "events:#{destination.id}", %{
-        "producer_token" => producer_token,
-        "consumer_token" => consumer_token
+        "token" => token
       })
 
     %{socket: socket, topic: topic, destination: destination}
