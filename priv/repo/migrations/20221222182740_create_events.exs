@@ -7,8 +7,8 @@ defmodule ER.Repo.Migrations.CreateEvents do
       add :name, :string
       add :topic_name, references(:topics, column: :name, type: :string)
       add :topic_identifier, :string
-      add :user_id, :string
-      add :anonymous_id, :string
+      add :user_key, :string
+      add :anonymous_key, :string
       add :offset, :serial
       add :source, :string
       add :occurred_at, :utc_datetime
@@ -25,8 +25,8 @@ defmodule ER.Repo.Migrations.CreateEvents do
       add :name, :string
       add :topic_name, :string
       add :topic_identifier, :string
-      add :user_id, :string
-      add :anonymous_id, :string
+      add :user_key, :string
+      add :anonymous_key, :string
       add :offset, :serial
       add :source, :string
       add :occurred_at, :utc_datetime

@@ -18,8 +18,8 @@ defmodule ER.Events.Event do
           data: map(),
           data_schema_json: String.t(),
           data_schema: map(),
-          user_id: integer(),
-          anonymous_id: String.t(),
+          user_key: integer(),
+          anonymous_key: String.t(),
           occurred_at: DateTime.t(),
           offset: integer(),
           source: String.t(),
@@ -43,8 +43,8 @@ defmodule ER.Events.Event do
              :name,
              :data,
              :data_schema,
-             :user_id,
-             :anonymous_id,
+             :user_key,
+             :anonymous_key,
              :occurred_at,
              :offset,
              :source,
@@ -66,8 +66,8 @@ defmodule ER.Events.Event do
     field :data_json, :string, virtual: true
     field :name, :string
     field :topic_identifier, :string
-    field :user_id, :string
-    field :anonymous_id, :string
+    field :user_key, :string
+    field :anonymous_key, :string
     field :occurred_at, :utc_datetime
     field :offset, :integer, read_after_writes: true
     field :source, :string
@@ -115,8 +115,8 @@ defmodule ER.Events.Event do
       :data_json,
       :topic_name,
       :topic_identifier,
-      :user_id,
-      :anonymous_id,
+      :user_key,
+      :anonymous_key,
       :destination_locks,
       :data_schema,
       :data_schema_json,
@@ -138,7 +138,24 @@ defmodule ER.Events.Event do
     ])
   end
 
+  def validate_data_schema(
+        %Ecto.Changeset{changes: %{data_schema_json: data}} =
+          changeset
+      )
+      when not is_nil(data) do
+    data_schema_valid?(changeset)
+  end
+
+  def validate_data_schema(%Ecto.Changeset{changes: %{data_schema: data}} = changeset)
+      when not is_nil(data) do
+    data_schema_valid?(changeset)
+  end
+
   def validate_data_schema(changeset) do
+    changeset
+  end
+
+  defp data_schema_valid?(changeset) do
     data_schema = get_field(changeset, :data_schema)
 
     if data_schema do

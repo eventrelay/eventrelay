@@ -44,8 +44,8 @@ defmodule ERWeb.EventJSON do
       context: event.context,
       occurred_at: occurred_at,
       offset: event.offset,
-      user_id: event.user_id,
-      anonymous_id: event.anonymous_id,
+      user_key: event.user_key,
+      anonymous_key: event.anonymous_key,
       errors: event.errors
     }
   end
