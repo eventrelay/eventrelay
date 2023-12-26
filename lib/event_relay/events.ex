@@ -17,10 +17,11 @@ defmodule ER.Events do
 
   def from_events_for_topic(topic_name: topic_name) do
     table_name = ER.Events.Event.table_name(topic_name)
+
     from(e in {table_name, Event}, as: :events)
   end
 
-  def prepare_calcuate_query(
+  def prepare_calculate_query(
         topic_name: topic_name,
         topic_identifier: topic_identifier,
         field_path: field_path,
@@ -141,7 +142,7 @@ defmodule ER.Events do
         type: type,
         predicates: predicates
       ) do
-    prepare_calcuate_query(
+    prepare_calculate_query(
       topic_name: topic_name,
       topic_identifier: topic_identifier,
       field_path: field_path,
@@ -389,6 +390,7 @@ defmodule ER.Events do
 
     try do
       # First attempt to insert it in the proper topic events table
+
       event =
         %Event{}
         |> ER.Events.Event.put_ecto_source(attrs[:topic_name])

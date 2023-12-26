@@ -308,7 +308,7 @@ defmodule ER.Events.Event do
   end
 
   def table_name(topic_name) do
-    topic_name <> "_events"
+    String.downcase(topic_name <> "_events")
   end
 
   @doc """

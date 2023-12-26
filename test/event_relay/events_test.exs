@@ -158,7 +158,7 @@ defmodule ER.EventsTest do
 
   describe "list_events_for_topic/1" do
     setup do
-      {:ok, topic} = ER.Events.create_topic(%{name: "metrics"})
+      {:ok, topic} = ER.Events.create_topic(%{name: "Metrics"})
 
       {:ok, topic: topic}
     end
