@@ -56,7 +56,8 @@ defmodule ERWeb.EventsChannel do
                  durable: durable,
                  verified: verified,
                  topic_name: topic_name,
-                 topic_identifier: topic_identifier
+                 topic_identifier: topic_identifier,
+                 prev_id: Map.get(event, "prev_id")
                }) do
             {:ok, %Event{} = event} ->
               Logger.debug("Published event: #{inspect(event)}")

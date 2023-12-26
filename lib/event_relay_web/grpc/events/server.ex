@@ -42,7 +42,8 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
                  verified: verified,
                  topic_name: topic_name,
                  topic_identifier: topic_identifier,
-                 data_schema_json: Map.get(event, :data_schema)
+                 data_schema_json: Map.get(event, :data_schema),
+                 prev_id: Map.get(event, :prev_id)
                }) do
             {:ok, %Event{} = event} ->
               build_event(event, topic)
@@ -185,7 +186,8 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
       user_id: event.user_id,
       anonymous_id: event.anonymous_id,
       errors: event.errors,
-      data_schema: Event.data_schema_json(event)
+      data_schema: Event.data_schema_json(event),
+      prev_id: event.prev_id
     )
   end
 end

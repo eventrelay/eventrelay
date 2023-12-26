@@ -30,6 +30,7 @@ defmodule ER.Events.Event do
           trace_key: binary(),
           reference_key: binary(),
           group_key: binary(),
+          prev_id: binary(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }
@@ -52,7 +53,8 @@ defmodule ER.Events.Event do
              :errors,
              :group_key,
              :reference_key,
-             :trace_key
+             :trace_key,
+             :prev_id
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -88,6 +90,9 @@ defmodule ER.Events.Event do
     field :data_schema, :map
     field :data_schema_json, :string, virtual: true
 
+    # The id of the event that triggered this event
+    field :prev_id, :binary_id
+
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
     timestamps(type: :utc_datetime)
@@ -115,7 +120,8 @@ defmodule ER.Events.Event do
       :destination_locks,
       :data_schema,
       :data_schema_json,
-      :verified
+      :verified,
+      :prev_id
     ])
     |> decode_context()
     |> decode_data()

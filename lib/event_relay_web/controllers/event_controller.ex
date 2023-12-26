@@ -31,7 +31,8 @@ defmodule ERWeb.EventController do
                      durable: durable,
                      verified: verified,
                      topic_name: topic_name,
-                     topic_identifier: topic_identifier
+                     topic_identifier: topic_identifier,
+                     prev_id: indifferent_get(event, :prev_id)
                    }) do
                 {:ok, %Event{} = event} ->
                   event

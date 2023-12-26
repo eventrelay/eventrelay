@@ -160,6 +160,7 @@ message NewEvent {
   map<string, string> context = 10; // single level key-value pairs
   // JSON Schema for the event data
   string data_schema = 11;
+  string prev_id = 12;
 }
 
 message Event {
@@ -179,6 +180,7 @@ message Event {
   repeated string errors = 14; // list of strings representing errors
   // JSON Schema for the event data
   string data_schema = 15;
+  string prev_id = 16;
 }
 
 message PublishEventsRequest {
