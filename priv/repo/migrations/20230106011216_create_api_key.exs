@@ -18,5 +18,7 @@ defmodule ER.Repo.Migrations.CreateApiKey do
         name: :api_keys_key_secret_status_type_index
       )
     )
+
+    create(unique_index(:api_keys, [:key], name: :api_keys_key_index))
   end
 end

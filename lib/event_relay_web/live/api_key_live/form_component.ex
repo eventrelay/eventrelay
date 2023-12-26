@@ -32,7 +32,12 @@ defmodule ERWeb.ApiKeyLive.FormComponent do
           field={f[:type]}
           prompt="Pick a type"
           type="select"
-          options={[{"Admin", "admin"}, {"Producer", "producer"}, {"Consumer", "consumer"}]}
+          options={[
+            {"Admin", "admin"},
+            {"Producer", "producer"},
+            {"Consumer", "consumer"},
+            {"Producer/Consumer", "producer_consumer"}
+          ]}
           label="Type"
         />
         <.input field={f[:group_key]} type="text" label="Group Key" />

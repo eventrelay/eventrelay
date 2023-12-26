@@ -115,7 +115,7 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
           message: "ApiKey is revoked"
       end
 
-      if api_key.type in [:admin, :producer] do
+      if api_key.type in [:admin, :producer, :producer_consumer] do
         raise GRPC.RPCError,
           status: GRPC.Status.failed_precondition(),
           message: "ApiKey is not of type consumer"
@@ -264,7 +264,7 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
           message: "ApiKey is revoked"
       end
 
-      if api_key.type in [:admin, :consumer] do
+      if api_key.type in [:admin, :consumer, :producer_consumer] do
         raise GRPC.RPCError,
           status: GRPC.Status.failed_precondition(),
           message: "ApiKey is not of type producer"
