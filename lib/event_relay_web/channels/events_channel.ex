@@ -9,17 +9,14 @@ defmodule ERWeb.EventsChannel do
     ER.Container.channel_cache().register_socket(self(), destination_id)
 
     case authorized?(payload) do
-      {:ok, {producer_claims, consumer_claims}} ->
-        producer_api_key = ER.Accounts.get_api_key(producer_claims["api_key_id"])
-        consumer_api_key = ER.Accounts.get_api_key(consumer_claims["api_key_id"])
+      {:ok, claims} ->
+        api_key = ER.Accounts.get_api_key(claims["api_key_id"])
 
         socket =
           socket
           |> assign(:destination_id, destination_id)
-          |> assign(:producer_claims, producer_claims)
-          |> assign(:producer_api_key, producer_api_key)
-          |> assign(:consumer_claims, consumer_claims)
-          |> assign(:consumer_api_key, consumer_api_key)
+          |> assign(:claims, claims)
+          |> assign(:api_key, api_key)
 
         {:ok, socket}
 
@@ -37,7 +34,7 @@ defmodule ERWeb.EventsChannel do
       ) do
     request = ERWeb.Grpc.Eventrelay.PublishEventsRequest.new(atomize_map(payload))
 
-    case Bosun.permit(socket.assigns.producer_api_key, :request, request) do
+    case Bosun.permit(socket.assigns.api_key, :request, request) do
       {:ok, _} ->
         response = %{status: "ok"}
         {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
@@ -77,30 +74,18 @@ defmodule ERWeb.EventsChannel do
   end
 
   defp authorized?(payload) do
-    producer_claims =
-      payload["producer_token"]
+    claims =
+      payload["token"]
       |> to_string()
       |> ER.JWT.Token.get_claims()
       |> ER.unwrap_ok_or_nil()
 
-    consumer_claims =
-      payload["consumer_token"]
-      |> to_string()
-      |> ER.JWT.Token.get_claims()
-      |> ER.unwrap_ok_or_nil()
-
-    case {producer_claims, consumer_claims} do
-      {nil, nil} ->
+    case claims do
+      nil ->
         {:error, "no token provided"}
 
-      {nil, consumer_claims} ->
-        {:ok, {nil, consumer_claims}}
-
-      {producer_claims, nil} ->
-        {:ok, {producer_claims, nil}}
-
-      {producer_claims, consumer_claims} ->
-        {:ok, {producer_claims, consumer_claims}}
+      claims ->
+        {:ok, claims}
     end
   end
 end
