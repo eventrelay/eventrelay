@@ -16,12 +16,12 @@ defmodule ERWeb.Grpc.EventRelay.Destinations.Server do
           CreateDestinationResponse.t()
   def create_destination(request, _stream) do
     attrs = %{
-      name: request.destination.name,
-      topic_name: request.destination.topic_name,
-      topic_identifier: request.destination.topic_identifier,
-      config: request.destination.config,
-      destination_type: request.destination.destination_type,
-      group_key: request.destination.group_key
+      name: request.name,
+      topic_name: request.topic_name,
+      topic_identifier: request.topic_identifier,
+      config: request.config,
+      destination_type: request.destination_type,
+      group_key: request.group_key
     }
 
     destination =

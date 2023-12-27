@@ -52,6 +52,7 @@ defmodule ER.Accounts.ApiKey do
     api_token
     |> cast(attrs, [:name, :key, :secret, :status, :type, :group_key, :tls_hostname])
     |> put_key(api_key)
+    |> put_name(api_key)
     |> put_secret(api_key)
     |> put_tls_key(api_key)
     |> put_tls_crt(api_key)
@@ -68,6 +69,13 @@ defmodule ER.Accounts.ApiKey do
     |> unique_constraint(:key_secret_status_type_unique,
       name: :api_keys_key_secret_status_type_index
     )
+  end
+
+  def put_name(
+        cs,
+        api_key
+      ) do
+    put_change(cs, :name, api_key.name)
   end
 
   def put_key(

@@ -8,7 +8,6 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.ServerTest do
   alias ERWeb.Grpc.Eventrelay.{
     GetMetricValueRequest,
     CreateMetricRequest,
-    NewMetric,
     DeleteMetricRequest,
     ListMetricsRequest
   }
@@ -127,13 +126,11 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.ServerTest do
   describe "create_metric/2" do
     test "create a new metric", %{topic: topic} do
       request = %CreateMetricRequest{
-        metric: %NewMetric{
-          name: "Test Metric",
-          field_path: "data.cart.total",
-          topic_name: topic.name,
-          type: :SUM,
-          query: "reference_key == 'test'"
-        }
+        name: "Test Metric",
+        field_path: "data.cart.total",
+        topic_name: topic.name,
+        type: :SUM,
+        query: "reference_key == 'test'"
       }
 
       result = Server.create_metric(request, nil)
