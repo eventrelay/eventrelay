@@ -7,7 +7,6 @@ defmodule ERWeb.Grpc.EventRelay.Destinations.ServerTest do
 
   alias ERWeb.Grpc.Eventrelay.{
     CreateDestinationRequest,
-    NewDestination,
     DeleteDestinationRequest,
     ListDestinationsRequest
   }
@@ -21,12 +20,10 @@ defmodule ERWeb.Grpc.EventRelay.Destinations.ServerTest do
   describe "create_destination/2" do
     test "create a new destination", %{topic: topic} do
       request = %CreateDestinationRequest{
-        destination: %NewDestination{
-          name: "Test Destination",
-          topic_name: topic.name,
-          config: %{"endpoint_url" => "http://localhost:9000"},
-          destination_type: "webhook"
-        }
+        name: "Test Destination",
+        topic_name: topic.name,
+        config: %{"endpoint_url" => "http://localhost:9000"},
+        destination_type: "webhook"
       }
 
       result = Server.create_destination(request, nil)

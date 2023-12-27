@@ -90,16 +90,6 @@ message DeleteTopicResponse {
   Topic topic = 1;
 }
 
-message NewDestination {
-  string name = 1;
-  string topic_name = 2;
-  string topic_identifier = 3;
-  map<string, string> config = 4;
-  bool paused = 5;
-  string destination_type = 6;
-  string group_key = 7;
-}
-
 message Destination {
   string id = 1;
   string name = 2;
@@ -132,7 +122,13 @@ message GetDestinationResponse {
 }
 
 message CreateDestinationRequest {
-  NewDestination destination = 1;
+  string name = 1;
+  string topic_name = 2;
+  string topic_identifier = 3;
+  map<string, string> config = 4;
+  bool paused = 5;
+  string destination_type = 6;
+  string group_key = 7;
 }
 
 message CreateDestinationResponse {
@@ -255,17 +251,6 @@ enum MetricType {
   COUNT = 4;
 }
 
-
-message NewMetric {
-  string name = 1;
-  string topic_name = 2;
-  string topic_identifier = 3;
-  // A path to the value using dot syntax ex. "data.cart.total" => 10.00 for {"cart": {"total": 10.00}}
-  string field_path = 4;
-  MetricType type = 5;
-  string query = 6;
-}
-
 message Metric {
   string id = 1;
   string name = 2;
@@ -310,7 +295,13 @@ message GetMetricResponse {
 }
 
 message CreateMetricRequest {
-  NewMetric metric = 1;
+  string name = 1;
+  string topic_name = 2;
+  string topic_identifier = 3;
+  // A path to the value using dot syntax ex. "data.cart.total" => 10.00 for {"cart": {"total": 10.00}}
+  string field_path = 4;
+  MetricType type = 5;
+  string query = 6;
 }
 
 message CreateMetricResponse {

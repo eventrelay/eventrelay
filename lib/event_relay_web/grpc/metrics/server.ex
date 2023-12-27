@@ -87,12 +87,12 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.Server do
           CreateMetricResponse.t()
   def create_metric(request, _stream) do
     attrs = %{
-      name: request.metric.name,
-      field_path: request.metric.field_path,
-      topic_name: request.metric.topic_name,
-      topic_identifier: request.metric.topic_identifier,
-      type: from_grpc_enum(request.metric.type),
-      query: request.metric.query
+      name: request.name,
+      field_path: request.field_path,
+      topic_name: request.topic_name,
+      topic_identifier: request.topic_identifier,
+      type: from_grpc_enum(request.type),
+      query: request.query
     }
 
     metric =
