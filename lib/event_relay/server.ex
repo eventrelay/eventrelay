@@ -5,14 +5,29 @@ defmodule ER.Server do
 
   defmacro __using__(_opts) do
     quote do
+      require Logger
+
       @spec factory(binary()) :: any()
       def factory(id, args \\ %{}) do
+        name = name(id)
+
+        Logger.debug(
+          "#{__MODULE__}.factory(#{inspect(id)}, #{inspect(args)}) with module=#{inspect(__MODULE__)} and name=#{inspect(name)}"
+        )
+
         initial_state = Map.merge(args, %{"id" => id})
 
-        Horde.DynamicSupervisor.start_child(
-          ER.Horde.Supervisor,
-          {__MODULE__, [name: name(id), initial_state: initial_state]}
+        result =
+          DynamicSupervisor.start_child(
+            ER.DynamicSupervisor,
+            {__MODULE__, [name: name, initial_state: initial_state]}
+          )
+
+        Logger.debug(
+          "#{__MODULE__}.factory(#{inspect(id)}, #{inspect(args)}) with result=#{inspect(result)}"
         )
+
+        result
       end
 
       def child_spec(opts) do
@@ -22,8 +37,7 @@ defmodule ER.Server do
         %{
           id: "#{__MODULE__}_#{name}",
           start: {__MODULE__, :start_link, [name, initial_state]},
-          shutdown: 60_000,
-          restart: :transient
+          shutdown: 5_000
         }
       end
 
@@ -35,21 +49,22 @@ defmodule ER.Server do
       def start_link(name, initial_state) do
         case GenServer.start_link(__MODULE__, initial_state, name: via_tuple(name)) do
           {:ok, pid} ->
-            Logger.debug(
-              "#{__MODULE__}.start_link here: starting #{via_tuple(name)} on node=#{inspect(Node.self())}"
+            Logger.info(
+              "#{__MODULE__}.start_link here: starting #{inspect(via_tuple(name))} on node=#{inspect(Node.self())}"
             )
 
             {:ok, pid}
 
           {:error, {:already_started, pid}} ->
-            Logger.debug(
+            Logger.info(
               "#{__MODULE__}.start_link: already started at #{inspect(pid)}, returning :ignore on node=#{inspect(Node.self())}"
             )
 
             :ignore
 
           :ignore ->
-            Logger.debug("#{__MODULE__}.start_link :ignore on node=#{inspect(Node.self())}")
+            Logger.info("#{__MODULE__}.start_link :ignore on node=#{inspect(Node.self())}")
+            :ignore
         end
       end
 
@@ -73,10 +88,6 @@ defmodule ER.Server do
         handle_terminate(reason, state)
       end
 
-      def schedule_next_tick(time_interval \\ nil) do
-        Process.send_after(self(), :tick, tick_interval(time_interval))
-      end
-
       def via(id) do
         id
         |> name()
@@ -84,7 +95,8 @@ defmodule ER.Server do
       end
 
       def via_tuple(id) do
-        {:via, Horde.Registry, {ER.Horde.Registry, id}}
+        Logger.debug("#{__MODULE__}.via_tuple(#{inspect(id)})")
+        {:via, Registry, {ER.Registry, id}}
       end
     end
   end

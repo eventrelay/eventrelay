@@ -275,9 +275,7 @@ defmodule ER.EventsTest do
       events =
         Events.list_queued_events_for_topic(
           batch_size: 100,
-          topic_name: topic.name,
-          topic_identifier: nil,
-          destination_id: destination_with_locks.id
+          destination: destination_with_locks
         )
 
       assert Enum.count(events) == 10
@@ -292,9 +290,7 @@ defmodule ER.EventsTest do
       events =
         Events.list_queued_events_for_topic(
           batch_size: 100,
-          topic_name: topic.name,
-          topic_identifier: nil,
-          destination_id: destination.id
+          destination: destination
         )
 
       # should return all events
@@ -312,9 +308,7 @@ defmodule ER.EventsTest do
       events =
         Events.list_queued_events_for_topic(
           batch_size: 100,
-          topic_name: topic.name,
-          topic_identifier: nil,
-          destination_id: destination_with_locks.id
+          destination: destination_with_locks
         )
 
       # we should have the original 10 plus the unlocked event
@@ -356,9 +350,7 @@ defmodule ER.EventsTest do
       events =
         Events.list_queued_events_for_topic(
           batch_size: 100,
-          topic_name: topic.name,
-          topic_identifier: nil,
-          destination_id: destination.id
+          destination: destination
         )
 
       # now that all the events are locked non should be found

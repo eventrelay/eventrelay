@@ -1,4 +1,7 @@
 defmodule ER.ChannelMonitor do
+  @moduledoc """
+  Listens for connections to the events channel. 
+  """
   use GenServer
 
   def monitor(server_name, pid, mfa) do

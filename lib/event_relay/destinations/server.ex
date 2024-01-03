@@ -67,7 +67,6 @@ defmodule ER.Destinations.Server do
   end
 
   def handle_info(:tick, state) do
-    # Logger.debug("#{__MODULE__}.handle_info(:tick)")
     schedule_next_tick()
     {:noreply, state}
   end
@@ -76,10 +75,13 @@ defmodule ER.Destinations.Server do
     Destination.matches?(destination, event)
   end
 
-  def handle_terminate(reason, state) do
-    Logger.debug("Destination server terminated: #{inspect(reason)}")
-    Logger.debug("Destination server state: #{inspect(state)}")
-    # TODO: save state to redis if needed or delete it if this is a good termination
+  def handle_terminate(_reason, _state) do
+    # Logger.debug("Destination server terminated: #{inspect(reason)}")
+    # Logger.debug("Destination server state: #{inspect(state)}")
+  end
+
+  def schedule_next_tick(time_interval \\ nil) do
+    Process.send_after(self(), :tick, tick_interval(time_interval))
   end
 
   @spec tick_interval() :: integer()

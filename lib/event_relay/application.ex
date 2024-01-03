@@ -34,6 +34,8 @@ defmodule ER.Application do
 
     children =
       [
+        # Listen for changes in the nodes
+        ER.NodeListener,
         # Start the Telemetry supervisor
         ERWeb.Telemetry,
         # Start the Ecto repository
@@ -42,18 +44,23 @@ defmodule ER.Application do
         {Phoenix.PubSub, name: ER.PubSub},
         # Start the Endpoint (http/https)
         ERWeb.Endpoint,
+        # Start the GRPC API
         {GRPC.Server.Supervisor, grpc_start_args()},
+        # Start the Elixir Process Registry
+        {Registry, keys: :unique, name: ER.Registry},
+        # Start a DynamicSupervisor for our application
+        {DynamicSupervisor, strategy: :one_for_one, name: ER.DynamicSupervisor},
+        # Start the Cluster server
         # {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
+        # Setup the ChannelCache
         {ER.Events.ChannelCache, []},
+        # Setup the ApiKeyCache
         {ER.Accounts.ApiKeyCache, []},
-        ER.NodeListener,
-        {ER.Horde.Registry, [name: ER.Horde.Registry, shutdown: 60_000, keys: :unique]},
-        {ER.Horde.Supervisor,
-         [name: ER.Horde.Supervisor, shutdown: 60_000, strategy: :one_for_one]},
-        {ER.ChannelMonitor, :events},
-        ER.BootServer
+        # Start the server that monitor Phoenix channels connections
+        {ER.ChannelMonitor, :events}
       ]
       |> maybe_add_child(ER.Env.use_redis?(), ER.Redix)
+      |> add_child(ER.BootServer)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -61,8 +68,10 @@ defmodule ER.Application do
     Supervisor.start_link(children, opts)
   end
 
-  defp maybe_add_child(children, true, child), do: children ++ [child]
+  defp maybe_add_child(children, true, child), do: add_child(children, child)
   defp maybe_add_child(children, false, _child), do: children
+
+  defp add_child(children, child), do: children ++ [child]
 
   defp grpc_start_args() do
     opts = [endpoint: ERWeb.Grpc.Endpoint, port: ER.Env.grpc_port()]
@@ -100,10 +109,10 @@ defmodule ER.Application do
       end
 
     opts =
-      unless Code.ensure_loaded?(IEx) and IEx.started?() do
-        Keyword.merge(opts, start_server: true)
-      else
+      if Code.ensure_loaded?(IEx) and IEx.started?() do
         opts
+      else
+        Keyword.merge(opts, start_server: true)
       end
 
     Logger.debug("GRPC Server opts: #{inspect(opts)}")

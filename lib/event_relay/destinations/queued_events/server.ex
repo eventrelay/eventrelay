@@ -9,30 +9,24 @@ defmodule ER.Destinations.QueuedEvents.Server do
 
   def handle_continue(:load_state, %{"id" => id} = state) do
     destination = ER.Destinations.get_destination!(id)
-    topic_name = destination.topic_name
-    topic_identifier = destination.topic_identifier
-    full_topic = ER.Events.Topic.build_topic(topic_name, topic_identifier)
 
     state =
       state
-      |> Map.put(:topic_name, topic_name)
-      |> Map.put(:topic_identifier, topic_identifier)
-      |> Map.put(:full_topic, full_topic)
-      |> Map.put(:destination, destination)
+      |> Map.put("destination", destination)
 
-    Logger.debug("Queued Events server started for #{inspect(full_topic)}")
+    Logger.debug("Queued Events server started for destination=#{inspect(id)}")
 
     {:noreply, state}
   end
 
-  def pull_queued_events(args) do
-    GenServer.call(via(args[:destination_id]), {:pull_queued_events, args[:batch_size]})
+  def pull_queued_events(id, batch_size) do
+    GenServer.call(via(id), {:pull_queued_events, batch_size})
   end
 
-  def unlocked_queued_events(args) do
+  def unlocked_queued_events(id, event_ids) do
     GenServer.call(
-      via(args[:destination_id]),
-      {:unlocked_queued_events, args[:event_ids]}
+      via(id),
+      {:unlocked_queued_events, event_ids}
     )
   end
 
@@ -40,20 +34,18 @@ defmodule ER.Destinations.QueuedEvents.Server do
   def handle_call(
         {:pull_queued_events, batch_size},
         _from,
-        %{"id" => destination_id, topic_name: topic_name, topic_identifier: topic_identifier} =
+        %{"destination" => destination} =
           state
       ) do
     # get the events
     events =
       Events.list_queued_events_for_topic(
         batch_size: batch_size,
-        topic_name: topic_name,
-        topic_identifier: topic_identifier,
-        destination_id: destination_id
+        destination: destination
       )
 
     # lock the events
-    Events.lock_destination_events(destination_id, events)
+    Events.lock_destination_events(destination.id, events)
 
     {:reply, events, state}
   end
@@ -62,7 +54,7 @@ defmodule ER.Destinations.QueuedEvents.Server do
   def handle_call(
         {:unlocked_queued_events, event_ids},
         _from,
-        %{"id" => destination_id, topic_name: topic_name, topic_identifier: topic_identifier} =
+        %{"destination" => destination} =
           state
       ) do
     event_ids = Enum.join(event_ids, ", ")
@@ -71,13 +63,13 @@ defmodule ER.Destinations.QueuedEvents.Server do
       Events.list_events_for_topic(
         offset: 0,
         batch_size: 100,
-        topic_name: topic_name,
-        topic_identifier: topic_identifier,
+        topic_name: destination.topic_name,
+        topic_identifier: destination.topic_identifier,
         query: "id in [#{event_ids}]"
       )
 
-    # lock the events
-    Events.unlock_destination_events(destination_id, events.results)
+    # unlock the events
+    Events.unlock_destination_events(destination.id, events.results)
 
     {:reply, events.results, state}
   end
@@ -85,15 +77,11 @@ defmodule ER.Destinations.QueuedEvents.Server do
   def handle_terminate(reason, state) do
     Logger.debug("Queued Events server terminated: #{inspect(reason)}")
     Logger.debug("Queued Events server state: #{inspect(state)}")
+    :ok
   end
 
   @spec name(binary()) :: binary()
   def name(id) do
     "queued_events:" <> id
-  end
-
-  @spec tick_interval() :: integer()
-  def tick_interval(tick_interval \\ nil) do
-    tick_interval || 900_000
   end
 end

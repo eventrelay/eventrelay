@@ -21,9 +21,10 @@ if System.get_env("PHX_SERVER") do
 end
 
 config :ex_aws, :s3,
-  scheme: System.get_env("ER_S3_SCHEME", "http://"),
-  host: System.get_env("ER_S3_HOST", "localhost"),
-  port: System.get_env("ER_S3_PORT", "9000")
+  scheme: System.get_env("ER_S3_SCHEME", "https://"),
+  host: System.get_env("ER_S3_HOST", "localhost")
+
+# port: System.get_env("ER_S3_PORT", "9000")
 
 config :hammer,
   backend: [

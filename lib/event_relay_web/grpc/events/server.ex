@@ -116,8 +116,8 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     try do
       events =
         ER.Destinations.QueuedEvents.Server.pull_queued_events(
-          destination_id: request.destination_id,
-          batch_size: batch_size
+          request.destination_id,
+          batch_size
         )
 
       topic_name = destination.topic_name
@@ -146,8 +146,8 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     try do
       events =
         ER.Destinations.QueuedEvents.Server.unlocked_queued_events(
-          destination_id: request.destination_id,
-          event_ids: request.event_ids
+          request.destination_id,
+          request.event_ids
         )
 
       topic_name = destination.topic_name

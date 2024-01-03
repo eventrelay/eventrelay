@@ -251,12 +251,23 @@ defmodule ER.Events do
 
   def list_queued_events_for_topic(
         batch_size: batch_size,
-        topic_name: topic_name,
-        topic_identifier: topic_identifier,
         destination_id: destination_id
       ) do
     destination = ER.Destinations.get_destination!(destination_id)
-    destination_id = Ecto.UUID.dump!(destination_id)
+
+    list_queued_events_for_topic(
+      batch_size: batch_size,
+      destination: destination
+    )
+  end
+
+  def list_queued_events_for_topic(
+        batch_size: batch_size,
+        destination: destination
+      ) do
+    destination_id = destination.id
+    topic_name = destination.topic_name
+    topic_identifier = destination.topic_identifier
 
     query =
       from_events_for_topic(topic_name: topic_name)
@@ -269,13 +280,13 @@ defmodule ER.Events do
 
     query =
       if Flamel.present?(destination.query) do
-        predicates = Predicated.Query.new(destination.query)
+        case Predicated.Query.new(destination.query) do
+          {:ok, predicates} ->
+            conditions = apply_predicates(predicates, nil, nil)
+            from query, where: ^conditions
 
-        if Flamel.present?(predicates) do
-          conditions = apply_predicates(predicates, nil, nil)
-          from query, where: ^conditions
-        else
-          query
+          _ ->
+            query
         end
       else
         query
@@ -349,10 +360,8 @@ defmodule ER.Events do
   def get_event!(id), do: Repo.get!(Event, id)
 
   def get_event_for_topic!(id, topic_name: topic_name) do
-    uuid = Ecto.UUID.dump!(id)
-
     from_events_for_topic(topic_name: topic_name)
-    |> where(as(:events).id == ^uuid)
+    |> where(as(:events).id == ^id)
     |> Repo.one!()
   end
 
@@ -512,10 +521,10 @@ defmodule ER.Events do
 
   """
   def delete_event(%Event{} = event, topic_name: topic_name) do
-    uuid = Ecto.UUID.dump!(event.id)
+    id = event.id
 
     case from_events_for_topic(topic_name: topic_name)
-         |> where(as(:events).id == ^uuid)
+         |> where(as(:events).id == ^id)
          |> Repo.delete_all() do
       {1, _} ->
         {:ok, event}

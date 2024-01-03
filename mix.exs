@@ -27,7 +27,7 @@ defmodule ER.MixProject do
   def application do
     [
       mod: {ER.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:observer, :wx, :logger, :runtime_tools]
     ]
   end
 
@@ -43,7 +43,7 @@ defmodule ER.MixProject do
       {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.7.0-rc.0", override: true},
       {:phoenix_ecto, "~> 4.4"},
-      {:ecto_sql, "~> 3.6"},
+      {:ecto_sql, "~> 3.11"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -77,7 +77,7 @@ defmodule ER.MixProject do
       {:hammox, "~> 0.7", only: :test},
       {:excoveralls, "~> 0.10", only: :test},
       # Distributed Elixir
-      {:horde, "~> 0.8.2"},
+      {:horde, "~> 0.8.7"},
       {:libcluster, "~> 3.2"},
       # HTTP Client
       {:httpoison, "~> 1.8"},
@@ -106,10 +106,14 @@ defmodule ER.MixProject do
       {:predicated, github: "themusicman/predicated", branch: "main"},
       # {:predicated, path: "/home/tbrewer/projects/predicated"},
       {:flamel, github: "themusicman/flamel", branch: "main"},
+      {:off_broadway_ecto, github: "eventrelay/offbroadway_ecto", branch: "main"},
 
       # Certificate Authority/TLS
       {:x509, "~> 0.8"},
-      {:ex_json_schema, "~> 0.10.2"}
+      {:ex_json_schema, "~> 0.10.2"},
+      {:liquex, "~> 0.11.0"},
+      {:broadway_dashboard, "~> 0.4.0"},
+      {:broadway, path: "deps/broadway", override: true}
     ]
   end
 

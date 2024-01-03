@@ -3,92 +3,120 @@ defmodule ER.Destinations.Manager.Server do
   Manages all the destination servers
   """
   use GenServer
+  use ER.Server
   require Logger
-  alias Phoenix.PubSub
+  alias ER.Destinations
   alias ER.Destinations.Destination
+  alias Phoenix.PubSub
 
-  def child_spec(opts) do
-    name = Keyword.get(opts, :name, __MODULE__)
-
-    %{
-      id: "#{__MODULE__}_#{name}",
-      start: {__MODULE__, :start_link, [name]},
-      shutdown: 60_000,
-      restart: :transient
-    }
-  end
-
-  def start_link(name) do
-    case GenServer.start_link(__MODULE__, %{}, name: via_tuple(name)) do
-      {:ok, pid} ->
-        Logger.debug("#{__MODULE__}.start_link: starting #{via_tuple(name)}")
-        {:ok, pid}
-
-      {:error, {:already_started, pid}} ->
-        Logger.debug("#{__MODULE__} already started at #{inspect(pid)}, returning :ignore")
-        :ignore
-
-      :ignore ->
-        Logger.debug("#{__MODULE__}.start_link :ignore")
-    end
-  end
-
-  def init(args) do
+  def handle_continue(:load_state, state) do
     PubSub.subscribe(ER.PubSub, "destination:created")
     PubSub.subscribe(ER.PubSub, "destination:updated")
     PubSub.subscribe(ER.PubSub, "destination:deleted")
-    {:ok, args, {:continue, :load_state}}
-  end
 
-  def handle_continue(:load_state, state) do
-    # get all the destinations and start the destination servers but
-    # only if this is the primary node
-    # TODO: need to figure out how to get the primary node
     destinations = ER.Destinations.list_destinations()
 
-    Enum.each(destinations, fn destination ->
-      ER.Destinations.Server.factory(destination.id)
-
-      if Destination.s3?(destination) do
-        # if we are an S3 destination spin up the server that syncs batches of deliveries to S3
-        ER.Destinations.Delivery.S3.Server.factory(destination.id, %{
-          "destination" => destination
-        })
-      end
+    Enum.each(destinations, fn dest ->
+      start_destination_pipeline(dest)
     end)
 
     {:noreply, state}
   end
 
-  def handle_info({:destination_created, destination_id}, state) do
+  def start_destination_pipeline(id) when is_binary(id) do
+    destination = Destinations.get_destination(id)
+    start_destination_pipeline(destination)
+  end
+
+  def start_destination_pipeline(%Destination{} = destination) do
+    case ER.Destinations.Pipeline.factory(destination) do
+      nil ->
+        Logger.info(
+          "#{__MODULE__}.start_destination_pipeline(#{inspect(destination)} not starting pipline."
+        )
+
+      pipeline ->
+        Logger.debug(
+          "#{__MODULE__}.start_destination_pipeline(#{inspect(destination)} starting pipeline. pipeline=#{inspect(pipeline)}"
+        )
+
+        result =
+          DynamicSupervisor.start_child(
+            ER.DynamicSupervisor,
+            {pipeline, [destination: destination]}
+          )
+
+        Logger.debug("#{__MODULE__}.start_destination_pipeline with result=#{inspect(result)}")
+    end
+  end
+
+  def start_destination_pipeline(destination) do
+    Logger.info(
+      "Cannot start ER.Destinations.Pipeline because the detination is invalid. detination=#{inspect(destination)}"
+    )
+  end
+
+  def stop_destination_pipeline(%Destination{} = destination) do
+    case ER.Destinations.Pipeline.factory(destination) do
+      nil ->
+        Logger.info(
+          "#{__MODULE__}.stop_destination_pipeline(#{inspect(destination)} not stopping pipline."
+        )
+
+      pipeline ->
+        server = apply(pipeline, :via, [destination.id])
+
+        case GenServer.whereis(server) do
+          nil ->
+            Logger.info(
+              "#{__MODULE__}.stop_destination_pipeline(#{inspect(destination)} not stopping pipline because pipeline is not started."
+            )
+
+          _ ->
+            Broadway.stop(server)
+        end
+    end
+  end
+
+  def stop_destination_pipeline(destination) do
+    Logger.info(
+      "Cannot stop ER.Destinations.Pipeline because the detination is invalid. detination=#{inspect(destination)}"
+    )
+  end
+
+  def handle_info({:destination_created, destination}, state) do
     Logger.debug(
-      "#{__MODULE__}.handle_info({:destination_created, #{inspect(destination_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
+      "#{__MODULE__}.handle_info({:destination_created, #{inspect(destination)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    ER.Destinations.Server.factory(destination_id)
+    start_destination_pipeline(destination)
     {:noreply, state}
   end
 
-  def handle_info({:destination_updated, destination_id}, state) do
+  def handle_info({:destination_updated, destination}, state) do
     Logger.debug(
-      "#{__MODULE__}.handle_info({:destination_updated, #{inspect(destination_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
+      "#{__MODULE__}.handle_info({:destination_updated, #{inspect(destination)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    ER.Destinations.Server.stop(destination_id)
-    ER.Destinations.Server.factory(destination_id)
+    stop_destination_pipeline(destination)
+    start_destination_pipeline(destination)
     {:noreply, state}
   end
 
-  def handle_info({:destination_deleted, destination_id}, state) do
+  def handle_info({:destination_deleted, destination}, state) do
     Logger.debug(
-      "#{__MODULE__}.handle_info({:destination_deleted, #{inspect(destination_id)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
+      "#{__MODULE__}.handle_info({:destination_deleted, #{inspect(destination)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    ER.Destinations.Server.stop(destination_id)
+    stop_destination_pipeline(destination)
     {:noreply, state}
   end
 
-  def via_tuple(name) do
-    {:via, Horde.Registry, {ER.Horde.Registry, name}}
+  def handle_terminate(_reason, _state) do
+    :ok
+  end
+
+  def name(id) do
+    "destination:#{id}"
   end
 end
