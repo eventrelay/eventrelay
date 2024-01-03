@@ -32,7 +32,8 @@ defmodule ER.Events.Event do
           group_key: binary(),
           prev_id: binary(),
           inserted_at: DateTime.t(),
-          updated_at: DateTime.t()
+          updated_at: DateTime.t(),
+          available_at: DateTime.t()
         }
 
   @derive {Jason.Encoder,
@@ -46,6 +47,7 @@ defmodule ER.Events.Event do
              :user_key,
              :anonymous_key,
              :occurred_at,
+             :available_at,
              :offset,
              :source,
              :verified,
@@ -69,6 +71,7 @@ defmodule ER.Events.Event do
     field :user_key, :string
     field :anonymous_key, :string
     field :occurred_at, :utc_datetime
+    field :available_at, :utc_datetime
     field :offset, :integer, read_after_writes: true
     field :source, :string
     field :verified, :boolean, default: false
@@ -121,13 +124,13 @@ defmodule ER.Events.Event do
       :data_schema,
       :data_schema_json,
       :verified,
-      :prev_id
+      :prev_id,
+      :available_at
     ])
     |> decode_context()
     |> decode_data()
     |> decode_data_schema()
     |> validate_data_schema()
-    # |> decode_occurred_at()
     |> assoc_constraint(:topic)
     |> foreign_key_constraint(:topic_name, name: :events_topic_name_fkey)
     |> validate_required([
@@ -221,25 +224,27 @@ defmodule ER.Events.Event do
     changeset
   end
 
-  def decode_occurred_at(%Ecto.Changeset{changes: %{occurred_at: occurred_at}} = changeset) do
+  def decode_datetime_at(changeset, field) do
+    field = Flamel.to_atom(field)
+    value = get_change(changeset, field)
     # handle the default GRPC value for a string
-    if occurred_at in ["", nil] do
+    if value in ["", nil] do
       changeset
-      |> put_change(:occurred_at, nil)
+      |> put_change(field, nil)
     else
-      case DateTime.from_iso8601(occurred_at) do
-        {:ok, datetime, _} ->
+      case Flamel.Moment.to_datetime(value) do
+        nil ->
           changeset
-          |> put_change(:occurred_at, datetime)
+          |> add_error(field, "is invalid ISO8601 datetime")
 
-        {:error, _} ->
+        datetime ->
           changeset
-          |> add_error(:occurred_at, "is invalid ISO8601 datetime")
+          |> put_change(field, datetime)
       end
     end
   end
 
-  def decode_occurred_at(changeset) do
+  def decode_datetime_at(changeset) do
     changeset
   end
 

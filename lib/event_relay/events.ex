@@ -182,6 +182,7 @@ defmodule ER.Events do
       |> where(as(:events).topic_name == ^topic_name)
       |> apply_ordering(predicates)
       |> where(not is_nil(as(:events).occurred_at))
+      |> where_available()
 
     query =
       unless ER.empty?(topic_identifier) do
@@ -228,6 +229,7 @@ defmodule ER.Events do
     query =
       from_events_for_topic(topic_name: topic_name)
       |> where(as(:events).topic_name == ^topic_name)
+      |> where_available()
 
     query =
       unless ER.empty?(topic_identifier) do
@@ -241,6 +243,10 @@ defmodule ER.Events do
 
   def list_events_for_topic(topic_name: topic_name) do
     list_events_for_topic(topic_name: topic_name, topic_identifier: nil)
+  end
+
+  defp where_available(query, now \\ DateTime.utc_now()) do
+    where(query, [events: events], events.available_at <= ^now)
   end
 
   def list_queued_events_for_topic(
@@ -259,6 +265,7 @@ defmodule ER.Events do
       |> where(^destination_id not in as(:events).destination_locks)
       |> limit(^batch_size)
       |> order_by(as(:events).offset)
+      |> where_available()
 
     query =
       if Flamel.present?(destination.query) do
@@ -377,16 +384,26 @@ defmodule ER.Events do
     publish_event({:ok, event})
   end
 
+  defp put_datetime_if_empty(attrs, field) do
+    field = Flamel.to_atom(field)
+    value = attrs[field]
+
+    value =
+      if ER.empty?(value) do
+        DateTime.truncate(DateTime.now!("Etc/UTC"), :second)
+      else
+        Flamel.Moment.to_datetime(value)
+      end
+
+    Map.put(attrs, field, value)
+  end
+
   @spec create_event_for_topic(map()) :: {:ok, Event.t()} | {:error, Ecto.Changeset.t()}
   def create_event_for_topic(attrs \\ %{}) do
-    occurred_at = attrs[:occurred_at]
-
     attrs =
-      if ER.empty?(occurred_at) do
-        Map.put(attrs, :occurred_at, DateTime.truncate(DateTime.now!("Etc/UTC"), :second))
-      else
-        Map.put(attrs, :occurred_at, Flamel.Moment.to_datetime(occurred_at))
-      end
+      attrs
+      |> put_datetime_if_empty(:occurred_at)
+      |> put_datetime_if_empty(:available_at)
 
     try do
       # First attempt to insert it in the proper topic events table
