@@ -36,6 +36,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
                  data_json: Map.get(event, :data),
                  context: Map.get(event, :context),
                  occurred_at: Map.get(event, :occurred_at),
+                 available_at: Map.get(event, :available_at),
                  user_key: Map.get(event, :user_key),
                  anonymous_key: Map.get(event, :anonymous_key),
                  durable: request.durable,
@@ -171,6 +172,13 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
         DateTime.to_iso8601(event.occurred_at)
       end
 
+    available_at =
+      if ER.empty?(event.available_at) do
+        ""
+      else
+        DateTime.to_iso8601(event.available_at)
+      end
+
     GrpcEvent.new(
       id: event.id,
       name: event.name,
@@ -182,6 +190,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
       data: Event.data_json(event),
       context: event.context,
       occurred_at: occurred_at,
+      available_at: available_at,
       offset: event.offset,
       user_key: event.user_key,
       anonymous_key: event.anonymous_key,

@@ -23,6 +23,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
     test "publishes events", %{topic: topic} do
       event_name = "entry.created"
       group_key = "groupkey"
+      available_at = DateTime.to_iso8601(~U[2021-12-21 18:27:00Z])
 
       request = %PublishEventsRequest{
         topic: topic.name,
@@ -32,7 +33,8 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
             name: event_name,
             data: Jason.encode!(%{}),
             source: "test",
-            group_key: group_key
+            group_key: group_key,
+            available_at: available_at
           }
         ]
       }
@@ -43,8 +45,14 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       assert event.name == event_name
       assert event.group_key == group_key
+      assert event.available_at == available_at
 
       events = Events.list_events_for_topic(topic_name: topic.name)
+
+      db_event = List.first(events)
+
+      assert Flamel.Moment.to_iso8601(db_event.available_at) == available_at
+
       assert Enum.count(events) == 1
     end
 

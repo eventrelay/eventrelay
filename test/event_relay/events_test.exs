@@ -163,7 +163,7 @@ defmodule ER.EventsTest do
       {:ok, topic: topic}
     end
 
-    test "returns events that respect the destination_locks", %{
+    test "returns events", %{
       topic: topic
     } do
       attrs =
@@ -184,6 +184,19 @@ defmodule ER.EventsTest do
           source: "app",
           offset: 2,
           data: %{"first_name" => "Thomas"}
+        )
+
+      Events.create_event_for_topic(attrs)
+
+      # this event should not be returned
+      attrs =
+        params_for(:event,
+          topic: topic,
+          name: "user.created",
+          source: "app",
+          offset: 2,
+          data: %{"first_name" => "Thomas"},
+          available_at: ~U[3000-12-21 18:27:00Z]
         )
 
       Events.create_event_for_topic(attrs)
@@ -248,6 +261,15 @@ defmodule ER.EventsTest do
         Enum.map(10..19, fn i ->
           Events.create_event_for_topic(params_for(:event, topic: topic, offset: i))
         end)
+
+      # should not show in results
+      Events.create_event_for_topic(
+        params_for(:event,
+          topic: topic,
+          offset: 1000,
+          available_at: ~U[3000-12-21 18:27:00Z]
+        )
+      )
 
       # first lets attempt to get events for destination that have some events locked
       events =
@@ -444,17 +466,46 @@ defmodule ER.EventsTest do
     test "create_event_for_topic/1 with valid data creates a event in the proper topic events table" do
       topic = insert(:topic, name: "test")
       ER.Events.Event.create_table!(topic)
+      occurred_at = DateTime.to_iso8601(~U[2022-12-21 18:27:00Z])
+      available_at = DateTime.to_iso8601(~U[2021-12-21 18:27:00Z])
 
       event = %{
         context: %{},
         data: %{},
         name: "some name",
-        occurred_at: DateTime.to_iso8601(~U[2022-12-21 18:27:00Z]),
+        occurred_at: occurred_at,
+        available_at: available_at,
         source: "some source",
         topic_name: topic.name
       }
 
       assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
+
+      assert Flamel.Moment.to_iso8601(event.occurred_at) == occurred_at
+      assert Flamel.Moment.to_iso8601(event.available_at) == available_at
+
+      assert Ecto.get_meta(event, :source) ==
+               "test_events"
+
+      ER.Events.Event.drop_table!(topic)
+    end
+
+    test "create_event_for_topic/1 and set a default occurred_at and available_at " do
+      topic = insert(:topic, name: "test")
+      ER.Events.Event.create_table!(topic)
+
+      event = %{
+        context: %{},
+        data: %{},
+        name: "some name",
+        source: "some source",
+        topic_name: topic.name
+      }
+
+      assert {:ok, %Event{} = event} = Events.create_event_for_topic(event)
+
+      refute event.occurred_at == nil
+      refute event.available_at == nil
 
       assert Ecto.get_meta(event, :source) ==
                "test_events"

@@ -190,6 +190,7 @@ defmodule ERWeb.Grpc.Eventrelay.NewEvent do
   field :context, 10, repeated: true, type: ERWeb.Grpc.Eventrelay.NewEvent.ContextEntry, map: true
   field :data_schema, 11, type: :string, json_name: "dataSchema"
   field :prev_id, 12, type: :string, json_name: "prevId"
+  field :available_at, 13, type: :string, json_name: "availableAt"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Event.ContextEntry do
@@ -218,6 +219,7 @@ defmodule ERWeb.Grpc.Eventrelay.Event do
   field :errors, 14, repeated: true, type: :string
   field :data_schema, 15, type: :string, json_name: "dataSchema"
   field :prev_id, 16, type: :string, json_name: "prevId"
+  field :available_at, 17, type: :string, json_name: "availableAt"
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PublishEventsRequest do

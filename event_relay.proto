@@ -157,6 +157,7 @@ message NewEvent {
   // JSON Schema for the event data
   string data_schema = 11; // stringified JSON
   string prev_id = 12;
+  string available_at = 13; // when the event is available
 }
 
 message Event {
@@ -177,6 +178,7 @@ message Event {
   // JSON Schema for the event data
   string data_schema = 15; // stringified JSON
   string prev_id = 16;
+  string available_at = 17; // when the event is available
 }
 
 message PublishEventsRequest {
