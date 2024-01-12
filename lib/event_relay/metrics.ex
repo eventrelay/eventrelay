@@ -56,9 +56,9 @@ defmodule ER.Metrics do
 
     result =
       ER.Events.list_events_for_topic(
+        topic_name,
         offset: 0,
         batch_size: 1,
-        topic_name: topic_name,
         topic_identifier: topic_identifier,
         predicates: predicates
       )

@@ -31,7 +31,7 @@ defmodule ER.Destinations.Pipeline.S3 do
             min_demand: broadway_config.processor_min_demand,
             max_demand: broadway_config.processor_max_demand
           ]
-        ]
+        ],
         batchers: [
           s3: [
             concurrency: broadway_config.batcher_concurrency,

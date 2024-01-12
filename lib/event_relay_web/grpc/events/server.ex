@@ -77,11 +77,11 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     try do
       batched_results =
         ER.Events.list_events_for_topic(
+          topic_name,
           offset: offset,
           batch_size: batch_size,
-          topic_name: topic_name,
           topic_identifier: topic_identifier,
-          query: request.query
+          predicates: request.query
         )
 
       events = Enum.map(batched_results.results, &build_event(&1, topic))

@@ -21,9 +21,9 @@ defmodule ER.BootServer do
     Logger.debug("BootServer.boot on node=#{inspect(Node.self())}")
 
     unless Code.ensure_loaded?(IEx) and IEx.started?() do
-      ER.Destinations.Manager.Server.factory("manager")
+      ER.Destinations.Manager.Server.factory("destinations:manager", %{trap_exit: false})
 
-      ER.Pruners.Manager.Server.factory("manager")
+      ER.Pruners.Manager.Server.factory("pruners:manager")
 
       # TODO: improve supervision
       ER.Sources.list_sources()

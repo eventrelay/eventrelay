@@ -5,6 +5,7 @@ defmodule ER.Destinations do
   require Logger
   alias Phoenix.PubSub, as: PubSub
   import Ecto.Query, warn: false
+  import Flamel.Wrap
   alias ER.Repo
   alias ER.Destinations.Destination
 
@@ -154,9 +155,9 @@ defmodule ER.Destinations do
 
     batched_results =
       ER.Events.list_events_for_topic(
+        topic_name,
         offset: 0,
         batch_size: 100_000,
-        topic_name: topic_name,
         topic_identifier: nil,
         predicates: predicates
       )
@@ -196,6 +197,31 @@ defmodule ER.Destinations do
   end
 
   @doc """
+  Returns a deliver for a topic by the event id
+  """
+  @spec get_delivery_for_topic_by_event_id(binary(), keyword()) :: Delivery.t() | nil
+  def get_delivery_for_topic_by_event_id(event_id, topic_name: topic_name) do
+    from_deliveries_for_topic(topic_name: topic_name)
+    |> where(as(:deliveries).event_id == ^event_id)
+    |> preload([:destination])
+    |> Repo.one()
+  end
+
+  @doc """
+  Returns a delivery is finds based on Event ID or creates a new delivery
+  """
+  @spec get_or_create_delivery_for_topic_by_event_id(binary(), map()) :: Deliver.t()
+  def get_or_create_delivery_for_topic_by_event_id(topic_name, attrs) do
+    event_id = attrs[:event_id]
+
+    if delivery = get_delivery_for_topic_by_event_id(event_id, topic_name: topic_name) do
+      ok(delivery)
+    else
+      create_delivery_for_topic(topic_name, attrs)
+    end
+  end
+
+  @doc """
   Creates a delivery.
   """
   def create_delivery(attrs \\ %{}) do
@@ -212,7 +238,8 @@ defmodule ER.Destinations do
     |> ER.Destinations.Delivery.put_ecto_source(topic_name)
   end
 
-  @spec create_delivery_for_topic(map()) :: {:ok, Delivery.t()} | {:error, Ecto.Changeset.t()}
+  @spec create_delivery_for_topic(binary(), map(), Delivery.t()) ::
+          {:ok, Delivery.t()} | {:error, Ecto.Changeset.t()}
   def create_delivery_for_topic(topic_name, attrs \\ %{}, delivery \\ %Delivery{}) do
     changeset =
       delivery

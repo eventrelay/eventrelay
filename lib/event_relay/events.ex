@@ -156,33 +156,33 @@ defmodule ER.Events do
   Returns the list of events for a topic
   """
   def list_events_for_topic(
-        offset: offset,
-        batch_size: batch_size,
-        topic_name: topic_name,
-        topic_identifier: topic_identifier
+        topic_name,
+        opts
       ) do
-    list_events_for_topic(
-      offset: offset,
-      batch_size: batch_size,
-      topic_name: topic_name,
-      topic_identifier: topic_identifier,
-      predicates: []
-    )
-  end
+    offset = Keyword.get(opts, :offset, 0)
+    batch_size = Keyword.get(opts, :batch_size, 100)
+    topic_identifier = Keyword.get(opts, :topic_identifier, nil)
 
-  def list_events_for_topic(
-        offset: offset,
-        batch_size: batch_size,
-        topic_name: topic_name,
-        topic_identifier: topic_identifier,
-        predicates: predicates
-      ) do
+    predicates =
+      opts
+      |> Keyword.get(:predicates, nil)
+      |> ER.Predicates.to_predicates()
+
+    include_all = Keyword.get(opts, :include_all, false)
+    return_batch = Keyword.get(opts, :return_batch, true)
+
     query =
       from_events_for_topic(topic_name: topic_name)
       |> where(as(:events).topic_name == ^topic_name)
       |> apply_ordering(predicates)
       |> where(not is_nil(as(:events).occurred_at))
-      |> where_available()
+
+    query =
+      if include_all do
+        query
+      else
+        where_available(query)
+      end
 
     query =
       unless ER.empty?(topic_identifier) do
@@ -200,49 +200,11 @@ defmodule ER.Events do
       end
 
     # IO.inspect(sql: Repo.to_sql(:all, query))
-
-    ER.BatchedResults.new(query, %{"offset" => offset, "batch_size" => batch_size})
-  end
-
-  def list_events_for_topic(
-        offset: offset,
-        batch_size: batch_size,
-        topic_name: topic_name,
-        topic_identifier: topic_identifier,
-        query: query
-      ) do
-    predicates = ER.Predicates.to_predicates(query)
-
-    list_events_for_topic(
-      offset: offset,
-      batch_size: batch_size,
-      topic_name: topic_name,
-      topic_identifier: topic_identifier,
-      predicates: predicates
-    )
-  end
-
-  def list_events_for_topic(
-        topic_name: topic_name,
-        topic_identifier: topic_identifier
-      ) do
-    query =
-      from_events_for_topic(topic_name: topic_name)
-      |> where(as(:events).topic_name == ^topic_name)
-      |> where_available()
-
-    query =
-      unless ER.empty?(topic_identifier) do
-        query |> where(as(:events).topic_identifier == ^topic_identifier)
-      else
-        query
-      end
-
-    Repo.all(query)
-  end
-
-  def list_events_for_topic(topic_name: topic_name) do
-    list_events_for_topic(topic_name: topic_name, topic_identifier: nil)
+    if return_batch do
+      ER.BatchedResults.new(query, %{"offset" => offset, "batch_size" => batch_size})
+    else
+      Repo.all(query)
+    end
   end
 
   defp where_available(query, now \\ DateTime.utc_now()) do

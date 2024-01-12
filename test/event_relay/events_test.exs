@@ -78,7 +78,9 @@ defmodule ER.EventsTest do
       {deleted_count, _} = Events.delete_events_for_topic_before(topic.name, before, query)
       assert deleted_count == 1
 
-      events = Events.list_events_for_topic(topic_name: topic.name, topic_identifier: nil)
+      events =
+        Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
+
       assert Enum.map(events, & &1.id) == [to_keep_1.id, to_keep_2.id]
     end
   end
@@ -151,7 +153,9 @@ defmodule ER.EventsTest do
       {deleted_count, _} = Events.delete_events_for_topic_over(topic.name, max_count, query)
       assert deleted_count == 1
 
-      events = Events.list_events_for_topic(topic_name: topic.name, topic_identifier: nil)
+      events =
+        Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
+
       assert Enum.map(events, & &1.id) == [to_keep_1.id, to_keep_2.id]
     end
   end
@@ -219,9 +223,9 @@ defmodule ER.EventsTest do
 
       batch =
         Events.list_events_for_topic(
+          topic.name,
           offset: 0,
           batch_size: 10,
-          topic_name: topic.name,
           topic_identifier: nil,
           predicates: predicates
         )
@@ -600,9 +604,9 @@ defmodule ER.EventsTest do
         total_batches: 1
       } =
         Events.list_events_for_topic(
+          topic.name,
           offset: 0,
           batch_size: 100,
-          topic_name: topic.name,
           topic_identifier: nil
         )
 
@@ -620,9 +624,9 @@ defmodule ER.EventsTest do
                total_batches: 0
              } ==
                Events.list_events_for_topic(
+                 topic.name,
                  offset: 0,
                  batch_size: 100,
-                 topic_name: topic.name,
                  topic_identifier: nil
                )
     end

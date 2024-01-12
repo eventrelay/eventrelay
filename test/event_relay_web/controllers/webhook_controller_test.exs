@@ -28,7 +28,8 @@ defmodule ERWeb.WebhookControllerTest do
 
       assert text_response(conn, 200) == "OK"
 
-      events = ER.Events.list_events_for_topic(topic_name: topic.name, topic_identifier: nil)
+      events =
+        ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
 
       event = List.last(events)
 

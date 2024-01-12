@@ -47,7 +47,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert event.group_key == group_key
       assert event.available_at == available_at
 
-      events = Events.list_events_for_topic(topic_name: topic.name)
+      events = Events.list_events_for_topic(topic.name, return_batch: false)
 
       db_event = List.first(events)
 
@@ -108,7 +108,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert Jason.decode!(event.data) == data
       assert Jason.decode!(event.data_schema) == data_schema
 
-      events = Events.list_events_for_topic(topic_name: topic.name)
+      events = Events.list_events_for_topic(topic.name, return_batch: false)
       assert Enum.count(events) == 1
 
       event = List.first(events)
@@ -158,7 +158,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       }
 
       Server.publish_events(request, nil)
-      events = Events.list_events_for_topic(topic_name: topic.name)
+      events = Events.list_events_for_topic(topic.name, return_batch: false)
       assert Enum.count(events) == 0
     end
   end

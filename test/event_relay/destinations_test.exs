@@ -2,6 +2,7 @@ defmodule ER.DestinationsTest do
   use ER.DataCase
 
   alias ER.Destinations
+  alias ER.Events
 
   import ER.Test.Setups
   import ER.Factory
@@ -130,6 +131,103 @@ defmodule ER.DestinationsTest do
       assert {:error, %Ecto.Changeset{}} = Destinations.create_delivery(@invalid_attrs)
     end
 
+    test "get_delivery_for_topic_by_event_id/2 returns a delivery if one exists for that event id" do
+      {:ok, topic} = Events.create_topic(%{name: "users"})
+
+      attrs =
+        params_for(:event,
+          topic: topic
+        )
+
+      {:ok, event} = Events.create_event_for_topic(attrs)
+
+      destination = insert(:destination, topic: topic)
+      topic_name = destination.topic_name
+
+      attrs = %{
+        event_id: event.id,
+        destination_id: destination.id,
+        status: :success
+      }
+
+      Destinations.create_delivery_for_topic(topic_name, attrs)
+
+      refute Destinations.get_delivery_for_topic_by_event_id(event.id, topic_name: topic_name) ==
+               nil
+    end
+
+    test "get_delivery_for_topic_by_event_id/2 returns nil if one does not exists for that event id" do
+      {:ok, topic} = Events.create_topic(%{name: "users"})
+
+      attrs =
+        params_for(:event,
+          topic: topic
+        )
+
+      {:ok, event} = Events.create_event_for_topic(attrs)
+
+      destination = insert(:destination, topic: topic)
+      topic_name = destination.topic_name
+
+      assert Destinations.get_delivery_for_topic_by_event_id(event.id, topic_name: topic_name) ==
+               nil
+    end
+
+    test "get_or_create_delivery_for_topic_by_event_id/2 returns a delivery if one exists for that event id" do
+      {:ok, topic} = Events.create_topic(%{name: "users"})
+
+      attrs =
+        params_for(:event,
+          topic: topic
+        )
+
+      {:ok, event} = Events.create_event_for_topic(attrs)
+
+      destination = insert(:destination, topic: topic)
+      topic_name = destination.topic_name
+
+      attrs = %{
+        event_id: event.id,
+        destination_id: destination.id,
+        status: :pending
+      }
+
+      {:ok, existing_delivery} = Destinations.create_delivery_for_topic(topic_name, attrs)
+
+      {:ok, delivery} =
+        Destinations.get_or_create_delivery_for_topic_by_event_id(topic_name, attrs)
+
+      assert delivery.id == existing_delivery.id
+    end
+
+    test "get_or_create_delivery_for_topic_by_event_id/2 returns a delivery if one does not exists for that event id" do
+      {:ok, topic} = Events.create_topic(%{name: "users"})
+
+      attrs =
+        params_for(:event,
+          topic: topic
+        )
+
+      {:ok, event} = Events.create_event_for_topic(attrs)
+
+      destination = insert(:destination, topic: topic)
+      topic_name = destination.topic_name
+
+      attrs = %{
+        event_id: event.id,
+        destination_id: destination.id,
+        status: :pending
+      }
+
+      assert Destinations.get_delivery_for_topic_by_event_id(event.id, topic_name: topic_name) ==
+               nil
+
+      {:ok, delivery} =
+        Destinations.get_or_create_delivery_for_topic_by_event_id(topic_name, attrs)
+
+      refute delivery == nil
+    end
+
     test "create_delivery_for_topic/2 with invalid data creates a event in the dead letter events table" do
       destination = insert(:destination)
       topic_name = destination.topic_name
@@ -181,6 +279,36 @@ defmodule ER.DestinationsTest do
 
       assert reason ==
                "relation \"#{topic.name}_deliveries\" does not exist"
+    end
+
+    test "update_delivery/2 updates the delivery" do
+      {:ok, topic} = Events.create_topic(%{name: "users"})
+
+      attrs =
+        params_for(:event,
+          topic: topic
+        )
+
+      {:ok, event} = Events.create_event_for_topic(attrs)
+
+      destination = insert(:destination, topic: topic)
+
+      attrs = %{
+        event_id: event.id,
+        destination_id: destination.id,
+        status: :pending
+      }
+
+      {:ok, delivery} = Destinations.create_delivery_for_topic(topic.name, attrs)
+
+      {:ok, delivery} =
+        Destinations.update_delivery(delivery, %{
+          status: :success,
+          attempts: [%{"response" => "attempt"}]
+        })
+
+      assert delivery.status == :success
+      assert delivery.attempts == [%{"response" => "attempt"}]
     end
 
     test "update_delivery/2 with valid data updates the delivery" do

@@ -21,6 +21,8 @@ defmodule ER.Destinations.Pipeline.Base do
       end
 
       def get_broadway_config(%Destination{config: config} = destination) do
+        # TOOD Maybe add some jitter to the pull_interval. To avoid all pipelines
+        # making calls to the db very close to each other.
         config
         |> Map.get("pipeline", %{})
         |> Map.put(:destination, destination)

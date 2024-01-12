@@ -28,9 +28,13 @@ defmodule ER.Destinations.Pipeline.Client do
   def handle_failed(messages, opts) do
     destination = get_destination(opts)
 
+    event_ids = Enum.map(messages, fn %{data: event} -> event.id end)
+
+    Logger.error("event_ids=#{inspect(event_ids)}")
+
     ER.Destinations.QueuedEvents.Server.unlocked_queued_events(
       destination.id,
-      Enum.map(messages, fn %{data: event} -> event.id end)
+      event_ids
     )
 
     :ok

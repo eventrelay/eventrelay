@@ -14,15 +14,14 @@ defmodule ERWeb.WebhookController do
     verified = false
     durable = true
 
-    Context.new(%{
-      event: %{
-        name: "webhook.inbound",
-        source: source.source,
-        data: data,
-        durable: durable,
-        verified: verified,
-        topic_name: topic_name
-      }
+    %Context{}
+    |> Context.assign(:event, %{
+      name: "webhook.inbound",
+      source: source.source,
+      data: data,
+      durable: durable,
+      verified: verified,
+      topic_name: topic_name
     })
     |> check_rate_limit()
     |> produce_event()
@@ -46,7 +45,7 @@ defmodule ERWeb.WebhookController do
     end
   end
 
-  defp produce_event(%Context{halt: true} = ctx) do
+  defp produce_event(%Context{halt?: true} = ctx) do
     ctx
   end
 
@@ -57,7 +56,7 @@ defmodule ERWeb.WebhookController do
     end
   end
 
-  defp log(%Context{halt: true} = ctx) do
+  defp log(%Context{halt?: true} = ctx) do
     Logger.info("#{__MODULE__}.ingest halted process. reason=#{ctx.reason}")
     ctx
   end

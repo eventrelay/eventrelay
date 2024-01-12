@@ -1,6 +1,11 @@
 defmodule ER.Destinations.Pipeline.Webhook do
   use Broadway
   use ER.Destinations.Pipeline.Base
+  alias ER.Events
+  alias ER.Destinations.Webhook
+  alias ER.Destinations
+  import Flamel.Wrap
+  alias ER.Repo
 
   def start_link(opts) do
     broadway_config = get_broadway_config(opts[:destination])
@@ -48,19 +53,112 @@ defmodule ER.Destinations.Pipeline.Webhook do
   def handle_message(_, %Message{data: event} = message, %{destination: destination}) do
     Logger.debug("#{__MODULE__}.handle_message(#{inspect(message)}, #{inspect(destination)}")
 
-    topic_name = destination.topic_name
+    try do
+      topic_name = destination.topic_name
 
-    delivery = ER.Destinations.build_delivery_for_topic(topic_name)
-    Logger.debug("Created delivery #{inspect(delivery)}")
+      delivery =
+        ER.Destinations.get_or_create_delivery_for_topic_by_event_id(
+          topic_name,
+          %{event_id: event.id, destination_id: destination.id, status: :pending}
+        )
+        |> Flamel.Wrap.unwrap_ok!()
+        |> Repo.preload(:destination)
 
-    ER.Destinations.Webhook.Delivery.Server.factory(delivery.id, %{
-      "topic_name" => topic_name,
-      "delivery" => delivery,
-      "destination" => destination,
-      "event" => event
-    })
+      process_message(message, delivery)
+    rescue
+      e ->
+        Logger.error(
+          "#{__MODULE__}.handle_message(#{inspect(message)}, #{inspect(destination)} with e=#{inspect(e)}"
+        )
+
+        Message.failed(message, e.message)
+    end
+  end
+
+  def process_message(message, delivery) do
+    destination = delivery.destination
+
+    response =
+      Webhook.request(
+        destination.config["endpoint_url"],
+        message.data,
+        destination.id,
+        destination.topic_name,
+        destination.topic_identifier,
+        destination.signing_secret
+      )
+      |> Webhook.handle_response()
+
+    attempts = [
+      %{"response" => unwrap(response), "attempted_at" => DateTime.utc_now()} | delivery.attempts
+    ]
+
+    {message, _delivery} =
+      if success?(response) do
+        handle_success(message, delivery, attempts)
+      else
+        handle_retry(message, delivery, attempts)
+      end
 
     message
+  end
+
+  def handle_success(message, delivery, attempts) do
+    {message, update_delivery(delivery, %{status: :success, attempts: attempts})}
+  end
+
+  def handle_retry(message, delivery, attempts) do
+    case ER.Destinations.Pipeline.Webhook.Retries.next(delivery.destination, delivery, attempts) do
+      {%{halt?: true}, nil} ->
+        # failure but we don't want to fail the message
+        {message, update_delivery(delivery, %{status: :failure, attempts: attempts})}
+
+      {_strategy, available_at} ->
+        # lets retry again at
+        Message.update_data(message, fn event ->
+          update_event(event, delivery, %{available_at: available_at})
+        end)
+        |> Message.failed("retry")
+        |> then(fn message ->
+          {message, update_delivery(delivery, %{status: :pending, attempts: attempts})}
+        end)
+    end
+  end
+
+  def update_event(event, delivery, attrs \\ %{}) do
+    case Events.update_event(event, attrs) do
+      {:ok, event} ->
+        event
+
+      error ->
+        Logger.error(
+          "#{__MODULE__}.update_event(#{inspect(event)}, #{inspect(delivery)}, #{inspect(attrs)}) with error=#{inspect(error)}"
+        )
+
+        event
+    end
+  end
+
+  def update_delivery(delivery, attrs \\ %{}) do
+    case Destinations.update_delivery(delivery, attrs) do
+      {:ok, delivery} ->
+        delivery
+
+      error ->
+        Logger.error(
+          "#{__MODULE__}.update_delivery(#{inspect(delivery)}, #{inspect(attrs)} with error=#{inspect(error)}"
+        )
+
+        delivery
+    end
+  end
+
+  def success?({:ok, _}) do
+    true
+  end
+
+  def success?({:error, _}) do
+    false
   end
 
   def name(id) do

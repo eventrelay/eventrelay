@@ -61,11 +61,12 @@ defmodule ER.Destinations.QueuedEvents.Server do
     # get the events
     events =
       Events.list_events_for_topic(
+        destination.topic_name,
         offset: 0,
         batch_size: 100,
-        topic_name: destination.topic_name,
         topic_identifier: destination.topic_identifier,
-        query: "id in [#{event_ids}]"
+        predicates: "id in [#{event_ids}]",
+        include_all: true
       )
 
     # unlock the events

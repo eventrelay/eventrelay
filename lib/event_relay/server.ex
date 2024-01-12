@@ -42,7 +42,6 @@ defmodule ER.Server do
       end
 
       def init(args) do
-        Process.flag(:trap_exit, true)
         {:ok, args, {:continue, :load_state}}
       end
 
@@ -78,14 +77,6 @@ defmodule ER.Server do
         )
 
         {:stop, :shutdown, state}
-      end
-
-      def terminate(reason, state) do
-        Logger.debug(
-          "#{__MODULE__} terminating with reason=#{inspect(reason)} with state=#{inspect(state)}"
-        )
-
-        handle_terminate(reason, state)
       end
 
       def via(id) do

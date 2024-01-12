@@ -49,7 +49,7 @@ defmodule ERWeb.EventsChannelTest do
     ref = push(socket, "publish_events", request)
     assert_reply ref, :ok, %{status: "ok"}
 
-    events = ER.Events.list_events_for_topic(topic_name: topic.name)
+    events = ER.Events.list_events_for_topic(topic.name, return_batch: false)
     assert length(events) == 1
   end
 end
