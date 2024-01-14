@@ -6,7 +6,7 @@ defmodule ER.Metrics do
   import ER.Metrics.Predicates
 
   def publish_metric_updates(updates) do
-    Enum.map(updates, fn {value, _event, metric} ->
+    Enum.each(updates, fn {value, _event, metric} ->
       PubSub.broadcast(ER.PubSub, "metric:updated", {:metric_updated, metric, value})
     end)
 
@@ -56,9 +56,9 @@ defmodule ER.Metrics do
 
     result =
       ER.Events.list_events_for_topic(
+        topic_name,
         offset: 0,
         batch_size: 1,
-        topic_name: topic_name,
         topic_identifier: topic_identifier,
         predicates: predicates
       )

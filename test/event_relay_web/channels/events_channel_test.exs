@@ -2,9 +2,7 @@ defmodule ERWeb.EventsChannelTest do
   use ERWeb.ChannelCase
 
   import ER.Factory
-  import Mox
-
-  setup :verify_on_exit!
+  use Mimic
 
   setup do
     api_key = insert(:api_key, type: :producer_consumer)
@@ -15,8 +13,8 @@ defmodule ERWeb.EventsChannelTest do
 
     {:ok, token} = ER.JWT.Token.build(api_key)
 
-    expect(ER.Events.ChannelCacheBehaviorMock, :register_socket, fn _pid, _destination_id ->
-      1
+    expect(ER.Events.ChannelCache, :register_socket, fn _pid, _destination_id ->
+      nil
     end)
 
     ER.Events.Event.create_table!(topic)
@@ -49,7 +47,7 @@ defmodule ERWeb.EventsChannelTest do
     ref = push(socket, "publish_events", request)
     assert_reply ref, :ok, %{status: "ok"}
 
-    events = ER.Events.list_events_for_topic(topic_name: topic.name)
+    events = ER.Events.list_events_for_topic(topic.name, return_batch: false)
     assert length(events) == 1
   end
 end

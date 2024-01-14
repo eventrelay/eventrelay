@@ -5,6 +5,7 @@ defmodule ER.Destinations do
   require Logger
   alias Phoenix.PubSub, as: PubSub
   import Ecto.Query, warn: false
+  import Flamel.Wrap
   alias ER.Repo
   alias ER.Destinations.Destination
 
@@ -20,8 +21,11 @@ defmodule ER.Destinations do
   end
 
   def list_destinations(ids: ids) when is_list(ids) do
-    ids = Enum.map(ids, &Ecto.UUID.dump!/1)
     from_destinations() |> where(as(:destinations).id in ^ids) |> Repo.all()
+  end
+
+  def list_destinations(types: types) when is_list(types) do
+    from_destinations() |> where(as(:destinations).destination_type in ^types) |> Repo.all()
   end
 
   def list_destinations(page: page, page_size: page_size) do
@@ -47,7 +51,7 @@ defmodule ER.Destinations do
   end
 
   def publish_destination_created({:ok, destination}) do
-    PubSub.broadcast(ER.PubSub, "destination:created", {:destination_created, destination.id})
+    PubSub.broadcast(ER.PubSub, "destination:created", {:destination_created, destination})
     {:ok, destination}
   end
 
@@ -56,7 +60,7 @@ defmodule ER.Destinations do
   end
 
   def publish_destination_updated({:ok, destination}) do
-    PubSub.broadcast(ER.PubSub, "destination:updated", {:destination_updated, destination.id})
+    PubSub.broadcast(ER.PubSub, "destination:updated", {:destination_updated, destination})
     {:ok, destination}
   end
 
@@ -65,7 +69,7 @@ defmodule ER.Destinations do
   end
 
   def publish_destination_deleted({:ok, destination}) do
-    PubSub.broadcast(ER.PubSub, "destination:deleted", {:destination_deleted, destination.id})
+    PubSub.broadcast(ER.PubSub, "destination:deleted", {:destination_deleted, destination})
     {:ok, destination}
   end
 
@@ -130,11 +134,9 @@ defmodule ER.Destinations do
   end
 
   def list_deliveries_for_destination(topic_name, destination_id, opts \\ []) do
-    destination_uuid = Ecto.UUID.dump!(destination_id)
-
     query =
       from_deliveries_for_topic(topic_name: topic_name)
-      |> where(as(:deliveries).destination_id == ^destination_uuid)
+      |> where(as(:deliveries).destination_id == ^destination_id)
 
     query =
       if status = Keyword.get(opts, :status, nil) do
@@ -157,9 +159,9 @@ defmodule ER.Destinations do
 
     batched_results =
       ER.Events.list_events_for_topic(
+        topic_name,
         offset: 0,
         batch_size: 100_000,
-        topic_name: topic_name,
         topic_identifier: nil,
         predicates: predicates
       )
@@ -192,12 +194,35 @@ defmodule ER.Destinations do
     do: Repo.get!(Delivery, id) |> Repo.preload(destination: [:topic])
 
   def get_delivery_for_topic!(id, topic_name: topic_name) do
-    uuid = Ecto.UUID.dump!(id)
-
     from_deliveries_for_topic(topic_name: topic_name)
-    |> where(as(:deliveries).id == ^uuid)
+    |> where(as(:deliveries).id == ^id)
     |> preload([:destination])
     |> Repo.one!()
+  end
+
+  @doc """
+  Returns a deliver for a topic by the event id
+  """
+  @spec get_delivery_for_topic_by_event_id(binary(), keyword()) :: Delivery.t() | nil
+  def get_delivery_for_topic_by_event_id(event_id, topic_name: topic_name) do
+    from_deliveries_for_topic(topic_name: topic_name)
+    |> where(as(:deliveries).event_id == ^event_id)
+    |> preload([:destination])
+    |> Repo.one()
+  end
+
+  @doc """
+  Returns a delivery is finds based on Event ID or creates a new delivery
+  """
+  @spec get_or_create_delivery_for_topic_by_event_id(binary(), map()) :: Deliver.t()
+  def get_or_create_delivery_for_topic_by_event_id(topic_name, attrs) do
+    event_id = attrs[:event_id]
+
+    if delivery = get_delivery_for_topic_by_event_id(event_id, topic_name: topic_name) do
+      ok(delivery)
+    else
+      create_delivery_for_topic(topic_name, attrs)
+    end
   end
 
   @doc """
@@ -217,7 +242,8 @@ defmodule ER.Destinations do
     |> ER.Destinations.Delivery.put_ecto_source(topic_name)
   end
 
-  @spec create_delivery_for_topic(map()) :: {:ok, Delivery.t()} | {:error, Ecto.Changeset.t()}
+  @spec create_delivery_for_topic(binary(), map(), Delivery.t()) ::
+          {:ok, Delivery.t()} | {:error, Ecto.Changeset.t()}
   def create_delivery_for_topic(topic_name, attrs \\ %{}, delivery \\ %Delivery{}) do
     changeset =
       delivery
@@ -281,7 +307,7 @@ defmodule ER.Destinations do
   Will update all deliveries with the given updates. It assumes that all deliveries have the same Ecto source.
   """
   def update_all_deliveries(topic_name, deliveries, updates) do
-    delivery_ids = Enum.map(deliveries, fn d -> Ecto.UUID.dump!(d.id) end)
+    delivery_ids = Enum.map(deliveries, fn d -> d.id end)
 
     from_deliveries_for_topic(topic_name: topic_name)
     |> where(as(:deliveries).id in ^delivery_ids)

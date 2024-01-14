@@ -114,9 +114,9 @@ defmodule ERWeb.EventLive.Index do
       {:ok, predicates} ->
         batched_result =
           ER.Events.list_events_for_topic(
+            topic_name,
             offset: socket.assigns.offset,
             batch_size: ER.to_integer(socket.assigns.batch_size),
-            topic_name: topic_name,
             topic_identifier: topic_identifier,
             predicates: predicates
           )

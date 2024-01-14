@@ -102,6 +102,10 @@ defmodule ER.Pruners.Server do
     end
   end
 
+  def schedule_next_tick(time_interval \\ nil) do
+    Process.send_after(self(), :tick, tick_interval(time_interval))
+  end
+
   def tick_interval(tick_interval \\ nil) do
     tick_interval || @default_tick_interval
   end

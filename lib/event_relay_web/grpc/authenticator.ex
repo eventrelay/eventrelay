@@ -10,7 +10,6 @@ defmodule ERWeb.Grpc.EventRelay.Interceptors.Authenticator do
   #
   # @impl GRPC.Server.Interceptor
   def init(opts) do
-    Logger.debug("ERWeb.Grpc.EventRelay.Interceptors.Auth.init(#{inspect(opts)})")
     opts
   end
 

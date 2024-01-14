@@ -372,7 +372,7 @@ defmodule ER.Accounts do
   Returns the list of active api_keys.
   """
   def list_active_api_keys() do
-    from_api_keys() |> where(as(:api_keys).status == "active") |> Repo.all()
+    from_api_keys() |> where(as(:api_keys).status == :active) |> Repo.all()
   end
 
   @doc """
@@ -383,7 +383,7 @@ defmodule ER.Accounts do
   end
 
   def get_api_key_with_topic(api_key, topic_name) do
-    {:ok, api_key_id} = Ecto.UUID.dump(api_key.id)
+    api_key_id = api_key.id
 
     from_api_keys()
     |> join(:left, [api_keys: a], t in assoc(a, :api_key_topics), as: :api_key_topics)
@@ -393,7 +393,7 @@ defmodule ER.Accounts do
   end
 
   def get_api_key_with_destination_topic(api_key, topic_name) do
-    {:ok, api_key_id} = Ecto.UUID.dump(api_key.id)
+    api_key_id = api_key.id
 
     from_api_keys()
     |> join(:left, [api_keys: a], as in assoc(a, :api_key_destinations),
@@ -421,7 +421,7 @@ defmodule ER.Accounts do
     from_api_keys()
     |> where(as(:api_keys).key == ^key)
     |> where(as(:api_keys).secret == ^secret)
-    |> where(as(:api_keys).status == "active")
+    |> where(as(:api_keys).status == :active)
     |> preload([:destinations, :topics])
     |> Repo.one()
   end
@@ -433,8 +433,8 @@ defmodule ER.Accounts do
     from_api_keys()
     |> where(as(:api_keys).key == ^key)
     |> where(as(:api_keys).secret == ^secret)
-    |> where(as(:api_keys).status == "active")
-    |> where(as(:api_keys).type == "consumer")
+    |> where(as(:api_keys).status == :active)
+    |> where(as(:api_keys).type == :consumer)
     |> Repo.one()
   end
 
@@ -445,8 +445,8 @@ defmodule ER.Accounts do
     from_api_keys()
     |> where(as(:api_keys).key == ^key)
     |> where(as(:api_keys).secret == ^secret)
-    |> where(as(:api_keys).status == "active")
-    |> where(as(:api_keys).type == "producer")
+    |> where(as(:api_keys).status == :active)
+    |> where(as(:api_keys).type == :producer)
     |> Repo.one()
   end
 

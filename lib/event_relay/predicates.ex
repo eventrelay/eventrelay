@@ -10,5 +10,7 @@ defmodule ER.Predicates do
     end
   end
 
+  def to_predicates(value) when is_list(value), do: value
+
   def to_predicates(_), do: []
 end

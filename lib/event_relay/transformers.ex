@@ -20,6 +20,7 @@ defmodule ER.Transformers do
 
   def debug(thing, label) do
     if ER.Env.debug_transformers() do
+      # credo:disable-for-next-line Credo.Check.Warning.IoInspect
       IO.inspect(thing, label: label)
     else
       thing

@@ -2,6 +2,8 @@ defmodule ER.Test.Setups do
   import ER.Factory
 
   use ER.DataCase
+  alias Broadway.Message
+  alias ER.Events
 
   def setup_topic(_context) do
     topic = insert(:topic)
@@ -14,6 +16,28 @@ defmodule ER.Test.Setups do
     end)
 
     {:ok, topic: topic}
+  end
+
+  def setup_messages(context) do
+    topic = context.topic
+
+    {:ok, event} =
+      params_for(:event, topic: topic)
+      |> Events.create_event_for_topic()
+
+    message = %Message{data: event, acknowledger: Broadway.NoopAcknowledger.init()}
+
+    messages = [message]
+
+    {:ok, event} =
+      params_for(:event, topic: topic)
+      |> Events.create_event_for_topic()
+
+    message = %Message{data: event, acknowledger: Broadway.NoopAcknowledger.init()}
+
+    messages = [message | messages]
+
+    {:ok, topic: topic, messages: messages}
   end
 
   def setup_deliveries(context) do

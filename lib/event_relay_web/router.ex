@@ -52,7 +52,12 @@ defmodule ERWeb.Router do
     scope "/dev" do
       pipe_through :browser
 
-      live_dashboard "/dashboard", metrics: ERWeb.Telemetry
+      live_dashboard "/dashboard",
+        additional_pages: [
+          broadway: BroadwayDashboard
+        ],
+        metrics: ERWeb.Telemetry
+
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end

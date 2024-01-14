@@ -27,7 +27,7 @@ defmodule ER.MixProject do
   def application do
     [
       mod: {ER.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:observer, :wx, :logger, :runtime_tools]
     ]
   end
 
@@ -43,7 +43,7 @@ defmodule ER.MixProject do
       {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.7.0-rc.0", override: true},
       {:phoenix_ecto, "~> 4.4"},
-      {:ecto_sql, "~> 3.6"},
+      {:ecto_sql, "~> 3.11"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -54,7 +54,6 @@ defmodule ER.MixProject do
       {:esbuild, "~> 0.5", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.1.8", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
-      # {:finch, "~> 0.13"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
@@ -77,10 +76,9 @@ defmodule ER.MixProject do
       {:hammox, "~> 0.7", only: :test},
       {:excoveralls, "~> 0.10", only: :test},
       # Distributed Elixir
-      {:horde, "~> 0.8.2"},
       {:libcluster, "~> 3.2"},
       # HTTP Client
-      {:httpoison, "~> 1.8"},
+      {:req, "~> 0.4"},
       # Redis
       {:redix, "~> 1.2"},
       # Cache
@@ -106,10 +104,22 @@ defmodule ER.MixProject do
       {:predicated, github: "themusicman/predicated", branch: "main"},
       # {:predicated, path: "/home/tbrewer/projects/predicated"},
       {:flamel, github: "themusicman/flamel", branch: "main"},
+      {:off_broadway_ecto, github: "eventrelay/offbroadway_ecto", branch: "main"},
 
       # Certificate Authority/TLS
       {:x509, "~> 0.8"},
-      {:ex_json_schema, "~> 0.10.2"}
+      {:ex_json_schema, "~> 0.10.2"},
+      {:liquex, "~> 0.11.0"},
+      {:broadway_dashboard, "~> 0.4.0"},
+      {:mimic, "~> 1.7", only: :test},
+
+      # Code Quality
+      {:ex_check, "~> 0.14.0", only: [:dev], runtime: false},
+      {:credo, ">= 0.0.0", only: [:dev], runtime: false},
+      {:dialyxir, ">= 0.0.0", only: [:dev], runtime: false},
+      {:doctor, ">= 0.0.0", only: [:dev], runtime: false},
+      {:sobelow, ">= 0.0.0", only: [:dev], runtime: false},
+      {:mix_audit, ">= 0.0.0", only: [:dev], runtime: false}
     ]
   end
 

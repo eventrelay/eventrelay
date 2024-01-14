@@ -4,45 +4,20 @@ defmodule ER.Pruners.Manager.Server do
   """
   use GenServer
   require Logger
+  use ER.Server
   alias Phoenix.PubSub
 
-  def child_spec(opts) do
-    name = Keyword.get(opts, :name, __MODULE__)
+  def handle_continue(:load_state, state) do
+    Logger.debug(
+      "#{__MODULE__}.handle_continue(:load_state, #{inspect(state)}) loading pruner manager server"
+    )
 
-    %{
-      id: "#{__MODULE__}_#{name}",
-      start: {__MODULE__, :start_link, [name]},
-      shutdown: 60_000,
-      restart: :transient
-    }
-  end
-
-  def start_link(name) do
-    case GenServer.start_link(__MODULE__, %{}, name: via_tuple(name)) do
-      {:ok, pid} ->
-        Logger.debug("#{__MODULE__}.start_link: starting #{via_tuple(name)}")
-        {:ok, pid}
-
-      {:error, {:already_started, pid}} ->
-        Logger.debug("#{__MODULE__} already started at #{inspect(pid)}, returning :ignore")
-        :ignore
-
-      :ignore ->
-        Logger.debug("#{__MODULE__}.start_link :ignore")
-    end
-  end
-
-  def init(args) do
     PubSub.subscribe(ER.PubSub, "pruner:created")
     PubSub.subscribe(ER.PubSub, "pruner:updated")
     PubSub.subscribe(ER.PubSub, "pruner:deleted")
-    {:ok, args, {:continue, :load_state}}
-  end
 
-  def handle_continue(:load_state, state) do
-    pruners = ER.Pruners.list_pruners()
-
-    Enum.each(pruners, fn pruner ->
+    ER.Pruners.list_pruners()
+    |> Enum.each(fn pruner ->
       ER.Pruners.Server.factory(pruner.id)
     end)
 
@@ -77,7 +52,11 @@ defmodule ER.Pruners.Manager.Server do
     {:noreply, state}
   end
 
-  def via_tuple(name) do
-    {:via, Horde.Registry, {ER.Horde.Registry, name}}
+  def handle_terminate(_reason, _state) do
+    :ok
+  end
+
+  def name(id) do
+    "pruner:#{id}"
   end
 end

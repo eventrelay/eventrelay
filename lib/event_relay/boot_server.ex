@@ -21,15 +21,9 @@ defmodule ER.BootServer do
     Logger.debug("BootServer.boot on node=#{inspect(Node.self())}")
 
     unless Code.ensure_loaded?(IEx) and IEx.started?() do
-      Horde.DynamicSupervisor.start_child(
-        ER.Horde.Supervisor,
-        {ER.Destinations.Manager.Server, [name: "destinations_manager"]}
-      )
+      ER.Destinations.Manager.Server.factory("destinations:manager")
 
-      Horde.DynamicSupervisor.start_child(
-        ER.Horde.Supervisor,
-        {ER.Pruners.Manager.Server, [name: "pruners_manager"]}
-      )
+      ER.Pruners.Manager.Server.factory("pruners:manager")
 
       # TODO: improve supervision
       ER.Sources.list_sources()

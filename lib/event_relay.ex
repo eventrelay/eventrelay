@@ -8,16 +8,20 @@ defmodule ER do
   """
   require Logger
 
+  def env() do
+    Application.get_env(:event_relay, :environment)
+  end
+
   def test?() do
-    Application.get_env(:event_relay, :environment) == :test
+    env() == :test
   end
 
   def dev?() do
-    Application.get_env(:event_relay, :environment) == :dev
+    env() == :dev
   end
 
   def prod?() do
-    Application.get_env(:event_relay, :environment) == :prod
+    env() == :prod
   end
 
   def to_integer(value) when is_binary(value) do

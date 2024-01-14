@@ -1,5 +1,6 @@
 defmodule ER.EventsTest do
   use ER.DataCase
+  use Mimic
 
   alias ER.Events
   import ER.Factory
@@ -78,7 +79,9 @@ defmodule ER.EventsTest do
       {deleted_count, _} = Events.delete_events_for_topic_before(topic.name, before, query)
       assert deleted_count == 1
 
-      events = Events.list_events_for_topic(topic_name: topic.name, topic_identifier: nil)
+      events =
+        Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
+
       assert Enum.map(events, & &1.id) == [to_keep_1.id, to_keep_2.id]
     end
   end
@@ -151,7 +154,9 @@ defmodule ER.EventsTest do
       {deleted_count, _} = Events.delete_events_for_topic_over(topic.name, max_count, query)
       assert deleted_count == 1
 
-      events = Events.list_events_for_topic(topic_name: topic.name, topic_identifier: nil)
+      events =
+        Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
+
       assert Enum.map(events, & &1.id) == [to_keep_1.id, to_keep_2.id]
     end
   end
@@ -219,9 +224,9 @@ defmodule ER.EventsTest do
 
       batch =
         Events.list_events_for_topic(
+          topic.name,
           offset: 0,
           batch_size: 10,
-          topic_name: topic.name,
           topic_identifier: nil,
           predicates: predicates
         )
@@ -275,9 +280,7 @@ defmodule ER.EventsTest do
       events =
         Events.list_queued_events_for_topic(
           batch_size: 100,
-          topic_name: topic.name,
-          topic_identifier: nil,
-          destination_id: destination_with_locks.id
+          destination: destination_with_locks
         )
 
       assert Enum.count(events) == 10
@@ -292,9 +295,7 @@ defmodule ER.EventsTest do
       events =
         Events.list_queued_events_for_topic(
           batch_size: 100,
-          topic_name: topic.name,
-          topic_identifier: nil,
-          destination_id: destination.id
+          destination: destination
         )
 
       # should return all events
@@ -312,9 +313,7 @@ defmodule ER.EventsTest do
       events =
         Events.list_queued_events_for_topic(
           batch_size: 100,
-          topic_name: topic.name,
-          topic_identifier: nil,
-          destination_id: destination_with_locks.id
+          destination: destination_with_locks
         )
 
       # we should have the original 10 plus the unlocked event
@@ -356,9 +355,7 @@ defmodule ER.EventsTest do
       events =
         Events.list_queued_events_for_topic(
           batch_size: 100,
-          topic_name: topic.name,
-          topic_identifier: nil,
-          destination_id: destination.id
+          destination: destination
         )
 
       # now that all the events are locked non should be found
@@ -558,6 +555,50 @@ defmodule ER.EventsTest do
       ER.Events.Event.drop_table!(topic)
     end
 
+    test "produce_event_for_topic/1 with valid data publishes an event" do
+      topic = insert(:topic, name: "test")
+      ER.Events.Event.create_table!(topic)
+      occurred_at = DateTime.to_iso8601(~U[2022-12-21 18:27:00Z])
+      available_at = DateTime.to_iso8601(~U[2021-12-21 18:27:00Z])
+
+      destination = insert(:destination, destination_type: :websocket, topic: topic)
+
+      event = %{
+        context: %{},
+        data: %{},
+        name: "my.unique.event",
+        occurred_at: occurred_at,
+        available_at: available_at,
+        source: "some source",
+        topic_name: topic.name,
+        durable: true
+      }
+
+      ER.Events.ChannelCache
+      |> expect(:any_sockets?, fn destination_id ->
+        assert destination_id == destination.id
+
+        true
+      end)
+
+      ERWeb.Endpoint
+      |> expect(:broadcast, fn topic, event_name, message ->
+        assert topic == "events:#{destination.id}"
+        assert event_name == "event:published"
+        assert message.name == "my.unique.event"
+      end)
+
+      assert {:ok, %Event{} = event} = Events.produce_event_for_topic(event)
+
+      assert Flamel.Moment.to_iso8601(event.occurred_at) == occurred_at
+      assert Flamel.Moment.to_iso8601(event.available_at) == available_at
+
+      assert Ecto.get_meta(event, :source) ==
+               "test_events"
+
+      ER.Events.Event.drop_table!(topic)
+    end
+
     test "update_event/2 with valid data updates the event" do
       event = insert(:event)
       topic = insert(:topic)
@@ -608,9 +649,9 @@ defmodule ER.EventsTest do
         total_batches: 1
       } =
         Events.list_events_for_topic(
+          topic.name,
           offset: 0,
           batch_size: 100,
-          topic_name: topic.name,
           topic_identifier: nil
         )
 
@@ -628,9 +669,9 @@ defmodule ER.EventsTest do
                total_batches: 0
              } ==
                Events.list_events_for_topic(
+                 topic.name,
                  offset: 0,
                  batch_size: 100,
-                 topic_name: topic.name,
                  topic_identifier: nil
                )
     end
