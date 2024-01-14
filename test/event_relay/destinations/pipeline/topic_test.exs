@@ -1,4 +1,4 @@
-defmodule ER.Destinations.Delivery.TopicTest do
+defmodule ER.Destinations.TopicTest do
   use ER.DataCase
   alias ER.Events.Event
   alias ER.Events
@@ -35,15 +35,27 @@ defmodule ER.Destinations.Delivery.TopicTest do
     {:ok, destination: destination, event: event, to_topic: to_topic, from_topic: from_topic}
   end
 
-  describe "push/2" do
+  describe "forward/2" do
     test "creates a new event in a different topic", %{
-      destination: destination,
       event: old_event,
       to_topic: to_topic,
       from_topic: from_topic
     } do
-      push_destination = ER.Destinations.Push.Factory.build(destination)
-      {:ok, new_event} = ER.Destinations.Push.Destination.push(push_destination, old_event)
+      {:ok, new_event} = ER.Destinations.Topic.forward(to_topic.name, old_event)
+
+      refute new_event.topic_name == from_topic.name
+      assert new_event.topic_name == to_topic.name
+      assert new_event.data == old_event.data
+      assert new_event.context == old_event.context
+      assert new_event.destination_locks == []
+    end
+
+    test "creates a new event if the prev_id is empty", %{
+      event: old_event,
+      to_topic: to_topic,
+      from_topic: from_topic
+    } do
+      {:ok, new_event} = ER.Destinations.Topic.forward(to_topic.name, old_event)
 
       refute new_event.topic_name == from_topic.name
       assert new_event.topic_name == to_topic.name

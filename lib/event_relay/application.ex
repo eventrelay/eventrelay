@@ -44,6 +44,8 @@ defmodule ER.Application do
         {Phoenix.PubSub, name: ER.PubSub},
         # Start the Endpoint (http/https)
         ERWeb.Endpoint,
+        # Starts supervisor for Flamel background tasks
+        {Task.Supervisor, name: Flamel.Task},
         # Start the GRPC API
         {GRPC.Server.Supervisor, grpc_start_args()},
         # Start the Elixir Process Registry

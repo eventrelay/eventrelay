@@ -24,6 +24,10 @@ defmodule ER.Destinations do
     from_destinations() |> where(as(:destinations).id in ^ids) |> Repo.all()
   end
 
+  def list_destinations(types: types) when is_list(types) do
+    from_destinations() |> where(as(:destinations).destination_type in ^types) |> Repo.all()
+  end
+
   def list_destinations(page: page, page_size: page_size) do
     from_destinations()
     |> ER.PaginatedResults.new(%{"page" => page, "page_size" => page_size})

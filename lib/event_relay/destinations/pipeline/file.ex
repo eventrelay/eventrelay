@@ -1,4 +1,4 @@
-defmodule ER.Destinations.Pipeline.S3 do
+defmodule ER.Destinations.Pipeline.File do
   use Broadway
   use ER.Destinations.Pipeline.Base
 
@@ -33,7 +33,7 @@ defmodule ER.Destinations.Pipeline.S3 do
           ]
         ],
         batchers: [
-          s3: [
+          sync: [
             concurrency: broadway_config.batcher_concurrency,
             batch_size: broadway_config.batch_size,
             batch_timeout: broadway_config.batch_timeout
@@ -59,7 +59,7 @@ defmodule ER.Destinations.Pipeline.S3 do
       }) do
     Logger.debug("#{__MODULE__}.handle_message(#{inspect(message)}")
 
-    Message.put_batcher(message, :s3)
+    Message.put_batcher(message, :sync)
   end
 
   def handle_message(_, message, context) do
@@ -70,40 +70,21 @@ defmodule ER.Destinations.Pipeline.S3 do
 
   @impl Broadway
   def handle_batch(
-        :s3,
+        :sync,
         messages,
         _batch_info,
-        %{destination: %{paused: false, config: %{"s3_bucket" => bucket, "s3_region" => region}}} =
-          _destination
+        %{destination: %{paused: false} = destination}
       ) do
-    now = DateTime.now!("Etc/UTC")
-
-    jsonl =
-      jsonl_encode_events(messages)
-
-    ER.Container.s3().put_object!(region, bucket, build_events_file_name(now), jsonl)
-    Logger.debug("#{__MODULE__}.handle_batch(#{inspect(messages)} successfully uploaded to S3.")
-    messages
-  end
-
-  def build_events_file_name(now) do
-    datetime = now |> DateTime.to_iso8601()
-    folder = now |> DateTime.to_date() |> Date.to_string()
-    "/#{folder}/#{datetime}-events.jsonl"
-  end
-
-  def jsonl_encode_events(messages) do
-    Enum.map(messages, fn %{data: event} ->
-      case Jason.encode(event) do
-        {:ok, json} ->
-          json
+    service =
+      case destination.config do
+        %{"service" => "s3"} ->
+          %ER.Destinations.File.S3{destination: destination}
 
         _ ->
           nil
       end
-    end)
-    |> Enum.reject(&is_nil/1)
-    |> Enum.join("\n")
+
+    ER.Destinations.File.put(service, messages)
   end
 
   def name(id) do

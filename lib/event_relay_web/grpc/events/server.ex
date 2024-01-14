@@ -95,9 +95,9 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
       )
     rescue
       e in ER.Filter.BadFieldError ->
-        raise GRPC.RPCError,
-          status: GRPC.Status.invalid_argument(),
-          message: e.message
+        reraise GRPC.RPCError,
+                [status: GRPC.Status.invalid_argument(), message: e.message],
+                __STACKTRACE__
     end
   end
 
@@ -128,9 +128,9 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
       PullQueuedEventsResponse.new(events: events)
     rescue
       e in ER.Filter.BadFieldError ->
-        raise GRPC.RPCError,
-          status: GRPC.Status.invalid_argument(),
-          message: e.message
+        reraise GRPC.RPCError,
+                [status: GRPC.Status.invalid_argument(), message: e.message],
+                __STACKTRACE__
     end
   end
 
@@ -158,9 +158,9 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
       UnLockQueuedEventsResponse.new(events: events)
     rescue
       e in ER.Filter.BadFieldError ->
-        raise GRPC.RPCError,
-          status: GRPC.Status.invalid_argument(),
-          message: e.message
+        reraise GRPC.RPCError,
+                [status: GRPC.Status.invalid_argument(), message: e.message],
+                __STACKTRACE__
     end
   end
 

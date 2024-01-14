@@ -74,9 +74,9 @@ defmodule ERWeb.Grpc.EventRelay.Destinations.Server do
       DeleteDestinationResponse.new(destination: destination)
     rescue
       _ in Ecto.NoResultsError ->
-        raise GRPC.RPCError,
-          status: GRPC.Status.not_found(),
-          message: "Destination not found"
+        reraise GRPC.RPCError,
+                [status: GRPC.Status.not_found(), message: "Destination not found"],
+                __STACKTRACE__
     end
   end
 

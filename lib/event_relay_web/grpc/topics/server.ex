@@ -81,7 +81,10 @@ defmodule ERWeb.Grpc.EventRelay.Topics.Server do
         rescue
           error ->
             Logger.error("Failed to delete topic: #{inspect(error)}")
-            raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+
+            reraise GRPC.RPCError,
+                    [status: GRPC.Status.unknown(), message: "Something went wrong"],
+                    __STACKTRACE__
         end
     end
   end

@@ -7,7 +7,7 @@ defmodule ER.Events do
   import ER.Events.Predicates
   alias ER.Repo
   alias Phoenix.PubSub
-
+  alias ER.Destinations
   alias ER.Events.Event
   alias ER.Events.Topic
 
@@ -428,6 +428,22 @@ defmodule ER.Events do
     if full_topic != topic_name do
       PubSub.broadcast(ER.PubSub, full_topic, {:event_created, event})
     end
+
+    Flamel.Task.background(
+      fn ->
+        Destinations.list_destinations(types: [:websocket])
+        |> Enum.map(fn destination ->
+          if ER.Events.ChannelCache.any_sockets?(destination.id) do
+            ERWeb.Endpoint.broadcast("events:#{destination.id}", "event:published", event)
+          else
+            Logger.debug(
+              "#{__MODULE__}.publish_event(#{inspect(event)}) for destination=#{inspect(destination)} do not push to websocket because there are no sockets connected on node=#{inspect(Node.self())}"
+            )
+          end
+        end)
+      end,
+      env: ER.env()
+    )
 
     {:ok, event}
   end

@@ -159,7 +159,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       Server.publish_events(request, nil)
       events = Events.list_events_for_topic(topic.name, return_batch: false)
-      assert Enum.count(events) == 0
+      assert Enum.empty?(events)
     end
   end
 
@@ -264,9 +264,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       {:ok, topic} = Events.create_topic(%{name: "jobs"})
       destination = insert(:destination, topic: topic)
 
-      # spin up the destination servers
-      ER.Destinations.Server.factory(destination.id)
-
       {:ok, destination: destination, topic: topic}
     end
 
@@ -305,7 +302,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       result = Server.pull_queued_events(request, nil)
 
-      assert Enum.count(result.events) == 0
+      assert Enum.empty?(result.events)
 
       request = %UnLockQueuedEventsRequest{
         destination_id: destination.id,
@@ -332,7 +329,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       result = Server.pull_queued_events(request, nil)
       # now we should have 0
-      assert Enum.count(result.events) == 0
+      assert Enum.empty?(result.events)
     end
   end
 
@@ -341,10 +338,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       {:ok, topic} = Events.create_topic(%{name: "jobs"})
       destination = insert(:destination, topic: topic)
       destination_without_locks = insert(:destination, topic: topic)
-
-      # spin up the destination servers
-      ER.Destinations.Server.factory(destination.id)
-      ER.Destinations.Server.factory(destination_without_locks.id)
 
       {:ok,
        destination: destination,
@@ -422,7 +415,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       result = Server.pull_queued_events(request, nil)
       # we should have no results for this destination since they are all locked
-      assert Enum.count(result.events) == 0
+      assert Enum.empty?(result.events)
     end
   end
 end

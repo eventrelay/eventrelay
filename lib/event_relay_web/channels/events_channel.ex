@@ -6,7 +6,7 @@ defmodule ERWeb.EventsChannel do
 
   @impl true
   def join("events:" <> destination_id, payload, socket) do
-    ER.Container.channel_cache().register_socket(self(), destination_id)
+    ER.Events.ChannelCache.register_socket(self(), destination_id)
 
     case authorized?(payload) do
       {:ok, claims} ->
@@ -41,7 +41,7 @@ defmodule ERWeb.EventsChannel do
         durable = unless ER.boolean?(durable), do: false, else: to_boolean(durable)
         verified = true
 
-        Enum.map(events, fn event ->
+        Enum.each(events, fn event ->
           case ER.Events.produce_event_for_topic(%{
                  name: Map.get(event, "name"),
                  source: Map.get(event, "source"),

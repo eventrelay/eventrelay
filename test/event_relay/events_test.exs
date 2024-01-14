@@ -1,5 +1,6 @@
 defmodule ER.EventsTest do
   use ER.DataCase
+  use Mimic
 
   alias ER.Events
   import ER.Factory
@@ -550,6 +551,50 @@ defmodule ER.EventsTest do
                assert Ecto.get_meta(event, :source) ==
                         "dead_letter_events"
              end) =~ "Invalid changeset for event"
+
+      ER.Events.Event.drop_table!(topic)
+    end
+
+    test "produce_event_for_topic/1 with valid data publishes an event" do
+      topic = insert(:topic, name: "test")
+      ER.Events.Event.create_table!(topic)
+      occurred_at = DateTime.to_iso8601(~U[2022-12-21 18:27:00Z])
+      available_at = DateTime.to_iso8601(~U[2021-12-21 18:27:00Z])
+
+      destination = insert(:destination, destination_type: :websocket, topic: topic)
+
+      event = %{
+        context: %{},
+        data: %{},
+        name: "my.unique.event",
+        occurred_at: occurred_at,
+        available_at: available_at,
+        source: "some source",
+        topic_name: topic.name,
+        durable: true
+      }
+
+      ER.Events.ChannelCache
+      |> expect(:any_sockets?, fn destination_id ->
+        assert destination_id == destination.id
+
+        true
+      end)
+
+      ERWeb.Endpoint
+      |> expect(:broadcast, fn topic, event_name, message ->
+        assert topic == "events:#{destination.id}"
+        assert event_name == "event:published"
+        assert message.name == "my.unique.event"
+      end)
+
+      assert {:ok, %Event{} = event} = Events.produce_event_for_topic(event)
+
+      assert Flamel.Moment.to_iso8601(event.occurred_at) == occurred_at
+      assert Flamel.Moment.to_iso8601(event.available_at) == available_at
+
+      assert Ecto.get_meta(event, :source) ==
+               "test_events"
 
       ER.Events.Event.drop_table!(topic)
     end

@@ -94,7 +94,10 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
         rescue
           error ->
             Logger.error("Failed to delete topic: #{inspect(error)}")
-            raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+
+            reraise GRPC.RPCError,
+                    [status: GRPC.Status.unknown(), message: "Something went wrong"],
+                    __STACKTRACE__
         end
     end
   end
@@ -158,14 +161,14 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
         error ->
           case error do
             %GRPC.RPCError{} ->
-              raise error
+              reraise error, __STACKTRACE__
 
             _ ->
               Logger.error("Failed to add destinations to api key: #{inspect(error)}")
 
-              raise GRPC.RPCError,
-                status: GRPC.Status.unknown(),
-                message: "Something went wrong"
+              reraise GRPC.RPCError,
+                      [status: GRPC.Status.unknown(), message: "Something went wrong"],
+                      __STACKTRACE__
           end
       end
     else
@@ -233,11 +236,14 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
         error ->
           case error do
             %GRPC.RPCError{} ->
-              raise error
+              reraise error, __STACKTRACE__
 
             _ ->
               Logger.error("Failed to delete api key destination: #{inspect(error)}")
-              raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+
+              reraise GRPC.RPCError,
+                      [status: GRPC.Status.unknown(), message: "Something went wrong"],
+                      __STACKTRACE__
           end
       end
     else
@@ -307,14 +313,14 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
         error ->
           case error do
             %GRPC.RPCError{} ->
-              raise error
+              reraise error, __STACKTRACE__
 
             _ ->
               Logger.error("Failed to add topics to api key: #{inspect(error)}")
 
-              raise GRPC.RPCError,
-                status: GRPC.Status.unknown(),
-                message: "Something went wrong"
+              reraise GRPC.RPCError,
+                      [status: GRPC.Status.unknown(), message: "Something went wrong"],
+                      __STACKTRACE__
           end
       end
     else
@@ -382,11 +388,14 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
         error ->
           case error do
             %GRPC.RPCError{} ->
-              raise error
+              reraise error, __STACKTRACE__
 
             _ ->
               Logger.error("Failed to delete api key topic: #{inspect(error)}")
-              raise GRPC.RPCError, status: GRPC.Status.unknown(), message: "Something went wrong"
+
+              reraise GRPC.RPCError,
+                      [status: GRPC.Status.unknown(), message: "Something went wrong"],
+                      __STACKTRACE__
           end
       end
     else

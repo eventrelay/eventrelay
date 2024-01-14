@@ -2,8 +2,6 @@ defmodule ER.Destinations.Pipeline.Topic do
   use Broadway
   use ER.Destinations.Pipeline.Base
 
-  @field_to_drop [:__meta__, :destination_locks, :topic]
-
   def start_link(opts) do
     broadway_config = get_broadway_config(opts[:destination])
 
@@ -56,14 +54,15 @@ defmodule ER.Destinations.Pipeline.Topic do
       ) do
     Logger.debug("#{__MODULE__}.handle_message(#{inspect(message)}, #{inspect(context)}")
 
-    attrs = Map.from_struct(event)
+    case ER.Destinations.Topic.forward(topic_name, event) do
+      {:ok, new_event} ->
+        Message.update_data(message, fn _event ->
+          new_event
+        end)
 
-    attrs =
-      attrs
-      |> Map.put(:topic_name, topic_name)
-      |> Map.drop(@field_to_drop)
-
-    ER.Events.produce_event_for_topic(attrs)
+      {:error, reason} ->
+        Message.failed(message, "#{inspect(reason)}")
+    end
 
     message
   end

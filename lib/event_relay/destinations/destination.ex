@@ -23,7 +23,7 @@ defmodule ER.Destinations.Destination do
     field :name, :string
     field :offset, :integer
     field :ordered, :boolean, default: false
-    field(:destination_type, Ecto.Enum, values: [:api, :webhook, :websocket, :s3, :topic])
+    field(:destination_type, Ecto.Enum, values: [:api, :webhook, :websocket, :file, :topic])
     field :paused, :boolean, default: false
     field :config, :map, default: %{}
     field :config_json, :string, virtual: true
@@ -61,7 +61,7 @@ defmodule ER.Destinations.Destination do
     |> put_signing_secret()
     |> ER.Schema.normalize_name()
     |> assoc_constraint(:topic)
-    |> validate_inclusion(:destination_type, [:s3, :webhook, :websocket, :api, :topic])
+    |> validate_inclusion(:destination_type, [:file, :webhook, :websocket, :api, :topic])
   end
 
   def put_signing_secret(changeset) do

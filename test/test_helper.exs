@@ -1,6 +1,6 @@
 # Mocks
-Mox.defmock(ER.Events.ChannelCacheBehaviorMock, for: ER.Events.ChannelCacheBehavior)
-Application.put_env(:event_relay, :channel_cache, ER.Events.ChannelCacheBehaviorMock)
+Mimic.copy(ERWeb.Endpoint)
+Mimic.copy(ER.Events.ChannelCache)
 
 ExUnit.start()
 Faker.start()

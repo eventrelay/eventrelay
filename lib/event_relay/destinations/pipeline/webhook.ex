@@ -80,12 +80,8 @@ defmodule ER.Destinations.Pipeline.Webhook do
 
     response =
       Webhook.request(
-        destination.config["endpoint_url"],
-        message.data,
-        destination.id,
-        destination.topic_name,
-        destination.topic_identifier,
-        destination.signing_secret
+        destination,
+        message.data
       )
       |> Webhook.handle_response()
 
