@@ -11,9 +11,7 @@ defmodule ER.Destinations.Pipeline.Webhook.RetriesTest do
         insert(:destination,
           destination_type: :webhook,
           config: %{
-            "max_attempts" => 5,
-            "max_interval" => 8_000,
-            "multiplier" => 2
+            "retries" => %{"max_attempts" => 10, "max_interval" => 999_000_000, "multiplier" => 2}
           },
           topic: topic
         )
@@ -59,8 +57,27 @@ defmodule ER.Destinations.Pipeline.Webhook.RetriesTest do
       {_strategy, available_at} = Retries.next(destination, delivery, attempts, now)
       assert available_at == DateTime.add(now, 60_000 * 8, :millisecond)
 
-      attempts = [%{"response" => 4} | attempts]
+      attempts = [%{"response" => 5} | attempts]
+      {_strategy, available_at} = Retries.next(destination, delivery, attempts, now)
+      assert available_at == DateTime.add(now, 60_000 * 16, :millisecond)
 
+      attempts = [%{"response" => 6} | attempts]
+      {_strategy, available_at} = Retries.next(destination, delivery, attempts, now)
+      assert available_at == DateTime.add(now, 60_000 * 32, :millisecond)
+
+      attempts = [%{"response" => 7} | attempts]
+      {_strategy, available_at} = Retries.next(destination, delivery, attempts, now)
+      assert available_at == DateTime.add(now, 60_000 * 64, :millisecond)
+
+      attempts = [%{"response" => 8} | attempts]
+      {_strategy, available_at} = Retries.next(destination, delivery, attempts, now)
+      assert available_at == DateTime.add(now, 60_000 * 128, :millisecond)
+
+      attempts = [%{"response" => 9} | attempts]
+      {_strategy, available_at} = Retries.next(destination, delivery, attempts, now)
+      assert available_at == DateTime.add(now, 60_000 * 256, :millisecond)
+
+      attempts = [%{"response" => 10} | attempts]
       {strategy, available_at} = Retries.next(destination, delivery, attempts, now)
       assert available_at == nil
       assert Flamel.Context.halted?(strategy) == true

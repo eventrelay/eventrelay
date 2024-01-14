@@ -8,6 +8,8 @@ defmodule ER.Destinations.Pipeline.Webhook.Retries do
       destination.config
       |> Map.get("retries", %{})
       |> Map.take(["max_interval", "max_attempts", "base", "multiplier"])
+      |> Map.put_new("max_attempts", 10)
+      |> Map.put_new("max_interval", 256_000)
       |> Map.put("attempt", attempt)
       |> Flamel.Map.atomize_keys()
       |> Flamel.Retryable.exponential()

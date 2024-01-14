@@ -17,7 +17,7 @@ defmodule ER.Destinations.Pipeline.WebhookTest do
         |> Events.create_event_for_topic()
 
       message = %Message{data: event, acknowledger: Broadway.NoopAcknowledger.init()}
-      destination = insert(:destination, config: %{"max_attempts" => 5})
+      destination = insert(:destination, config: %{"retries" => %{"max_attempts" => 5}})
       {:ok, destination: destination, event: event, topic: topic, message: message}
     end
 
