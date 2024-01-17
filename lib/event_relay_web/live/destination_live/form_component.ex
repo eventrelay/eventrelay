@@ -37,7 +37,28 @@ defmodule ERWeb.DestinationLive.FormComponent do
         />
         <.input field={f[:topic_identifier]} type="text" label="Topic Identifier" />
         <.input field={f[:group_key]} type="text" label="Group Key" />
-        <.input field={f[:config_json]} type="textarea" label="Config" />
+
+        <p :if={Flamel.to_atom(f[:destination_type].value) in [:webhook, :file, :topic]}>
+          Example Config
+        </p>
+        <.alert :if={Flamel.to_atom(f[:destination_type].value) == :webhook} color="info">
+          <pre><%= ER.Destinations.Destination.base_config(:webhook) |> Jason.encode!(pretty: true) %></pre>
+        </.alert>
+
+        <.alert :if={Flamel.to_atom(f[:destination_type].value) == :file} color="info">
+          <pre><%= ER.Destinations.Destination.base_config(:file) |> Jason.encode!(pretty: true) %></pre>
+        </.alert>
+
+        <.alert :if={Flamel.to_atom(f[:destination_type].value) == :topic} color="info">
+          <pre><%= ER.Destinations.Destination.base_config(:topic) |> Jason.encode!(pretty: true) %></pre>
+        </.alert>
+
+        <.input
+          :if={Flamel.to_atom(f[:destination_type].value) in [:webhook, :file, :topic]}
+          field={f[:config_json]}
+          type="textarea"
+          label="Config"
+        />
         <.input field={f[:query]} type="textarea" label="Query Filter" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Destination</.button>

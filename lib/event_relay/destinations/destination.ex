@@ -92,6 +92,201 @@ defmodule ER.Destinations.Destination do
     true
   end
 
+  def base_config_schema(:topic) do
+    %{
+      "$schema" => "http://json-schema.org/draft-04/schema#",
+      # "$id" => "https://example.com/employee.schema.json",
+      "title" => "Configuration for a topic destination",
+      "description" => "This document records the configuration for a topic destination",
+      "type" => "object",
+      "properties" => %{
+        "topic_name" => %{
+          "description" => "The name of the topic that you want to forward events to",
+          "type" => "string"
+        },
+        "pipeline" => config_schema_pipeline()
+      }
+    }
+  end
+
+  def base_config_schema(:file) do
+    %{
+      "$schema" => "http://json-schema.org/draft-04/schema#",
+      # "$id" => "https://example.com/employee.schema.json",
+      "title" => "Configuration for a topic destination",
+      "description" => "This document records the configuration for a topic destination",
+      "type" => "object",
+      "properties" => %{
+        "service" => %{
+          "description" => "The service you want to send the events to. Ex. s3",
+          "type" => "string",
+          "default" => "s3"
+        },
+        "format" => %{
+          "description" => "The format of the file pushed to the service. Ex. jsonl",
+          "type" => "string",
+          "default" => "jsonl"
+        },
+        "s3" => %{
+          "description" => "The configuration for S3",
+          "type" => "object",
+          "properties" => %{
+            "region" => %{
+              "description" => "The S3 region your bucket is in",
+              "type" => "string"
+            },
+            "bucket" => %{
+              "description" => "The S3 bucket name",
+              "type" => "string"
+            }
+          }
+        },
+        "pipeline" => config_schema_pipeline()
+      }
+    }
+  end
+
+  def base_config_schema(:webhook) do
+    %{
+      "$schema" => "http://json-schema.org/draft-04/schema#",
+      "$id" => "https://example.com/employee.schema.json",
+      "title" => "Configuration for a webhook destination",
+      "description" => "This document records the configuration for a webhook destination",
+      "type" => "object",
+      "properties" => %{
+        "topic_name" => %{
+          "description" => "The name of the topic that you want to forward events to",
+          "type" => "string"
+        },
+        "retries" => %{
+          "description" => "Configuration for Webhook Retries",
+          "type" => "object",
+          "properties" => %{
+            "max_interval" => %{
+              "description" => "The max interval between retries",
+              "type" => "number",
+              "default" => 256_000
+            },
+            "max_attempts" => %{
+              "description" => "The max attempts that will be tried",
+              "type" => "number",
+              "default" => 10
+            }
+          }
+        },
+        "pipeline" => config_schema_pipeline()
+      }
+    }
+  end
+
+  defp config_schema_pipeline() do
+    %{
+      "description" => "Configuration for Destination Pipeline",
+      "type" => "object",
+      "properties" => %{
+        "processor_concurrency" => %{
+          "description" =>
+            "The number of processes processing the evetnts. The larger the number the greater the throughput of the destination.",
+          "type" => "number",
+          "default" => 10
+        },
+        "processor_min_demand" => %{
+          "description" =>
+            "The minimum number of events the destination will demand when pulling events to process.",
+          "type" => "number",
+          "default" => 1
+        },
+        "processor_max_demand" => %{
+          "description" =>
+            "The maximum number of events the destination will demand when pulling events to process",
+          "type" => "number",
+          "default" => 50
+        },
+        "batcher_concurrency" => %{
+          "description" => "The number of batching processes to use",
+          "type" => "number",
+          "default" => 1
+        },
+        "batch_size" => %{
+          "description" => "The number of events to processes in each batch",
+          "type" => "number",
+          "default" => 50
+        },
+        "batch_timeout" => %{
+          "description" => "How long the batch has to process before it timesout in milliseconds",
+          "type" => "number",
+          "default" => 1000
+        },
+        "pull_interval" => %{
+          "description" =>
+            "How often the destination will pull events to processes in milliseconds",
+          "type" => "number",
+          "default" => 2000
+        }
+      }
+    }
+  end
+
+  def base_config(:webhook) do
+    %{
+      "endpoint_url" => "http://localhost:4000/webhooks",
+      "retries" => %{
+        "max_attempts" => 10,
+        "max_interval" => 256_000
+      },
+      "pipeline" => %{
+        "processor_concurrency" => 10,
+        "processor_min_demand" => 1,
+        "processor_max_demand" => 50,
+        "batcher_concurrency" => 1,
+        "batch_size" => 50,
+        "batch_timeout" => 1000,
+        "pull_interval" => 2000
+      }
+    }
+  end
+
+  def base_config(:file) do
+    %{
+      "service" => "s3",
+      "bucket" => "...",
+      "format" => "jsonl",
+      "region" => "...",
+      "retries" => %{
+        "max_attempts" => 10,
+        "max_interval" => 256_000
+      },
+      "pipeline" => %{
+        "processor_concurrency" => 10,
+        "processor_min_demand" => 1,
+        "processor_max_demand" => 50,
+        "batcher_concurrency" => 1,
+        "batch_size" => 50,
+        "batch_timeout" => 1000,
+        "pull_interval" => 2000
+      }
+    }
+  end
+
+  def base_config(:topic) do
+    %{
+      "topic_name" => "...",
+      "retries" => %{
+        "max_attempts" => 10,
+        "max_interval" => 256_000
+      },
+      "pipeline" => %{
+        "processor_concurrency" => 10,
+        "processor_min_demand" => 1,
+        "processor_max_demand" => 50,
+        "batcher_concurrency" => 1,
+        "batch_size" => 50,
+        "batch_timeout" => 1000,
+        "pull_interval" => 2000
+      }
+    }
+  end
+
   def matches?(%{query: query}, event) do
     event =
       Map.from_struct(event) |> Map.drop([:topic, :__meta__]) |> ER.atomize_map()
