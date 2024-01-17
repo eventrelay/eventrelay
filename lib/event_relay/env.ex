@@ -1,4 +1,8 @@
 defmodule ER.Env do
+  def disable_push_destinations? do
+    Flamel.to_boolean(System.get_env("ER_DISABLE_PUSH_DESTINATIONS")) == true
+  end
+
   def skip_grpc_auth? do
     Flamel.to_boolean(System.get_env("ER_SKIP_GRPC_AUTH")) == true
   end
