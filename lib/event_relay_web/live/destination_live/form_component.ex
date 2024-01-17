@@ -53,12 +53,8 @@ defmodule ERWeb.DestinationLive.FormComponent do
           <pre><%= ER.Destinations.Destination.base_config(:topic) |> Jason.encode!(pretty: true) %></pre>
         </.alert>
 
-        <.input
-          :if={Flamel.to_atom(f[:destination_type].value) in [:webhook, :file, :topic]}
-          field={f[:config_json]}
-          type="textarea"
-          label="Config"
-        />
+        <% # :if={Flamel.to_atom(f[:destination_type].value) in [:webhook, :file, :topic]} %>
+        <.input field={f[:config_json]} type="textarea" label="Config" />
         <.input field={f[:query]} type="textarea" label="Query Filter" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Destination</.button>
