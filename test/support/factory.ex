@@ -21,7 +21,7 @@ defmodule ER.Factory do
 
   def destination_factory do
     %ER.Destinations.Destination{
-      name: Faker.Lorem.word(),
+      name: sequence(:name, &"Destination Name #{&1}"),
       ordered: false,
       paused: false,
       config: %{},
@@ -104,7 +104,7 @@ defmodule ER.Factory do
 
   def metric_factory do
     %ER.Metrics.Metric{
-      name: Faker.Lorem.word(),
+      name: sequence(:name, &"Metric Name #{&1}"),
       type: :count,
       field_path: "data.cart.total"
     }
@@ -112,7 +112,7 @@ defmodule ER.Factory do
 
   def pruner_factory do
     %ER.Pruners.Pruner{
-      name: Faker.Lorem.word(),
+      name: sequence(:name, &"Pruner Name #{&1}"),
       topic: build(:topic),
       query: "",
       config: %{},
