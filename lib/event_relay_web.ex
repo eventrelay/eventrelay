@@ -57,6 +57,7 @@ defmodule ERWeb do
       use Phoenix.LiveView,
         layout: {ERWeb.Layouts, :app}
 
+      import Flamel.Wrap, only: [ok: 1, noreply: 1]
       unquote(html_helpers())
     end
   end

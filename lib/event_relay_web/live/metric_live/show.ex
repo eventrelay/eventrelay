@@ -5,7 +5,9 @@ defmodule ERWeb.MetricLive.Show do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    socket
+    |> assign(:topics, ER.Events.list_topics())
+    |> ok()
   end
 
   @impl true

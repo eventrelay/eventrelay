@@ -39,7 +39,7 @@ defmodule ER.DestinationsTest do
       assert {:ok, %Destination{} = destination} =
                Destinations.create_destination(valid_attrs)
 
-      assert destination.name == "some_name"
+      assert destination.name == "some name"
       assert destination.offset == 42
       assert destination.ordered == true
       assert destination.paused == false
@@ -66,7 +66,7 @@ defmodule ER.DestinationsTest do
       assert {:ok, %Destination{} = destination} =
                Destinations.update_destination(destination, update_attrs)
 
-      assert destination.name == "some_updated_name"
+      assert destination.name == "some updated name"
       assert destination.offset == 43
       assert destination.ordered == false
       assert destination.topic_name == topic.name

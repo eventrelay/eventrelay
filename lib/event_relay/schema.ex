@@ -2,8 +2,12 @@ defmodule ER.Schema do
   import Ecto.Changeset, only: [put_change: 3]
 
   def normalize_name(%Ecto.Changeset{changes: %{name: name}} = changeset) do
-    changeset
-    |> put_change(:name, String.replace(name, ~r/[^[:alnum:]\w]/, "_"))
+    name =
+      name
+      |> String.replace(~r/[^[:alnum:]\w]/, "_")
+      |> String.downcase()
+
+    put_change(changeset, :name, name)
   end
 
   def normalize_name(changeset) do
