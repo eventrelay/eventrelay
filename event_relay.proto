@@ -269,7 +269,7 @@ message GetMetricValueRequest {
 }
 
 message GetMetricValueResponse {
-  string value = 1; 
+  double value = 1; 
 }
 
 message ListMetricsRequest {

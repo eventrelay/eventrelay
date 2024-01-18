@@ -30,8 +30,12 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.Server do
 
       metric ->
         try do
-          value = to_string(ER.Metrics.get_value_for_metric(metric))
-          GetMetricValueResponse.new(value: value)
+          metric
+          |> ER.Metrics.get_value_for_metric()
+          |> Flamel.to_float()
+          |> then(fn value ->
+            GetMetricValueResponse.new(value: value)
+          end)
         rescue
           error ->
             Logger.error("Failed to delete topic: #{inspect(error)}")

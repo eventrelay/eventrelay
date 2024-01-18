@@ -312,7 +312,7 @@ end
 defmodule ERWeb.Grpc.Eventrelay.GetMetricValueResponse do
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :value, 1, type: :string
+  field :value, 1, type: :double
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ListMetricsRequest do

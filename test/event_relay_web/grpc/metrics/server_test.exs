@@ -33,7 +33,7 @@ defmodule ERWeb.Grpc.EventRelay.Metrics.ServerTest do
       result = Server.get_metric_value(request, nil)
 
       events = Events.list_events_for_topic(topic.name, return_batch: false)
-      assert Enum.count(events) == ER.to_integer(result.value)
+      assert Flamel.to_float(Enum.count(events)) == result.value
     end
 
     test "get a sum metric", %{topic: topic} do
