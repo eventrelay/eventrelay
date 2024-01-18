@@ -88,14 +88,9 @@ defmodule ER.Destinations.Destination do
   def topic?(%{destination_type: :topic}), do: true
   def topic?(_), do: false
 
-  def matches?(%{query: nil}, _event) do
-    true
-  end
-
   def base_config_schema(:topic) do
     %{
       "$schema" => "http://json-schema.org/draft-04/schema#",
-      # "$id" => "https://example.com/employee.schema.json",
       "title" => "Configuration for a topic destination",
       "description" => "This document records the configuration for a topic destination",
       "type" => "object",
@@ -112,7 +107,6 @@ defmodule ER.Destinations.Destination do
   def base_config_schema(:file) do
     %{
       "$schema" => "http://json-schema.org/draft-04/schema#",
-      # "$id" => "https://example.com/employee.schema.json",
       "title" => "Configuration for a topic destination",
       "description" => "This document records the configuration for a topic destination",
       "type" => "object",
@@ -149,7 +143,6 @@ defmodule ER.Destinations.Destination do
   def base_config_schema(:webhook) do
     %{
       "$schema" => "http://json-schema.org/draft-04/schema#",
-      "$id" => "https://example.com/employee.schema.json",
       "title" => "Configuration for a webhook destination",
       "description" => "This document records the configuration for a webhook destination",
       "type" => "object",
@@ -285,6 +278,10 @@ defmodule ER.Destinations.Destination do
         "pull_interval" => 2000
       }
     }
+  end
+
+  def matches?(%{query: nil}, _event) do
+    true
   end
 
   def matches?(%{query: query}, event) do
