@@ -21,11 +21,12 @@ defmodule ER.BootServer do
     Logger.debug("BootServer.boot on node=#{inspect(Node.self())}")
 
     unless Code.ensure_loaded?(IEx) and IEx.started?() do
-      ER.Destinations.Manager.Server.factory("destinations:manager")
+      unless ER.Env.disable_push_destinations?() do
+        ER.Destinations.Manager.Server.factory("destinations:manager")
+      end
 
       ER.Pruners.Manager.Server.factory("pruners:manager")
 
-      # TODO: improve supervision
       ER.Sources.list_sources()
       |> Enum.each(fn source ->
         ER.Sources.Source.start_source(source)
