@@ -34,7 +34,7 @@ defmodule ER.Metrics do
          data: %{
            "value" => value,
            "metric" => %{
-             "type" => to_string(metric.type),
+             "type" => Flamel.to_string(metric.type),
              "name" => metric.name,
              "field_path" => metric.field_path,
              "id" => metric.id

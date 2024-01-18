@@ -30,6 +30,14 @@ defmodule ER.Metrics.Metric do
       :produce_update_event,
       :query
     ])
-    |> validate_required([:name, :field_path, :type, :topic_name])
+    |> Flamel.Ecto.Validators.validate_required_if(
+      :field_path,
+      fn cs ->
+        type = get_field(cs, :type)
+        type not in [:count]
+      end,
+      message: "field path is required"
+    )
+    |> validate_required([:name, :type, :topic_name])
   end
 end

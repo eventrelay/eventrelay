@@ -6,7 +6,10 @@ defmodule ERWeb.MetricLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :metrics, Metrics.list_metrics())}
+    socket
+    |> stream(:metrics, Metrics.list_metrics())
+    |> assign(:topics, ER.Events.list_topics())
+    |> ok()
   end
 
   @impl true

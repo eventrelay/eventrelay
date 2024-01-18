@@ -59,7 +59,6 @@ defmodule ER.Destinations.Destination do
     |> unique_constraint(:name)
     |> decode_config()
     |> put_signing_secret()
-    |> ER.Schema.normalize_name()
     |> assoc_constraint(:topic)
     |> validate_inclusion(:destination_type, [:file, :webhook, :websocket, :api, :topic])
   end
