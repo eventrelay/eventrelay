@@ -245,10 +245,6 @@ defmodule ER.Destinations.Destination do
       "bucket" => "...",
       "format" => "jsonl",
       "region" => "...",
-      "retries" => %{
-        "max_attempts" => 10,
-        "max_interval" => 256_000
-      },
       "pipeline" => %{
         "processor_concurrency" => 10,
         "processor_min_demand" => 1,
@@ -264,10 +260,6 @@ defmodule ER.Destinations.Destination do
   def base_config(:topic) do
     %{
       "topic_name" => "...",
-      "retries" => %{
-        "max_attempts" => 10,
-        "max_interval" => 256_000
-      },
       "pipeline" => %{
         "processor_concurrency" => 10,
         "processor_min_demand" => 1,
