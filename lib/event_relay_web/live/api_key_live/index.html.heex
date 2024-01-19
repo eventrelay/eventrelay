@@ -15,6 +15,8 @@
   <:col :let={api_key} label="Group Key"><%= api_key.group_key %></:col>
   <:action :let={api_key}>
     <.link navigate={~p"/api_keys/#{api_key}"}>Show</.link>
+  </:action>
+  <:action :let={api_key}>
     <.link patch={~p"/api_keys/#{api_key}/edit"}>Edit</.link>
   </:action>
   <:action :let={api_key}>

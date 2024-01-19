@@ -1,6 +1,5 @@
 <.header>
-  Pruner <%= @pruner.id %>
-  <:subtitle>This is a pruner record from your database.</:subtitle>
+  Pruner
   <:actions>
     <.link patch={~p"/pruners/#{@pruner}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Edit pruner</.button>
@@ -9,6 +8,7 @@
 </.header>
 
 <.list>
+  <:item title="ID"><%= @pruner.id %></:item>
   <:item title="Name"><%= @pruner.name %></:item>
   <:item title="Config">
     <div id={"#{@pruner.id}-config"} phx-hook="JsonView" data-json={Jason.encode!(@pruner.config)}>

@@ -9,7 +9,6 @@ defmodule ERWeb.EventLive.FormComponent do
     <div>
       <.header>
         <%= @title %>
-        <:subtitle>Use this form to manage event records in your database.</:subtitle>
       </.header>
 
       <.simple_form

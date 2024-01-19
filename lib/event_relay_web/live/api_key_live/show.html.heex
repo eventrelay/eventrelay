@@ -1,6 +1,5 @@
 <.header>
-  API Key <%= @api_key.name %>
-  <:subtitle></:subtitle>
+  API Key
   <:actions>
     <.link patch={~p"/api_keys/#{@api_key}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Edit API Key</.button>

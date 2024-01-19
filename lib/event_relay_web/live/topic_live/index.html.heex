@@ -7,22 +7,13 @@
   </:actions>
 </.header>
 
-<.table
-  id="topics"
-  rows={@topics}
-  row_click={&JS.navigate(~p"/topics/#{&1}")}
-  row_id={fn row -> "topics-#{row.id}" end}
->
+<.table id="topics" rows={@topics} row_id={fn row -> "topics-#{row.id}" end}>
   <:col :let={topic} label="Name"><%= topic.name %></:col>
   <:action :let={topic}>
-    <div class="sr-only">
-      <.link navigate={~p"/topics/#{topic}"}>Show</.link>
-    </div>
+    <.link navigate={~p"/topics/#{topic}"}>Show</.link>
   </:action>
   <:action :let={topic}>
-    <div>
-      <.link navigate={~p"/topics/#{topic}/events"}>Events</.link>
-    </div>
+    <.link navigate={~p"/topics/#{topic}/events"}>Events</.link>
   </:action>
   <:action :let={topic}>
     <.link phx-click={JS.push("delete", value: %{id: topic.id})} data-confirm="Are you sure?">

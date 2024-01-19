@@ -1,6 +1,5 @@
 <.header>
-  Metric <%= @metric.id %>
-  <:subtitle>This is a metric record from your database.</:subtitle>
+  Metric
   <:actions>
     <.link patch={~p"/metrics/#{@metric}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Edit metric</.button>
@@ -9,6 +8,7 @@
 </.header>
 
 <.list>
+  <:item title="ID"><%= @metric.id %></:item>
   <:item title="Name"><%= @metric.name %></:item>
   <:item title="Field path"><%= @metric.field_path %></:item>
   <:item title="Type"><%= @metric.type %></:item>

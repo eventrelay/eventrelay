@@ -1,21 +1,33 @@
 <.header>
-  Event <%= @event.id %>
+  Event
   <:subtitle></:subtitle>
 </.header>
 
 <.list>
+  <:item title="ID"><%= @event.id %></:item>
+  <:item title="Topic Name"><%= @event.topic_name %></:item>
+  <:item title="Topic Identifier"><%= @event.topic_identifier %></:item>
   <:item title="Name"><%= @event.name %></:item>
-  <:item title="Offset"><%= @event.offset %></:item>
-  <:item title="Source"><%= @event.source %></:item>
-  <:item title="Occurred at"><%= @event.occurred_at %></:item>
-  <:item title="Context">
-    <div id={"#{@event.id}-context"} phx-hook="JsonView" data-json={Jason.encode!(@event.context)}>
-    </div>
-  </:item>
   <:item title="Data">
     <div id={"#{@event.id}-data"} phx-hook="JsonView" data-json={Jason.encode!(@event.data)}>
     </div>
   </:item>
+  <:item title="Context">
+    <div id={"#{@event.id}-context"} phx-hook="JsonView" data-json={Jason.encode!(@event.context)}>
+    </div>
+  </:item>
+  <:item title="Offset"><%= @event.offset %></:item>
+  <:item title="Source"><%= @event.source %></:item>
+  <:item title="Group Key"><%= @event.group_key %></:item>
+  <:item title="User Key"><%= @event.user_key %></:item>
+  <:item title="Anonymous Key"><%= @event.anonymous_key %></:item>
+  <:item title="Reference Key"><%= @event.reference_key %></:item>
+  <:item title="Trace Key"><%= @event.trace_key %></:item>
+  <:item title="Occurred at"><%= @event.occurred_at %></:item>
+  <:item title="Available at"><%= @event.available_at %></:item>
+  <:item title="Durable"><%= @event.durable %></:item>
+  <:item title="Verified"><%= @event.verified %></:item>
+  <:item title="Previous Event ID"><%= @event.prev_id %></:item>
 </.list>
 
 <.back navigate={~p"/topics/#{@topic}/events"}>Back to events</.back>

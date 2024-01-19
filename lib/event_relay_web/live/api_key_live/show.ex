@@ -88,6 +88,6 @@ defmodule ERWeb.ApiKeyLive.Show do
     {:noreply, socket}
   end
 
-  defp page_title(:show), do: "Show API key"
-  defp page_title(:edit), do: "Edit API key"
+  defp page_title(:show), do: "Show API Key"
+  defp page_title(:edit), do: "Edit API Key"
 end

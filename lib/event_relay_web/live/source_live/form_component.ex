@@ -9,7 +9,6 @@ defmodule ERWeb.SourceLive.FormComponent do
     <div>
       <.header>
         <%= @title %>
-        <:subtitle>Use this form to manage source records in your database.</:subtitle>
       </.header>
 
       <.simple_form
@@ -34,7 +33,7 @@ defmodule ERWeb.SourceLive.FormComponent do
           options={topics_to_select_options(@topics)}
           label="Topic Name"
         />
-        <.input field={@form[:source]} type="text" label="Source" />
+        <.input field={@form[:source]} type="text" label="Event Source Value" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Source</.button>
         </:actions>

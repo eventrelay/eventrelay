@@ -9,11 +9,11 @@
 
 <div id="filters">
   <.form :let={f} id="search" phx-submit="search" for={@search_form}>
-    <p class="bg-slate-100 p-2 rounded-md text-sm">
-      Example: <code>data.person.first_name == 'Bob' AND name == 'user.created'</code>
-    </p>
     <.input type="text" field={f[:query]} placeholder="Query Filter" />
     <p :if={@query_error}><%= @query_error %></p>
+    <p class="bg-slate-100 p-2 rounded-md text-sm mt-2">
+      Example: <code>data.person.first_name == 'Bob' AND name == 'user.created'</code>
+    </p>
     <button class="mt-4 rounded-md bg-zinc-900 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
       Search
     </button>
@@ -40,9 +40,7 @@
     <div id={"#{event.id}-data"} phx-hook="JsonView" data-json={Jason.encode!(event.data)}></div>
   </:col>
   <:action :let={event}>
-    <div>
-      <.link navigate={~p"/topics/#{@topic}/events/#{event}"}>Show</.link>
-    </div>
+    <.link navigate={~p"/topics/#{@topic}/events/#{event}"}>Show</.link>
   </:action>
   <:action :let={event}>
     <.link phx-click={JS.push("delete", value: %{id: event.id})} data-confirm="Are you sure?">

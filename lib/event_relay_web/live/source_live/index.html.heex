@@ -17,6 +17,8 @@
   <:col :let={{_id, source}} label="Source"><%= source.source %></:col>
   <:action :let={{_id, source}}>
     <.link navigate={~p"/sources/#{source}"}>Show</.link>
+  </:action>
+  <:action :let={{_id, source}}>
     <.link patch={~p"/sources/#{source}/edit"}>Edit</.link>
   </:action>
   <:action :let={{id, source}}>

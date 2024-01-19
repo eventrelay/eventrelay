@@ -16,7 +16,7 @@ defmodule ERWeb.ApiKeyLive.Index do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit API key")
+    |> assign(:page_title, "Edit API Key")
     |> assign(:api_key, Accounts.get_api_key!(id))
   end
 
@@ -28,7 +28,7 @@ defmodule ERWeb.ApiKeyLive.Index do
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "Listing API keys")
+    |> assign(:page_title, "Listing API Keys")
     |> assign(:api_key, nil)
   end
 

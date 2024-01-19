@@ -68,7 +68,8 @@ defmodule ERWeb.Router do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
 
     live_session :redirect_if_user_is_authenticated,
-      on_mount: [{ERWeb.UserAuth, :redirect_if_user_is_authenticated}] do
+      on_mount: [{ERWeb.UserAuth, :redirect_if_user_is_authenticated}],
+      layout: {ERWeb.Layouts, :chromeless} do
       # live "/users/register", UserRegistrationLive, :new
       live "/users/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
