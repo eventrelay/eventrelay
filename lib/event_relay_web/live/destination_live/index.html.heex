@@ -21,6 +21,9 @@
     <.link patch={~p"/destinations/#{destination}/edit"}>Edit</.link>
   </:action>
   <:action :let={destination}>
+    <.link patch={~p"/destinations/#{destination}/edit_config"}>Edit Config</.link>
+  </:action>
+  <:action :let={destination}>
     <.link
       phx-click={JS.push("delete", value: %{id: destination.id})}
       data-confirm="Are you sure?"
@@ -43,6 +46,21 @@
     action={@live_action}
     destination={@destination}
     topics={@topics}
+    navigate={~p"/destinations"}
+  />
+</.modal>
+<.modal
+  :if={@live_action == :edit_config}
+  id="destination-config-modal"
+  show
+  on_cancel={JS.patch(~p"/destinations")}
+>
+  <.live_component
+    module={ERWeb.DestinationLive.ConfigFormComponent}
+    id={@destination.id}
+    title={@page_title}
+    action={@live_action}
+    destination={@destination}
     navigate={~p"/destinations"}
   />
 </.modal>

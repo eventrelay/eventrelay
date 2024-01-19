@@ -44,7 +44,7 @@ defmodule ER.Destinations.Manager.Server do
     end)
   end
 
-  def build_destination_spec(%Destination{paused: true} = destination) do
+  def build_destination_spec(%Destination{paused: true}) do
     nil
   end
 
