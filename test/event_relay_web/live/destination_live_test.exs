@@ -85,6 +85,8 @@ defmodule ERWeb.DestinationLiveTest do
       assert html =~ "some_updated_name"
     end
 
+    # TOOD write test for config modal form
+
     test "deletes destination in listing", %{conn: conn, destination: destination} do
       {:ok, index_live, _html} = live(conn, ~p"/destinations")
 
