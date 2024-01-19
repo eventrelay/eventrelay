@@ -109,7 +109,7 @@ defmodule ERWeb.DestinationLiveTest do
     test "updates destination within modal", %{conn: conn, destination: destination} do
       {:ok, show_live, _html} = live(conn, ~p"/destinations/#{destination}")
 
-      assert show_live |> element("a", "Edit") |> render_click() =~
+      assert show_live |> element("a:first-child", "Edit") |> render_click() =~
                "Edit Destination"
 
       assert_patch(show_live, ~p"/destinations/#{destination}/show/edit")
