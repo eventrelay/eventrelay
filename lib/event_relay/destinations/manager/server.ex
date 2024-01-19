@@ -44,7 +44,11 @@ defmodule ER.Destinations.Manager.Server do
     end)
   end
 
-  def build_destination_spec(%Destination{} = destination) do
+  def build_destination_spec(%Destination{paused: true} = destination) do
+    nil
+  end
+
+  def build_destination_spec(%Destination{paused: false} = destination) do
     case ER.Destinations.Pipeline.factory(destination) do
       nil ->
         Logger.info(
