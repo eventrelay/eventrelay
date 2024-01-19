@@ -5,7 +5,7 @@ defmodule ERWeb.UserLoginLive do
     ~H"""
     <div class="mx-auto max-w-sm">
       <.header class="text-center">
-        Sign in to account
+        Log in to account
         <:subtitle></:subtitle>
       </.header>
 
@@ -28,7 +28,7 @@ defmodule ERWeb.UserLoginLive do
         </:actions>
         <:actions>
           <.button phx-disable-with="Sigining in..." class="w-full">
-            Sign in <span aria-hidden="true">→</span>
+            Log in <span aria-hidden="true">→</span>
           </.button>
         </:actions>
       </.simple_form>

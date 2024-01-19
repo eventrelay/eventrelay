@@ -30,7 +30,7 @@ defmodule ERWeb.ApiKeyLiveTest do
     test "lists all api_keys", %{conn: conn, api_key: api_key} do
       {:ok, _index_live, html} = live(conn, ~p"/api_keys")
 
-      assert html =~ "Listing API keys"
+      assert html =~ "Listing API Keys"
       assert html =~ api_key.key
     end
 
@@ -61,7 +61,7 @@ defmodule ERWeb.ApiKeyLiveTest do
       {:ok, index_live, _html} = live(conn, ~p"/api_keys")
 
       assert index_live |> element("#api_keys-#{api_key.id} a", "Edit") |> render_click() =~
-               "Edit API key"
+               "Edit API Key"
 
       assert_patch(index_live, ~p"/api_keys/#{api_key}/edit")
 
@@ -92,7 +92,7 @@ defmodule ERWeb.ApiKeyLiveTest do
     test "displays api_key", %{conn: conn, api_key: api_key} do
       {:ok, _show_live, html} = live(conn, ~p"/api_keys/#{api_key}")
 
-      assert html =~ "Show API key"
+      assert html =~ "Show API Key"
       assert html =~ api_key.key
     end
 
@@ -100,7 +100,7 @@ defmodule ERWeb.ApiKeyLiveTest do
       {:ok, show_live, _html} = live(conn, ~p"/api_keys/#{api_key}")
 
       assert show_live |> element("a", "Edit") |> render_click() =~
-               "Edit API key"
+               "Edit API Key"
 
       assert_patch(show_live, ~p"/api_keys/#{api_key}/show/edit")
 
