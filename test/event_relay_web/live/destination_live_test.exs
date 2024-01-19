@@ -85,6 +85,8 @@ defmodule ERWeb.DestinationLiveTest do
       assert html =~ "some_updated_name"
     end
 
+    # TOOD write test for config modal form
+
     test "deletes destination in listing", %{conn: conn, destination: destination} do
       {:ok, index_live, _html} = live(conn, ~p"/destinations")
 
@@ -109,7 +111,7 @@ defmodule ERWeb.DestinationLiveTest do
     test "updates destination within modal", %{conn: conn, destination: destination} do
       {:ok, show_live, _html} = live(conn, ~p"/destinations/#{destination}")
 
-      assert show_live |> element("a", "Edit") |> render_click() =~
+      assert show_live |> element("a:first-child", "Edit") |> render_click() =~
                "Edit Destination"
 
       assert_patch(show_live, ~p"/destinations/#{destination}/show/edit")

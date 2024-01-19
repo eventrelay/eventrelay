@@ -25,6 +25,12 @@ defmodule ERWeb.DestinationLive.Index do
     |> assign(:destination, Destinations.get_destination!(id))
   end
 
+  defp apply_action(socket, :edit_config, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "Edit Destination Config")
+    |> assign(:destination, Destinations.get_destination!(id))
+  end
+
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Destination")

@@ -2,12 +2,16 @@
   Destination
   <:actions>
     <.link patch={~p"/destinations/#{@destination}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit destination</.button>
+      <.button>Edit</.button>
+    </.link>
+    <.link patch={~p"/destinations/#{@destination}/show/edit_config"} phx-click={JS.push_focus()}>
+      <.button>Edit Config</.button>
     </.link>
   </:actions>
 </.header>
 
 <.list>
+  <:item title="Paused"><%= @destination.paused %></:item>
   <:item title="Name"><%= @destination.name %></:item>
   <:item title="Topic name"><%= @destination.topic_name %></:item>
   <:item title="Signing Secret"><%= @destination.signing_secret %></:item>
@@ -36,6 +40,21 @@
     action={@live_action}
     destination={@destination}
     topics={@topics}
+    navigate={~p"/destinations/#{@destination}"}
+  />
+</.modal>
+<.modal
+  :if={@live_action == :edit_config}
+  id="destination-config-modal"
+  show
+  on_cancel={JS.patch(~p"/destinations/#{@destination}")}
+>
+  <.live_component
+    module={ERWeb.DestinationLive.ConfigFormComponent}
+    id={@destination.id}
+    title={@page_title}
+    action={@live_action}
+    destination={@destination}
     navigate={~p"/destinations/#{@destination}"}
   />
 </.modal>

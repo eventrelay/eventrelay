@@ -99,9 +99,11 @@ defmodule ERWeb.Router do
       live "/destinations", DestinationLive.Index, :index
       live "/destinations/new", DestinationLive.Index, :new
       live "/destinations/:id/edit", DestinationLive.Index, :edit
+      live "/destinations/:id/edit_config", DestinationLive.Index, :edit_config
 
       live "/destinations/:id", DestinationLive.Show, :show
       live "/destinations/:id/show/edit", DestinationLive.Show, :edit
+      live "/destinations/:id/show/edit_config", DestinationLive.Show, :edit_config
 
       live "/api_keys", ApiKeyLive.Index, :index
       live "/api_keys/new", ApiKeyLive.Index, :new

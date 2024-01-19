@@ -22,4 +22,5 @@ defmodule ERWeb.DestinationLive.Show do
 
   defp page_title(:show), do: "Show Destination"
   defp page_title(:edit), do: "Edit Destination"
+  defp page_title(:edit_config), do: "Edit Destination Config"
 end
