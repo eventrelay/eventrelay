@@ -11,6 +11,7 @@
   <:col :let={destination} label="Name"><%= destination.name %></:col>
   <:col :let={destination} label="Topic name"><%= destination.topic_name %></:col>
   <:col :let={destination} label="Type"><%= destination.destination_type %></:col>
+  <:col :let={destination} label="Group Key"><%= destination.group_key %></:col>
 
   <:action :let={destination}>
     <.link navigate={~p"/destinations/#{destination}"}>Show</.link>
