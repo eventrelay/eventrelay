@@ -8,6 +8,7 @@
 </.header>
 
 <.table id="destinations" rows={@destinations} row_id={fn row -> "destinations-#{row.id}" end}>
+  <:col :let={destination} label="Paused"><%= destination.paused %></:col>
   <:col :let={destination} label="Name"><%= destination.name %></:col>
   <:col :let={destination} label="Topic name"><%= destination.topic_name %></:col>
   <:col :let={destination} label="Type"><%= destination.destination_type %></:col>

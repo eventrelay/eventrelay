@@ -20,6 +20,7 @@ defmodule ERWeb.DestinationLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
+        <.input field={f[:paused]} type="checkbox" label="Paused" />
         <.input field={f[:name]} type="text" label="Name" />
         <.input
           field={f[:destination_type]}
@@ -38,23 +39,6 @@ defmodule ERWeb.DestinationLive.FormComponent do
         <.input field={f[:topic_identifier]} type="text" label="Topic Identifier" />
         <.input field={f[:group_key]} type="text" label="Group Key" />
 
-        <p :if={Flamel.to_atom(f[:destination_type].value) in [:webhook, :file, :topic]}>
-          Example Config
-        </p>
-        <.alert :if={Flamel.to_atom(f[:destination_type].value) == :webhook} color="info">
-          <pre><%= ER.Destinations.Destination.base_config(:webhook) |> Jason.encode!(pretty: true) %></pre>
-        </.alert>
-
-        <.alert :if={Flamel.to_atom(f[:destination_type].value) == :file} color="info">
-          <pre><%= ER.Destinations.Destination.base_config(:file) |> Jason.encode!(pretty: true) %></pre>
-        </.alert>
-
-        <.alert :if={Flamel.to_atom(f[:destination_type].value) == :topic} color="info">
-          <pre><%= ER.Destinations.Destination.base_config(:topic) |> Jason.encode!(pretty: true) %></pre>
-        </.alert>
-
-        <% # :if={Flamel.to_atom(f[:destination_type].value) in [:webhook, :file, :topic]} %>
-        <.input field={f[:config_json]} type="textarea" label="Config" />
         <.input field={f[:query]} type="textarea" label="Query Filter" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Destination</.button>
@@ -67,6 +51,14 @@ defmodule ERWeb.DestinationLive.FormComponent do
   @impl true
   def update(%{destination: destination} = assigns, socket) do
     destination = %{destination | config_json: ER.Config.config_json(destination)}
+
+    destination =
+      if assigns[:action] == :new do
+        %{destination | paused: true}
+      else
+        destination
+      end
+
     changeset = Destinations.change_destination(destination)
 
     {:ok,
