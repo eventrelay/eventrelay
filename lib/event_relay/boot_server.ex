@@ -33,8 +33,6 @@ defmodule ER.BootServer do
       end)
     end
 
-    # TODO: needs to load all the deliveries that care still in progress
-
     {:noreply, state}
   end
 

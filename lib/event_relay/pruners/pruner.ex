@@ -17,7 +17,7 @@ defmodule ER.Pruners.Pruner do
   @foreign_key_type :binary_id
   schema "pruners" do
     field :name, :string
-    field :config, :map
+    field :config, :map, default: %{}
     field :config_json, :string, virtual: true
     field :query, :string
     field(:type, Ecto.Enum, values: [:time, :count])
@@ -32,5 +32,17 @@ defmodule ER.Pruners.Pruner do
     |> cast(attrs, [:name, :config, :query, :type, :topic_name, :config_json])
     |> validate_required([:name, :type, :topic_name])
     |> decode_config()
+  end
+
+  def base_config(:count) do
+    %{
+      "max_count" => 10_000
+    }
+  end
+
+  def base_config(:time) do
+    %{
+      "max_age" => 3_600
+    }
   end
 end
