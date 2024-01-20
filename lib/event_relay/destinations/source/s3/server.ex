@@ -4,7 +4,8 @@ defmodule ER.Destinations.Source.S3.Server do
   """
   require Logger
   use GenServer
-  use ER.Server
+  use ER.Server.Base
+  use ER.Horde.Server
   # alias ExAws.S3
   alias ER.Repo
 

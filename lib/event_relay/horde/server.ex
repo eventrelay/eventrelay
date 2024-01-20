@@ -1,4 +1,4 @@
-defmodule ER.Server do
+defmodule ER.Horde.Server do
   @moduledoc """
   Functions for Genservers
   """
@@ -18,8 +18,8 @@ defmodule ER.Server do
         initial_state = Map.merge(args, %{"id" => id})
 
         result =
-          DynamicSupervisor.start_child(
-            ER.DynamicSupervisor,
+          Horde.DynamicSupervisor.start_child(
+            ER.Horde.Supervisor,
             {__MODULE__, [name: name, initial_state: initial_state]}
           )
 

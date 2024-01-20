@@ -2,9 +2,10 @@ defmodule ER.Pruners.Manager.Server do
   @moduledoc """
   Manages all the pruner servers
   """
-  use GenServer
   require Logger
-  use ER.Server
+  use GenServer
+  use ER.Server.Base
+  use ER.Horde.Server
   alias Phoenix.PubSub
 
   def handle_continue(:load_state, state) do

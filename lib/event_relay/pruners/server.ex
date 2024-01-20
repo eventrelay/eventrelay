@@ -4,7 +4,8 @@ defmodule ER.Pruners.Server do
   """
   require Logger
   use GenServer
-  use ER.Server
+  use ER.Server.Base
+  use ER.Horde.Server
 
   @default_tick_interval 5 * 60 * 1_000
 

@@ -60,6 +60,7 @@ defmodule ER.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:exsync, "~> 0.2", only: :dev},
+      {:horde, "~> 0.8.0"},
       # Rate Limiting - https://github.com/ExHammer/hammer
       {:hammer_backend_redis, "~> 6.1"},
       {:hammer, "~> 6.1"},

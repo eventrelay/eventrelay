@@ -2,9 +2,10 @@ defmodule ER.Destinations.Manager.Server do
   @moduledoc """
   Manages all the destination servers
   """
-  use GenServer
-  use ER.Server
   require Logger
+  use GenServer
+  use ER.Server.Base
+  use ER.Horde.Server
   alias ER.Destinations
   alias ER.Destinations.Destination
   alias Phoenix.PubSub
@@ -16,21 +17,20 @@ defmodule ER.Destinations.Manager.Server do
 
     destinations = ER.Destinations.list_destinations()
 
-    children =
-      Enum.map(destinations, fn dest ->
-        build_destination_spec(dest)
-      end)
-      |> Enum.reject(&is_nil/1)
-
     pid =
-      case Supervisor.start_link(children,
-             name: ER.Destinations.Manager.Supervisor,
-             strategy: :one_for_one
-           ) do
-        {:ok, pid} -> pid
-        {:error, {:already_started, pid}} -> pid
-        _ -> nil
-      end
+      destinations
+      |> Enum.map(&build_destination_spec(&1))
+      |> Enum.reject(&is_nil/1)
+      |> then(fn children ->
+        case Supervisor.start_link(children,
+               name: ER.Destinations.Manager.Supervisor,
+               strategy: :one_for_one
+             ) do
+          {:ok, pid} -> pid
+          {:error, {:already_started, pid}} -> pid
+          _ -> nil
+        end
+      end)
 
     state = Map.put(state, :supervisor, pid)
 
