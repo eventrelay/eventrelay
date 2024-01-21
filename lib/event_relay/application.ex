@@ -52,6 +52,9 @@ defmodule ER.Application do
         {Registry, keys: :unique, name: ER.Registry},
         # Start a DynamicSupervisor for our application
         {DynamicSupervisor, strategy: :one_for_one, name: ER.DynamicSupervisor},
+        {ER.Horde.Registry, [name: ER.Horde.Registry, shutdown: 60_000, keys: :unique]},
+        {ER.Horde.Supervisor,
+         [name: ER.Horde.Supervisor, shutdown: 60_000, strategy: :one_for_one]},
         # Start the Cluster server
         # {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
         # Setup the ChannelCache

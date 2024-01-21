@@ -1,4 +1,4 @@
-defmodule ER.Server do
+defmodule ER.Horde.Server do
   @moduledoc """
   Functions for Genservers
   """
@@ -18,8 +18,8 @@ defmodule ER.Server do
         initial_state = Map.merge(args, %{"id" => id})
 
         result =
-          DynamicSupervisor.start_child(
-            ER.DynamicSupervisor,
+          Horde.DynamicSupervisor.start_child(
+            ER.Horde.Supervisor,
             {__MODULE__, [name: name, initial_state: initial_state]}
           )
 
@@ -32,7 +32,7 @@ defmodule ER.Server do
 
       def via_tuple(id) do
         Logger.debug("#{__MODULE__}.via_tuple(#{inspect(id)})")
-        {:via, Registry, {ER.Registry, id}}
+        {:via, Horde.Registry, {ER.Horde.Registry, id}}
       end
     end
   end

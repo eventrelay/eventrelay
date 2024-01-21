@@ -4,7 +4,8 @@ defmodule ER.Destinations.QueuedEvents.Server do
   """
   require Logger
   use GenServer
-  use ER.Server
+  use ER.Server.Base
+  use ER.Horde.Server
   alias ER.Events
 
   def handle_continue(:load_state, %{"id" => id} = state) do

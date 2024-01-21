@@ -26,6 +26,12 @@ defmodule ERWeb.PrunerLive.FormComponent do
           options={Ecto.Enum.mappings(ER.Pruners.Pruner, :type)}
           label="Type"
         />
+        <.alert :if={Flamel.to_atom(@form[:type].value) == :count} color="info">
+          <pre><%= ER.Pruners.Pruner.base_config(:count) |> Jason.encode!(pretty: true) %></pre>
+        </.alert>
+        <.alert :if={Flamel.to_atom(@form[:type].value) == :time} color="info">
+          max_age is a value in seconds <pre><%= ER.Pruners.Pruner.base_config(:time) |> Jason.encode!(pretty: true) %></pre>
+        </.alert>
         <.input field={@form[:config_json]} type="textarea" label="Config" />
         <.input field={@form[:query]} type="textarea" label="Query Filter" />
         <.input

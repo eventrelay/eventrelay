@@ -7,7 +7,7 @@ defmodule ER.Destinations.Pipeline.BroadwayConfig do
             batch_timeout: 1000,
             name: nil,
             destination: nil,
-            pull_interval: 2000
+            pull_interval: 1000
 
   alias __MODULE__
 
