@@ -29,6 +29,11 @@ defmodule ER.Horde.Server do
 
         result
       end
+
+      def via_tuple(id) do
+        Logger.debug("#{__MODULE__}.via_tuple(#{inspect(id)})")
+        {:via, Horde.Registry, {ER.Horde.Registry, id}}
+      end
     end
   end
 end
