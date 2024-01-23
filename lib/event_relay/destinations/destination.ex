@@ -131,6 +131,14 @@ defmodule ER.Destinations.Destination do
             "bucket" => %{
               "description" => "The S3 bucket name",
               "type" => "string"
+            },
+            "access_key_id" => %{
+              "description" => "The AWS access_key_id",
+              "type" => "string"
+            },
+            "secret_access_key" => %{
+              "description" => "The AWS secret_access_key",
+              "type" => "string"
             }
           }
         },
@@ -240,10 +248,12 @@ defmodule ER.Destinations.Destination do
 
   def base_config(:file) do
     %{
+      "format" => "jsonl",
       "service" => "s3",
       "bucket" => "...",
-      "format" => "jsonl",
       "region" => "...",
+      "access_key_id" => "...",
+      "secret_access_key" => "...",
       "pipeline" => %{
         "processor_concurrency" => 10,
         "processor_min_demand" => 1,
