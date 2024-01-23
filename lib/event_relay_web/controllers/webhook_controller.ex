@@ -10,6 +10,37 @@ defmodule ERWeb.WebhookController do
   def ingest(conn, params) do
     source = conn.assigns[:source]
 
+    %Context{}
+    |> check_rate_limit()
+    |> assign_event(source, conn, params)
+    |> produce_event()
+    |> log()
+    |> send_response(conn)
+  end
+
+  defp send_response(%Context{halt?: true, reason: "Rate limit" <> reason} = _ctx, conn) do
+    conn
+    |> put_status(:too_many_requests)
+    |> text("Rate limit" <> reason)
+  end
+
+  defp send_response(%Context{halt?: true} = _ctx, conn) do
+    conn
+    |> put_status(:ok)
+    |> text("OK")
+  end
+
+  defp send_response(%Context{halt?: false}, conn) do
+    conn
+    |> put_status(:ok)
+    |> text("OK")
+  end
+
+  defp assign_event(%Context{halt?: true} = ctx, _source, _conn, _params) do
+    ctx
+  end
+
+  defp assign_event(context, source, conn, params) do
     # TODO improve this with a full implementation of Webhoox
     {data, verified, event_name} =
       if source.type == :standard_webhook do
@@ -30,8 +61,7 @@ defmodule ERWeb.WebhookController do
     topic_name = source.topic_name
     durable = true
 
-    %Context{}
-    |> Context.assign(:event, %{
+    Context.assign(context, :event, %{
       name: event_name,
       source: source.source,
       data: data,
@@ -39,13 +69,6 @@ defmodule ERWeb.WebhookController do
       verified: verified,
       topic_name: topic_name
     })
-    |> check_rate_limit()
-    |> produce_event()
-    |> log()
-
-    conn
-    |> put_status(:ok)
-    |> text("OK")
   end
 
   defp check_rate_limit(ctx) do

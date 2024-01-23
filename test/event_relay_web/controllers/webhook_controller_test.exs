@@ -3,6 +3,7 @@ defmodule ERWeb.WebhookControllerTest do
 
   alias ER.Events
   import ER.Factory
+  use Mimic
 
   @moduletag source_type: :webhook
   @moduletag source_config: %{}
@@ -49,6 +50,21 @@ defmodule ERWeb.WebhookControllerTest do
       assert event.topic_name == source.topic_name
       assert event.data == data
       assert event.source == source.source
+    end
+
+    test "returns 429 when hitting a rate limit", %{conn: conn, source: source} do
+      ERWeb.RateLimiter
+      |> expect(:check_rate, fn "publish_events", durable: true ->
+        {:deny, "publish_events", 1_000, 1000}
+      end)
+
+      data = %{"type" => "user.updated", "data" => %{"id" => 123, "name" => "Riley"}}
+
+      conn =
+        post(conn, ~p"/webhooks/ingest/#{source}", data)
+
+      assert text_response(conn, 429) ==
+               "Rate limit exceeded for publish_events at 1000 requests per 1.0 second(s)"
     end
   end
 
