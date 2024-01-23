@@ -13,7 +13,15 @@ defmodule ER.Destinations.File.S3 do
 
     def put(
           %{
-            destination: %{config: %{"region" => region, "bucket" => bucket, "format" => format}}
+            destination: %{
+              config: %{
+                "region" => region,
+                "bucket" => bucket,
+                "access_key_id" => access_key_id,
+                "secret_access_key" => secret_access_key,
+                "format" => format
+              }
+            }
           },
           messages,
           opts
@@ -27,11 +35,11 @@ defmodule ER.Destinations.File.S3 do
         now = Keyword.get(opts, :now, DateTime.utc_now())
         filename = S3.build_events_file_name(ext, now)
 
-        ER.S3.put_object!(
-          region,
-          bucket,
-          filename,
-          encoded
+        ExAws.S3.put_object(bucket, filename, encoded)
+        |> ExAws.request!(
+          region: region,
+          access_key_id: access_key_id,
+          secret_access_key: secret_access_key
         )
 
         Logger.debug(

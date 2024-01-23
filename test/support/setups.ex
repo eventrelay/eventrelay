@@ -2,8 +2,8 @@ defmodule ER.Test.Setups do
   import ER.Factory
 
   use ER.DataCase
-  alias Broadway.Message
   alias ER.Events
+  import ER.Test.Helpers
 
   def setup_topic(_context) do
     topic = insert(:topic)
@@ -25,7 +25,7 @@ defmodule ER.Test.Setups do
       params_for(:event, topic: topic)
       |> Events.create_event_for_topic()
 
-    message = %Message{data: event, acknowledger: Broadway.NoopAcknowledger.init()}
+    message = build_broadway_message(event)
 
     messages = [message]
 
@@ -33,7 +33,7 @@ defmodule ER.Test.Setups do
       params_for(:event, topic: topic)
       |> Events.create_event_for_topic()
 
-    message = %Message{data: event, acknowledger: Broadway.NoopAcknowledger.init()}
+    message = build_broadway_message(event)
 
     messages = [message | messages]
 

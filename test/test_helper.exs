@@ -3,6 +3,7 @@ Mimic.copy(ERWeb.Endpoint)
 Mimic.copy(ER.Events.ChannelCache)
 Mimic.copy(Req)
 Mimic.copy(ERWeb.RateLimiter)
+Mimic.copy(ExAws)
 
 ExUnit.start()
 Faker.start()
