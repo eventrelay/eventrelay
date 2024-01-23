@@ -1,26 +1,47 @@
 defmodule ER.Destinations.Webhook do
   require Logger
-  alias ER.Events.Event
 
   def request(
         destination,
-        event
+        event,
+        now \\ DateTime.utc_now()
       ) do
-    body = Event.json_encode!(event)
-    signature = Event.signature(body, signing_secret: destination.signing_secret)
     url = destination.config["endpoint_url"]
+
+    payload = to_payload(event, now)
+
+    unix_timestamp = DateTime.to_unix(now)
+
+    signature =
+      Webhoox.Authentication.StandardWebhook.sign(
+        event.id,
+        unix_timestamp,
+        payload,
+        destination.signing_secret
+      )
 
     Req.post(
       url: url,
-      body: body,
+      body: Jason.encode!(payload),
       headers: [
         content_type: "application/json",
-        x_event_relay_signature: signature,
+        webhook_id: event.id,
+        webhook_timestamp: unix_timestamp,
+        webhook_signature: signature,
+        x_event_relay_event_id: event.id,
         x_event_relay_destination_id: destination.id,
-        x_event_relay_destination_topic_name: destination.topic_name,
-        x_event_relay_destination_topic_identifier: destination.topic_identifier
+        x_event_relay_topic_name: event.topic_name,
+        x_event_relay_topic_identifier: event.topic_identifier
       ]
     )
+  end
+
+  def to_payload(event, now) do
+    %{
+      timestamp: Flamel.Moment.to_iso8601(now),
+      data: event,
+      type: event.name
+    }
   end
 
   def to_map(response) do

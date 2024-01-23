@@ -12,7 +12,7 @@ defmodule ER.Sources.Source do
     field :config, :map, default: %{}
     field :config_json, :string, virtual: true
     # field(:type, Ecto.Enum, values: [:google_pubsub])
-    field(:type, Ecto.Enum, values: [:webhook])
+    field(:type, Ecto.Enum, values: [:webhook, :standard_webhook])
     # TODO: rething the Transformers
     has_one(:transformer, Transformer)
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
