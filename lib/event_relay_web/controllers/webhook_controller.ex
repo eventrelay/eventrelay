@@ -8,11 +8,9 @@ defmodule ERWeb.WebhookController do
   action_fallback ERWeb.FallbackController
 
   def ingest(conn, params) do
-    source = conn.assigns[:source]
-
     %Context{}
     |> check_rate_limit()
-    |> assign_event(source, conn, params)
+    |> assign_event(conn, params)
     |> produce_event()
     |> log()
     |> send_response(conn)
@@ -36,11 +34,12 @@ defmodule ERWeb.WebhookController do
     |> text("OK")
   end
 
-  defp assign_event(%Context{halt?: true} = ctx, _source, _conn, _params) do
+  defp assign_event(%Context{halt?: true} = ctx, _conn, _params) do
     ctx
   end
 
-  defp assign_event(context, source, conn, params) do
+  defp assign_event(context, conn, params) do
+    source = conn.assigns[:source]
     # TODO improve this with a full implementation of Webhoox
     {data, verified, event_name} =
       if source.type == :standard_webhook do
