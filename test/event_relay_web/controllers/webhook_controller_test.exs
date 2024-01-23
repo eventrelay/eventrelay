@@ -4,11 +4,22 @@ defmodule ERWeb.WebhookControllerTest do
   alias ER.Events
   import ER.Factory
 
-  def setup_auth(%{conn: conn, topic: topic}) do
-    source = insert(:source, topic: topic)
+  @moduletag source_type: :webhook
+  @moduletag source_config: %{}
+
+  def setup_auth(%{conn: conn, topic: topic} = context) do
+    source =
+      insert(:source, topic: topic, type: context.source_type, config: context.source_config)
+
     creds = Base.encode64("#{source.key}:#{source.secret}")
 
     {:ok, conn: put_req_header(conn, "authorization", "Basic #{creds}"), source: source}
+  end
+
+  def setup_destination(context) do
+    destination = insert(:destination, topic: context.topic)
+
+    {:ok, destination: destination}
   end
 
   setup %{conn: conn} do
@@ -37,6 +48,59 @@ defmodule ERWeb.WebhookControllerTest do
       assert event.name == "webhook.inbound"
       assert event.topic_name == source.topic_name
       assert event.data == data
+      assert event.source == source.source
+    end
+  end
+
+  describe "ingest standard webhook" do
+    @describetag source_type: :standard_webhook
+    @describetag source_config: %{"signing_secret" => "abc123"}
+
+    setup [:setup_auth, :setup_destination]
+
+    test "creates an a verified event and renders a 200 when a valid standard webhook is received",
+         %{conn: conn, topic: topic, source: source, destination: destination} do
+      now = DateTime.utc_now()
+      event_id = "123"
+
+      payload = %{
+        "timestamp" => Flamel.Moment.to_iso8601(now),
+        "type" => "user.updated",
+        "data" => %{"id" => event_id, "name" => "Riley"}
+      }
+
+      signature =
+        Webhoox.Authentication.StandardWebhook.sign(
+          event_id,
+          DateTime.to_unix(now),
+          payload,
+          destination.signing_secret
+        )
+
+      conn =
+        conn
+        |> Plug.Conn.put_req_header("accept", "application/json")
+        |> Plug.Conn.put_req_header("webhook-id", event_id)
+        |> Plug.Conn.put_req_header("webhook-signature", signature)
+        |> Plug.Conn.put_req_header(
+          "webhook-timestamp",
+          now |> DateTime.to_unix() |> Flamel.to_string()
+        )
+
+      conn =
+        post(conn, ~p"/webhooks/ingest/#{source}", payload)
+
+      assert text_response(conn, 200) == "OK"
+
+      events =
+        ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
+
+      event = List.last(events)
+
+      # TODO: move event name to source 
+      assert event.name == "user.updated"
+      assert event.topic_name == source.topic_name
+      assert event.data == payload["data"]
       assert event.source == source.source
     end
   end

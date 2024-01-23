@@ -3,20 +3,36 @@ defmodule ERWeb.WebhookController do
 
   require Logger
   alias Flamel.Context
+  alias Webhoox.Authentication.StandardWebhook
 
   action_fallback ERWeb.FallbackController
 
   def ingest(conn, params) do
     source = conn.assigns[:source]
 
-    data = Map.drop(params, ["source_id"])
+    # TODO improve this with a full implementation of Webhoox
+    {data, verified, event_name} =
+      if source.type == :standard_webhook do
+        body_params = conn.body_params
+        signing_secret = source.config["signing_secret"]
+
+        if StandardWebhook.verify(conn, body_params, signing_secret) do
+          # verified
+          {params["data"], true, params["type"]}
+        else
+          # not verified
+          {params["data"], false, params["type"]}
+        end
+      else
+        {Map.drop(params, ["source_id"]), false, "webhook.inbound"}
+      end
+
     topic_name = source.topic_name
-    verified = false
     durable = true
 
     %Context{}
     |> Context.assign(:event, %{
-      name: "webhook.inbound",
+      name: event_name,
       source: source.source,
       data: data,
       durable: durable,

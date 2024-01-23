@@ -8,7 +8,12 @@ defmodule ER.Factory do
       data: %{},
       name: "some name",
       occurred_at: DateTime.to_iso8601(~U[2022-12-21 18:27:00Z]),
-      source: "some source"
+      source: "some source",
+      reference_key: "book123",
+      group_key: "org123",
+      user_key: "user123",
+      trace_key: "trace123",
+      verified: true
     }
   end
 

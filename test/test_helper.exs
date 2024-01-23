@@ -1,6 +1,7 @@
 # Mocks
 Mimic.copy(ERWeb.Endpoint)
 Mimic.copy(ER.Events.ChannelCache)
+Mimic.copy(Req)
 
 ExUnit.start()
 Faker.start()
