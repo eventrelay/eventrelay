@@ -78,5 +78,5 @@ USER nobody
 EXPOSE 9000
 EXPOSE 50051
 
-CMD ["/app/bin/server"]
+CMD ["/app/bin/event_relay", "start"]
 
