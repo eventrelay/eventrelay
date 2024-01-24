@@ -80,16 +80,16 @@ if config_env() == :prod do
   #
 end
 
-database_url =
-  System.get_env("ER_DATABASE_URL") ||
-    raise """
-    environment variable DATABASE_URL is missing.
-    For example: ecto://USER:PASS@HOST/DATABASE
-    """
-
 db_opts =
   cond do
     config_env() == :dev ->
+      database_url =
+        System.get_env("ER_DATABASE_URL") ||
+          raise """
+          environment variable DATABASE_URL is missing.
+          For example: ecto://USER:PASS@HOST/DATABASE
+          """
+
       [
         url: database_url,
         stacktrace: true,
@@ -113,6 +113,13 @@ db_opts =
       ]
 
     true ->
+      database_url =
+        System.get_env("ER_DATABASE_URL") ||
+          raise """
+          environment variable DATABASE_URL is missing.
+          For example: ecto://USER:PASS@HOST/DATABASE
+          """
+
       maybe_ipv6 = if System.get_env("ER_ECTO_IPV6"), do: [:inet6], else: []
 
       [
