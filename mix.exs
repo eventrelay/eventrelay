@@ -27,7 +27,7 @@ defmodule ER.MixProject do
   def application do
     [
       mod: {ER.Application, []},
-      extra_applications: [:observer, :wx, :logger, :runtime_tools, :os_mon]
+      extra_applications: [:logger, :runtime_tools, :os_mon]
     ]
   end
 
