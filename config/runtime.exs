@@ -16,84 +16,8 @@ import Config
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
-if System.get_env("PHX_SERVER") do
-  config :event_relay, ERWeb.Endpoint, server: true
-end
-
-config :ex_aws, :s3,
-  scheme: System.get_env("ER_S3_SCHEME", "https://"),
-  host: System.get_env("ER_S3_HOST", "localhost")
-
-# port: System.get_env("ER_S3_PORT", "9000")
-
-config :hammer,
-  backend: [
-    ets: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]},
-    redis:
-      {Hammer.Backend.Redis,
-       [
-         delete_buckets_timeout: 10_0000,
-         expiry_ms: 60_000 * 60 * 2,
-         redis_url: System.get_env("ER_REDIS_URL")
-       ]}
-  ]
-
-config :event_relay, :ca_key, System.get_env("ER_CA_KEY")
-config :event_relay, :ca_crt, System.get_env("ER_CA_CRT")
-config :event_relay, :grpc_server_key, System.get_env("ER_GRPC_SERVER_KEY")
-config :event_relay, :grpc_server_crt, System.get_env("ER_GRPC_SERVER_CRT")
-config :event_relay, :hammer_backend, System.get_env("ER_HAMMER_BACKEND")
-
-if config_env() == :dev do
-  database_url =
-    System.get_env("ER_DATABASE_URL") ||
-      raise """
-      environment variable DATABASE_URL is missing.
-      For example: ecto://USER:PASS@HOST/DATABASE
-      """
-
-  # Configure your database
-  config :event_relay, ER.Repo,
-    url: database_url,
-    stacktrace: true,
-    show_sensitive_data_on_connection_error: true,
-    pool_size: 10
-end
-
-if config_env() == :test do
-  database_url =
-    System.get_env("ER_TEST_DATABASE_URL") ||
-      raise """
-      environment variable DATABASE_URL is missing.
-      For example: ecto://USER:PASS@HOST/DATABASE
-      """
-
-  # Configure your database
-  config :event_relay, ER.Repo,
-    url: database_url,
-    stacktrace: true,
-    show_sensitive_data_on_connection_error: true,
-    pool_size: 10
-end
 
 if config_env() == :prod do
-  config :event_relay, :grpc_port, ER.to_integer(System.get_env("ER_GRPC_PORT") || "50051")
-
-  database_url =
-    System.get_env("ER_DATABASE_URL") ||
-      raise """
-      environment variable DATABASE_URL is missing.
-      For example: ecto://USER:PASS@HOST/DATABASE
-      """
-
-  maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
-
-  config :event_relay, ER.Repo,
-    # ssl: true,
-    url: database_url,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-    socket_options: maybe_ipv6
-
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
   # want to use a different value for prod and you most likely don't want
@@ -106,52 +30,35 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "example.com"
-  port = String.to_integer(System.get_env("PORT") || "9000")
+  host = System.get_env("ER_WEB_HOST") || "example.com"
+  port = String.to_integer(System.get_env("ER_WEB_PORT") || "9000")
 
-  config :event_relay, ERWeb.Endpoint,
-    url: [host: host, port: 443, scheme: "https"],
-    http: [
-      # Enable IPv6 and bind on all interfaces.
-      # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
-      # See the documentation on https://hexdocs.pm/plug_cowboy/Plug.Cowboy.html
-      # for details about using IPv6 vs IPv4 and loopback vs public addresses.
-      ip: {0, 0, 0, 0, 0, 0, 0, 0},
-      port: port
-    ],
-    secret_key_base: secret_key_base
+  endpoint_opts =
+    [
+      secret_key_base: secret_key_base
+    ]
+    |> then(fn opts ->
+      if System.get_env("ER_USE_WEB_TLS") do
+        opts
+        |> Keyword.put(
+          :https,
+          [
+            port: port,
+            cipher_suite: :strong,
+            keyfile: System.get_env("ER_WEB_TLS_KEY_PATH"),
+            certfile: System.get_env("ER_WEB_TLS_CRT_PATH")
+          ],
+          force_ssl: [hsts: true]
+        )
+        |> Keyword.put(:url, host: host, port: port, scheme: "https")
+      else
+        opts
+        |> Keyword.put(:http, ip: {0, 0, 0, 0}, port: port)
+        |> Keyword.put(:url, host: host, port: 443, scheme: "http")
+      end
+    end)
 
-  # ## SSL Support
-  #
-  # To get SSL working, you will need to add the `https` key
-  # to your endpoint configuration:
-  #
-  #     config :event_relay, ERWeb.Endpoint,
-  #       https: [
-  #         ...,
-  #         port: 443,
-  #         cipher_suite: :strong,
-  #         keyfile: System.get_env("SOME_APP_SSL_KEY_PATH"),
-  #         certfile: System.get_env("SOME_APP_SSL_CERT_PATH")
-  #       ]
-  #
-  # The `cipher_suite` is set to `:strong` to support only the
-  # latest and more secure SSL ciphers. This means old browsers
-  # and clients may not be supported. You can set it to
-  # `:compatible` for wider support.
-  #
-  # `:keyfile` and `:certfile` expect an absolute path to the key
-  # and cert in disk or a relative path inside priv, for example
-  # "priv/ssl/server.key". For all supported SSL configuration
-  # options, see https://hexdocs.pm/plug/Plug.SSL.html#configure/1
-  #
-  # We also recommend setting `force_ssl` in your endpoint, ensuring
-  # no data is ever sent via http, always redirecting to https:
-  #
-  #     config :event_relay, ERWeb.Endpoint,
-  #       force_ssl: [hsts: true]
-  #
-  # Check `Plug.SSL` for all available options in `force_ssl`.
+  config :event_relay, ERWeb.Endpoint, endpoint_opts
 
   # ## Configuring the mailer
   #
@@ -171,7 +78,73 @@ if config_env() == :prod do
   #
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
   #
-  config :event_relay, :jwt_secret, System.get_env("ER_JWT_SECRET")
 end
 
+database_url =
+  System.get_env("ER_DATABASE_URL") ||
+    raise """
+    environment variable DATABASE_URL is missing.
+    For example: ecto://USER:PASS@HOST/DATABASE
+    """
+
+db_opts =
+  cond do
+    config_env() == :dev ->
+      [
+        url: database_url,
+        stacktrace: true,
+        show_sensitive_data_on_connection_error: true,
+        pool_size: 10
+      ]
+
+    config_env() == :test ->
+      test_database_url =
+        System.get_env("ER_TEST_DATABASE_URL") ||
+          raise """
+          environment variable DATABASE_URL is missing.
+          For example: ecto://USER:PASS@HOST/DATABASE
+          """
+
+      [
+        url: test_database_url,
+        stacktrace: true,
+        show_sensitive_data_on_connection_error: true,
+        pool_size: 10
+      ]
+
+    true ->
+      maybe_ipv6 = if System.get_env("ER_ECTO_IPV6"), do: [:inet6], else: []
+
+      [
+        url: database_url,
+        pool_size: String.to_integer(System.get_env("ER_DATABASE_POOL_SIZE") || "10"),
+        socket_options: maybe_ipv6
+      ]
+  end
+
+config :event_relay, ER.Repo, db_opts
+
+config :event_relay, :jwt_secret, System.get_env("ER_JWT_SECRET")
+
+config :hammer,
+  backend: [
+    ets: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]},
+    redis:
+      {Hammer.Backend.Redis,
+       [
+         delete_buckets_timeout: 10_0000,
+         expiry_ms: 60_000 * 60 * 2,
+         redis_url: System.get_env("ER_REDIS_URL")
+       ]}
+  ]
+
+config :event_relay, :ca_key, System.get_env("ER_CA_KEY")
+config :event_relay, :ca_crt, System.get_env("ER_CA_CRT")
+config :event_relay, :grpc_server_key, System.get_env("ER_GRPC_SERVER_KEY")
+config :event_relay, :grpc_server_crt, System.get_env("ER_GRPC_SERVER_CRT")
+config :event_relay, :hammer_backend, System.get_env("ER_HAMMER_BACKEND")
 config :event_relay, :account_key, System.get_env("ER_ACCOUNT_KEY")
+
+if System.get_env("ER_WEB_SERVER") do
+  config :event_relay, ERWeb.Endpoint, server: true
+end
