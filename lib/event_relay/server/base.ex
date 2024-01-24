@@ -32,7 +32,7 @@ defmodule ER.Server.Base do
             {:ok, pid}
 
           {:error, {:already_started, pid}} ->
-            Logger.info(
+            Logger.debug(
               "#{__MODULE__}.start_link: already started at #{inspect(pid)}, returning :ignore on node=#{inspect(Node.self())}"
             )
 
