@@ -51,6 +51,14 @@ defmodule ER.Transformers.LuaTransformer do
   defimpl ER.Transformers.Transformation do
     alias ER.Transformers.LuaTransformer, as: Transformer
 
+    def precompile(t) do
+      t
+    end
+
+    def reset(t) do
+      t
+    end
+
     def perform(%{transformer: %{script: script} = transformer} = _transformation, variables) do
       script
       |> ER.Lua.eval(variables)

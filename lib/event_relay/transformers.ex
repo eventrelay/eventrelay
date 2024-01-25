@@ -73,6 +73,17 @@ defmodule ER.Transformers do
     transformer
     |> Transformer.changeset(attrs)
     |> Repo.update()
+    |> case do
+      {:ok, transformer} ->
+        transformer
+        |> ER.Transformers.factory()
+        |> ER.Transformers.Transformation.reset()
+
+        {:ok, transformer}
+
+      error ->
+        error
+    end
   end
 
   @doc """

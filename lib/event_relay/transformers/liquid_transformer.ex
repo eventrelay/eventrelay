@@ -5,7 +5,19 @@ defmodule ER.Transformers.LiquidTransformer do
   defstruct transformer: nil
 
   defimpl ER.Transformers.Transformation do
-    def perform(%{transformer: transformer} = transformation, variables) do
+    alias ER.Transformers.LiquidTransformer
+
+    def precompile(%LiquidTransformer{transformer: transformer} = transformation) do
+      fetch_template_ast(transformer)
+      transformation
+    end
+
+    def reset(%LiquidTransformer{transformer: transformer} = transformation) do
+      ER.Cache.delete(cache_key(transformer))
+      precompile(transformation)
+    end
+
+    def perform(%LiquidTransformer{transformer: transformer} = transformation, variables) do
       variables = Enum.into(variables, %{})
 
       try do
@@ -36,7 +48,7 @@ defmodule ER.Transformers.LiquidTransformer do
         template_ast
       else
         {:ok, template_ast} = Liquex.parse(template)
-        ER.Cache.put(cache_key, template_ast)
+        ER.Cache.put(cache_key, template_ast, ttl: :timer.hours(24))
         template_ast
       end
     end
