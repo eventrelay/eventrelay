@@ -8,6 +8,7 @@ defmodule ER.Transformers.Transformer do
   schema "transformers" do
     field :script, :string
     belongs_to(:source, Source)
+    field(:type, Ecto.Enum, values: [:lua, :liquid])
     field(:return_type, Ecto.Enum, values: [:map])
 
     timestamps()

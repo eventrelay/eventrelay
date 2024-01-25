@@ -68,7 +68,12 @@ defmodule ER.Sources.Source do
 
   def build_context(%Source{type: :google_pubsub} = source) do
     # TODO: move topic_name and source info a context map on the ingester
-    %{"topic_name" => source.topic_name, "source" => source.source}
+    %{
+      "topic_name" => source.topic_name,
+      "source" => source.source,
+      "source_type" => Flamel.to_string(source.type),
+      "source_config" => source.config
+    }
   end
 
   def build_context(_) do

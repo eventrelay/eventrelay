@@ -57,6 +57,8 @@ defmodule ER.Application do
          [name: ER.Horde.Supervisor, shutdown: 60_000, strategy: :one_for_one]},
         # Start the Cluster server
         # {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
+        # Setup the Cache
+        {ER.Cache, []},
         # Setup the ChannelCache
         {ER.Events.ChannelCache, []},
         # Setup the ApiKeyCache

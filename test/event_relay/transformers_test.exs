@@ -3,59 +3,34 @@ defmodule ER.TransformersTest do
   import ER.Factory
   alias ER.Transformers
 
-  describe "to_map/2" do
-    test "handles nested maps" do
-      return = [
-        {"event",
-         [
-           {"data", [{"user", "themusicman"}]},
-           {"name", "users.updated"},
-           {"source", "GooglePubsub"},
-           {"topic_name", "users"}
-         ]}
-      ]
-
-      assert %{
-               "event" => %{
-                 "data" => %{"user" => "themusicman"},
-                 "name" => "users.updated",
-                 "source" => "GooglePubsub",
-                 "topic_name" => "users"
-               }
-             } == ER.Transformers.to_map(return)
-    end
-  end
-
-  describe "run/3" do
-    test "returns data for an event" do
+  describe "factory/1" do
+    setup do
       source = insert(:source)
+      {:ok, source: source}
+    end
 
-      message = %{
-        "event_data" => %{"user" => "themusicman"},
-        "event_name" => "users.updated"
-      }
-
-      context = %{
-        "source" => "GooglePubsub",
-        "topic_name" => "users"
-      }
-
+    test "return lua transformer", %{source: source} do
       transformer =
         insert(:transformer,
-          script:
-            "return {event = { topic_name = context.topic_name, data = message.event_data, name = message.event_name, source = context.source}}",
+          script: "",
           source: source,
+          type: :lua,
           return_type: :map
         )
 
-      assert %{
-               "event" => %{
-                 "data" => %{"user" => "themusicman"},
-                 "name" => "users.updated",
-                 "source" => "GooglePubsub",
-                 "topic_name" => "users"
-               }
-             } == ER.Transformers.run(transformer, message: message, context: context)
+      assert %Transformers.LuaTransformer{} = Transformers.factory(transformer)
+    end
+
+    test "return liquid transformer", %{source: source} do
+      transformer =
+        insert(:transformer,
+          script: "",
+          source: source,
+          type: :liquid,
+          return_type: :map
+        )
+
+      assert %Transformers.LiquidTransformer{} = Transformers.factory(transformer)
     end
   end
 
