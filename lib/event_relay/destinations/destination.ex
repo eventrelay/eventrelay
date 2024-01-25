@@ -4,6 +4,7 @@ defmodule ER.Destinations.Destination do
   alias ER.Events.Topic
   alias ER.Transformers.Transformer
   import ER.Config
+  alias ER.Repo
 
   @derive {Jason.Encoder,
            only: [
@@ -292,6 +293,15 @@ defmodule ER.Destinations.Destination do
       Map.from_struct(event) |> Map.drop([:topic, :__meta__]) |> ER.atomize_map()
 
     Predicated.test(query, event)
+  end
+
+  def find_transformer(destination, data) do
+    destination
+    |> Repo.preload(:transformers)
+    |> Map.get(:transformers)
+    |> Enum.find(fn transformer ->
+      Transformer.matches?(transformer, data)
+    end)
   end
 
   defimpl ER.Transformers.TransformationContext do

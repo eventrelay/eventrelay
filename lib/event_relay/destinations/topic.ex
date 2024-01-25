@@ -4,10 +4,9 @@ defmodule ER.Destinations.Topic do
   """
 
   require Logger
+  alias ER.Destinations.Destination
   alias ER.Transformers.Transformation
   alias ER.Transformers.TransformationContext
-  alias ER.Transformers.Transformer
-  alias ER.Repo
 
   @field_to_drop [:__meta__, :destination_locks, :topic]
 
@@ -18,11 +17,7 @@ defmodule ER.Destinations.Topic do
 
     attrs =
       destination
-      |> Repo.preload(:transformers)
-      |> Map.get(:transformers)
-      |> Enum.find(fn transformer ->
-        Transformer.matches?(transformer, attrs)
-      end)
+      |> Destination.find_transformer(attrs)
       |> maybe_transform_event(attrs, destination)
 
     attrs =
