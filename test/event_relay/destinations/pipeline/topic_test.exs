@@ -1,4 +1,4 @@
-defmodule ER.Destinations.TopicTest do
+defmodule ER.Destinations.Pipeline.TopicTest do
   use ER.DataCase
   alias ER.Events.Event
   alias ER.Events
@@ -39,23 +39,64 @@ defmodule ER.Destinations.TopicTest do
     test "creates a new event in a different topic", %{
       event: old_event,
       to_topic: to_topic,
-      from_topic: from_topic
+      from_topic: from_topic,
+      destination: destination
     } do
-      {:ok, new_event} = ER.Destinations.Topic.forward(to_topic.name, old_event)
+      {:ok, new_event} = ER.Destinations.Topic.forward(to_topic.name, old_event, destination)
+
+      refute new_event.topic_name == from_topic.name
+      assert new_event.topic_name == to_topic.name
+      assert new_event.data == old_event.data
+      assert new_event.context == old_event.context
+      assert new_event.group_key == old_event.group_key
+      assert new_event.user_key == old_event.user_key
+      assert new_event.reference_key == old_event.reference_key
+      assert new_event.trace_key == old_event.trace_key
+      assert new_event.destination_locks == []
+    end
+
+    test "creates a new event in a different topic that has been transformed", %{
+      event: old_event,
+      to_topic: to_topic,
+      from_topic: from_topic,
+      destination: destination
+    } do
+      insert(:transformer,
+        script: """
+        {
+            "data": {{event.data | json}},
+            "name": "another.name",
+            "source": "internal",
+            "topic_name": "{{context.topic_name}}",
+            "context": {{event.context | json}}
+        }
+        """,
+        type: :liquid,
+        destination: destination,
+        return_type: :map,
+        query: "name == '#{old_event.name}'"
+      )
+
+      {:ok, new_event} = ER.Destinations.Topic.forward(to_topic.name, old_event, destination)
 
       refute new_event.topic_name == from_topic.name
       assert new_event.topic_name == to_topic.name
       assert new_event.data == old_event.data
       assert new_event.context == old_event.context
       assert new_event.destination_locks == []
+      assert new_event.source == "internal"
+      assert new_event.name == "another.name"
+      assert old_event.group_key == "org123"
+      assert new_event.group_key == nil
     end
 
     test "creates a new event if the prev_id is empty", %{
       event: old_event,
       to_topic: to_topic,
-      from_topic: from_topic
+      from_topic: from_topic,
+      destination: destination
     } do
-      {:ok, new_event} = ER.Destinations.Topic.forward(to_topic.name, old_event)
+      {:ok, new_event} = ER.Destinations.Topic.forward(to_topic.name, old_event, destination)
 
       refute new_event.topic_name == from_topic.name
       assert new_event.topic_name == to_topic.name

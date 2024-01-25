@@ -6,6 +6,7 @@ defmodule ER.Sources.GooglePubSub do
   alias Broadway.Message
   alias ER.Events.Event
   alias ER.Repo
+  alias ER.Transformers.TransformationContext
   import ER
 
   def start_link(opts) do
@@ -44,7 +45,7 @@ defmodule ER.Sources.GooglePubSub do
             ER.Transformers.factory(source.transformer)
             |> ER.Transformers.Transformation.perform(
               message: Jason.decode!(data),
-              context: Source.build_context(source)
+              context: TransformationContext.build(source)
             )
           end)
 

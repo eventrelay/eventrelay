@@ -28,9 +28,9 @@ defmodule ER.Transformers.Transformer do
     |> validate_required([:script, :return_type])
   end
 
-  def matches?(%Transformer{query: nil}, _data), do: true
+  def matches?(%Transformer{query: nil}, _data), do: false
 
   def matches?(%Transformer{query: query}, data) do
-    if Flamel.present?(query), do: Predicated.test(query, data), else: true
+    if Flamel.present?(query), do: Predicated.test(query, data), else: false
   end
 end

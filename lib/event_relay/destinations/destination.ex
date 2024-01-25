@@ -2,6 +2,7 @@ defmodule ER.Destinations.Destination do
   use Ecto.Schema
   import Ecto.Changeset
   alias ER.Events.Topic
+  alias ER.Transformers.Transformer
   import ER.Config
 
   @derive {Jason.Encoder,
@@ -34,6 +35,7 @@ defmodule ER.Destinations.Destination do
 
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
+    has_many(:transformers, Transformer)
     timestamps(type: :utc_datetime)
   end
 
@@ -290,5 +292,15 @@ defmodule ER.Destinations.Destination do
       Map.from_struct(event) |> Map.drop([:topic, :__meta__]) |> ER.atomize_map()
 
     Predicated.test(query, event)
+  end
+
+  defimpl ER.Transformers.TransformationContext do
+    def build(destination) do
+      %{
+        "topic_name" => destination.topic_name,
+        "destination_type" => Flamel.to_string(destination.destination_type),
+        "destination_config" => destination.config
+      }
+    end
   end
 end

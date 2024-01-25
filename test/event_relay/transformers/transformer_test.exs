@@ -27,6 +27,13 @@ defmodule ER.Transformers.TransformerTest do
     } do
       assert ER.Transformers.Transformer.matches?(transformer, %{data: %{wrong: :data}}) == false
     end
+
+    test "returns false if the query string is empty", %{
+      transformer: transformer
+    } do
+      transformer = %{transformer | query: nil}
+      assert ER.Transformers.Transformer.matches?(transformer, payload()) == false
+    end
   end
 
   defp payload() do
