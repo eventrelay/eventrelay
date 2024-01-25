@@ -37,7 +37,7 @@ defmodule ER.TransformersTest do
   describe "transformers" do
     alias ER.Transformers.Transformer
 
-    @invalid_attrs %{script: nil}
+    @invalid_attrs %{script: nil, source_id: nil, destination_id: nil}
 
     test "list_transformers/0 returns all transformers" do
       transformer = insert(:transformer)
@@ -50,15 +50,24 @@ defmodule ER.TransformersTest do
     end
 
     test "create_transformer/1 with valid data creates a transformer" do
-      valid_attrs = %{script: "some script", return_type: :map}
+      source = insert(:source)
+      valid_attrs = %{script: "some script", return_type: :map, source_id: source.id}
 
       assert {:ok, %Transformer{} = transformer} = Transformers.create_transformer(valid_attrs)
       assert transformer.script == "some script"
       assert transformer.return_type == :map
+      assert transformer.source_id == source.id
     end
 
     test "create_transformer/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Transformers.create_transformer(@invalid_attrs)
+      assert {:error, %Ecto.Changeset{errors: errors}} =
+               Transformers.create_transformer(@invalid_attrs)
+
+      assert [
+               script: {"can't be blank", [validation: :required]},
+               return_type: {"can't be blank", [validation: :required]},
+               destination_id: {"must select either a source or destination", []}
+             ] == errors
     end
 
     test "update_transformer/2 with valid data updates the transformer" do
