@@ -52,6 +52,45 @@ defmodule ERWeb.WebhookControllerTest do
       assert event.source == source.source
     end
 
+    test "creates an event, transforms it and renders 200", %{
+      conn: conn,
+      topic: topic,
+      source: source
+    } do
+      insert(:transformer,
+        script: """
+        {
+            "data": {{event.data | json}},
+            "name": "another.name",
+            "source": "internal",
+            "topic_name": "{{context.topic_name}}",
+            "context": {{event.context | json}}
+        }
+        """,
+        type: :liquid,
+        source: source,
+        return_type: :map,
+        query: "topic_name == '#{source.topic_name}'"
+      )
+
+      data = %{"type" => "user.updated", "data" => %{"id" => 123, "name" => "Riley"}}
+
+      conn =
+        post(conn, ~p"/webhooks/ingest/#{source}", data)
+
+      assert text_response(conn, 200) == "OK"
+
+      events =
+        ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
+
+      event = List.last(events)
+
+      assert event.name == "another.name"
+      assert event.topic_name == source.topic_name
+      assert event.data == data
+      assert event.source == "internal"
+    end
+
     test "returns 429 when hitting a rate limit", %{conn: conn, source: source} do
       ERWeb.RateLimiter
       |> expect(:check_rate, fn "publish_events", durable: true ->

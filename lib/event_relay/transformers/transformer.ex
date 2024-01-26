@@ -1,9 +1,13 @@
 defmodule ER.Transformers.Transformer do
   use Ecto.Schema
+  require Logger
   import Ecto.Changeset
   alias ER.Destinations.Destination
   alias ER.Sources.Source
+  alias ER.Transformers.Transformation
+  alias ER.Transformers.TransformationContext
   alias __MODULE__
+  alias ER.Repo
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -32,5 +36,44 @@ defmodule ER.Transformers.Transformer do
 
   def matches?(%Transformer{query: query}, data) do
     if Flamel.present?(query), do: Predicated.test(query, data), else: false
+  end
+
+  def find_transformer(source_or_destination, data) do
+    source_or_destination
+    |> Repo.preload(:transformers)
+    |> Map.get(:transformers)
+    |> Enum.find(fn transformer ->
+      matches?(transformer, data)
+    end)
+  end
+
+  def transform(data, source_or_destination) do
+    find_transformer(source_or_destination, data)
+    |> transform(data, source_or_destination)
+  end
+
+  def transform(nil, attrs, _source_or_destination) do
+    Logger.debug("#{__MODULE__}.forward no transformer found.")
+    attrs
+  end
+
+  def transform(transformer, attrs, source_or_destination) do
+    transformer
+    |> ER.Transformers.factory()
+    |> Transformation.perform(
+      event: attrs,
+      context: TransformationContext.build(source_or_destination)
+    )
+    |> case do
+      nil ->
+        attrs
+
+      attrs ->
+        attrs = Flamel.Map.atomize_keys(attrs)
+
+        attrs
+        |> Map.put(:data, Flamel.Map.stringify_keys(attrs[:data] || %{}))
+        |> Map.put(:context, Flamel.Map.stringify_keys(attrs[:context] || %{}))
+    end
   end
 end

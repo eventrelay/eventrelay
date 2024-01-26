@@ -4,8 +4,9 @@ defmodule ERWeb.WebhookController do
   require Logger
   alias Flamel.Context
   alias Webhoox.Authentication.StandardWebhook
+  alias ER.Transformers.Transformer
 
-  action_fallback ERWeb.FallbackController
+  action_fallback(ERWeb.FallbackController)
 
   def ingest(conn, params) do
     %Context{}
@@ -60,14 +61,20 @@ defmodule ERWeb.WebhookController do
     topic_name = source.topic_name
     durable = true
 
-    Context.assign(context, :event, %{
-      name: event_name,
-      source: source.source,
-      data: data,
-      durable: durable,
-      verified: verified,
-      topic_name: topic_name
-    })
+    attrs =
+      %{
+        name: event_name,
+        source: source.source,
+        data: data,
+        durable: durable,
+        verified: verified,
+        topic_name: topic_name
+      }
+      |> Transformer.transform(source)
+      |> Map.put_new(:durable, durable)
+      |> Map.put_new(:verified, verified)
+
+    Context.assign(context, :event, attrs)
   end
 
   defp check_rate_limit(ctx) do

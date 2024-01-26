@@ -3,7 +3,6 @@ defmodule ER.Destinations.Topic do
   Handles taking an existing event and forwarding it to a new topic  
   """
 
-  require Logger
   alias ER.Events.Event
   alias ER.Destinations.Destination
 

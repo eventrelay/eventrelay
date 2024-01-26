@@ -1,7 +1,7 @@
 defmodule ER.Destinations.Webhook do
   require Logger
   alias ER.Events.Event
-  alias ER.Destinations.Destination
+  alias ER.Transformers.Transformer
 
   def request(
         destination,
@@ -42,7 +42,7 @@ defmodule ER.Destinations.Webhook do
     data =
       event
       |> Event.to_map()
-      |> Destination.transform_event(destination)
+      |> Transformer.transform(destination)
       |> Map.put_new(:id, event.id)
 
     %{

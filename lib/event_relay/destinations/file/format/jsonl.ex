@@ -2,7 +2,7 @@ defmodule ER.Destinations.File.Format.Jsonl do
   defstruct file_extension: "jsonl"
 
   defimpl ER.Destinations.File.Format do
-    alias ER.Destinations.Destination
+    alias ER.Transformers.Transformer
     alias ER.Events.Event
 
     def extension(encoder) do
@@ -15,7 +15,7 @@ defmodule ER.Destinations.File.Format.Jsonl do
           data =
             event
             |> Event.to_map()
-            |> Destination.transform_event(destination)
+            |> Transformer.transform(destination)
             |> Map.put_new("id", event.id)
 
           case Jason.encode(data) do

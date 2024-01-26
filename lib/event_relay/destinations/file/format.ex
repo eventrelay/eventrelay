@@ -22,7 +22,7 @@ end
 
 defimpl ER.Destinations.File.Format, for: Any do
   alias ER.Events.Event
-  alias ER.Destinations.Destination
+  alias ER.Transformers.Transformer
 
   def encode(encoder, messages, destination, _opts) do
     messages
@@ -32,7 +32,7 @@ defimpl ER.Destinations.File.Format, for: Any do
 
       event
       |> Event.to_map()
-      |> Destination.transform_event(destination)
+      |> Transformer.transform(destination)
       |> Map.put_new(:id, event.id)
     end)
     |> Jason.encode!()
