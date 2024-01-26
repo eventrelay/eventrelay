@@ -6,6 +6,7 @@ defmodule ER.Sources.GooglePubSub do
   alias Broadway.Message
   alias ER.Events.Event
   alias ER.Repo
+  alias ER.Transformers.TransformationContext
   import ER
 
   def start_link(opts) do
@@ -32,25 +33,34 @@ defmodule ER.Sources.GooglePubSub do
   end
 
   def handle_message(_, %Message{data: _data} = message, context) do
-    case context[:source] do
-      %Source{} = source ->
-        source =
-          source
-          |> Repo.preload(:transformer)
+    try do
+      case context[:source] do
+        %Source{} = source ->
+          source =
+            source
+            |> Repo.preload(:transformer)
 
-        message
-        |> Message.update_data(fn data ->
-          ER.Transformers.run(
-            source.transformer,
-            message: Jason.decode!(data),
-            context: Source.build_context(source)
+          message
+          |> Message.update_data(fn data ->
+            ER.Transformers.factory(source.transformer)
+            |> ER.Transformers.Transformation.perform(
+              message: Jason.decode!(data),
+              context: TransformationContext.build(source)
+            )
+          end)
+
+        _ ->
+          Logger.error(
+            "ER.Sources.GooglePubSub.handle_message missing source in context context=#{inspect(context)}"
           )
-        end)
-
-      _ ->
+      end
+    rescue
+      e ->
         Logger.error(
-          "ER.Sources.GooglePubSub.handle_message missing source in context context=#{inspect(context)}"
+          "#{__MODULE__}.handle_message(#{inspect(message)}, #{inspect(context)} with e=#{inspect(e)}"
         )
+
+        Message.failed(message, e.message)
     end
   end
 

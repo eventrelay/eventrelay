@@ -11,7 +11,7 @@ defprotocol ER.Destinations.File.Format do
   Encode the events
   """
   @spec encode(term(), [Message.t()], Keyword.t()) :: {term(), term()}
-  def encode(t, messages, opts \\ [])
+  def encode(t, messages, destination, opts \\ [])
 
   @doc """
   File extension for the format
@@ -21,9 +21,20 @@ defprotocol ER.Destinations.File.Format do
 end
 
 defimpl ER.Destinations.File.Format, for: Any do
-  def encode(encoder, messages, _opts) do
+  alias ER.Events.Event
+  alias ER.Transformers.Transformer
+
+  def encode(encoder, messages, destination, _opts) do
     messages
-    |> Enum.map(& &1.data)
+    |> Enum.map(fn message ->
+      event =
+        message.data
+
+      event
+      |> Event.to_map()
+      |> Transformer.transform(destination)
+      |> Map.put_new(:id, event.id)
+    end)
     |> Jason.encode!()
     |> then(fn encoded ->
       {encoder, encoded}

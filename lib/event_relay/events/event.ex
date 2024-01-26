@@ -282,6 +282,13 @@ defmodule ER.Events.Event do
     event |> json_encode!() |> signature(opts)
   end
 
+  @fields_to_drop [:__meta__, :destination_locks, :topic]
+
+  def to_map(%Event{} = event, additional_fields_to_drop \\ []) do
+    Map.from_struct(event)
+    |> Map.drop(@fields_to_drop ++ additional_fields_to_drop)
+  end
+
   @doc """
   Changes the source in the struct to the topic table name
   """

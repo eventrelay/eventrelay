@@ -31,6 +31,12 @@ defmodule ER.BootServer do
       |> Enum.each(fn source ->
         ER.Sources.Source.start_source(source)
       end)
+
+      ER.Transformers.list_transformers()
+      |> Enum.each(fn transformer ->
+        ER.Transformers.factory(transformer)
+        |> ER.Transformers.Transformation.precompile()
+      end)
     end
 
     {:noreply, state}

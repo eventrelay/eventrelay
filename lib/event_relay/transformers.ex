@@ -2,55 +2,11 @@ defmodule ER.Transformers do
   require Logger
   alias ER.Repo
 
-  def run(%{script: script, return_type: return_type}, globals) do
-    script
-    |> ER.Lua.eval(globals)
-    |> debug(:pre_return)
-    |> return(return_type)
-    |> debug(:post_return)
-  end
+  def factory(%{type: :lua} = transformer),
+    do: %ER.Transformers.LuaTransformer{transformer: transformer}
 
-  def return(data, :map) do
-    to_map(data)
-  end
-
-  def return(data, _) do
-    data
-  end
-
-  def debug(thing, label) do
-    if ER.Env.debug_transformers() do
-      # credo:disable-for-next-line Credo.Check.Warning.IoInspect
-      IO.inspect(thing, label: label)
-    else
-      thing
-    end
-  end
-
-  def to_map(list, acc \\ %{})
-
-  def to_map([head | rest], acc) do
-    acc =
-      case head do
-        # we have a nested map
-        {key, [{_, _} | _] = t} ->
-          Map.put(acc, key, to_map(t))
-
-        {key, val} ->
-          Map.put(acc, key, val)
-
-        # ignoring this val
-        unexpected ->
-          Logger.debug("ER.Transformers.GooglePubsub.to_map unexpected=#{inspect(unexpected)}")
-          acc
-      end
-
-    to_map(rest, acc)
-  end
-
-  def to_map([], acc) do
-    acc
-  end
+  def factory(%{type: :liquid} = transformer),
+    do: %ER.Transformers.LiquidTransformer{transformer: transformer}
 
   alias ER.Transformers.Transformer
 
@@ -117,6 +73,17 @@ defmodule ER.Transformers do
     transformer
     |> Transformer.changeset(attrs)
     |> Repo.update()
+    |> case do
+      {:ok, transformer} ->
+        transformer
+        |> ER.Transformers.factory()
+        |> ER.Transformers.Transformation.reset()
+
+        {:ok, transformer}
+
+      error ->
+        error
+    end
   end
 
   @doc """

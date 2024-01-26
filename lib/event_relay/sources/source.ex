@@ -14,7 +14,7 @@ defmodule ER.Sources.Source do
     # field(:type, Ecto.Enum, values: [:google_pubsub])
     field(:type, Ecto.Enum, values: [:webhook, :standard_webhook])
     # TODO: rething the Transformers
-    has_one(:transformer, Transformer)
+    has_many(:transformers, Transformer)
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
     field :source, :string
     field :key, :string
@@ -66,12 +66,15 @@ defmodule ER.Sources.Source do
     :noop
   end
 
-  def build_context(%Source{type: :google_pubsub} = source) do
-    # TODO: move topic_name and source info a context map on the ingester
-    %{"topic_name" => source.topic_name, "source" => source.source}
-  end
-
-  def build_context(_) do
-    %{}
+  defimpl ER.Transformers.TransformationContext do
+    def build(source) do
+      # TODO: move topic_name and source info a context map on the ingester
+      %{
+        "topic_name" => source.topic_name,
+        "source" => source.source,
+        "source_type" => Flamel.to_string(source.type),
+        "source_config" => source.config
+      }
+    end
   end
 end

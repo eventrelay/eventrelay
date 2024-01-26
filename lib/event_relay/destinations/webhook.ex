@@ -1,5 +1,7 @@
 defmodule ER.Destinations.Webhook do
   require Logger
+  alias ER.Events.Event
+  alias ER.Transformers.Transformer
 
   def request(
         destination,
@@ -8,7 +10,7 @@ defmodule ER.Destinations.Webhook do
       ) do
     url = destination.config["endpoint_url"]
 
-    payload = to_payload(event, now)
+    payload = to_payload(event, destination, now)
 
     unix_timestamp = DateTime.to_unix(now)
 
@@ -36,11 +38,17 @@ defmodule ER.Destinations.Webhook do
     )
   end
 
-  def to_payload(event, now) do
+  def to_payload(event, destination, now) do
+    data =
+      event
+      |> Event.to_map()
+      |> Transformer.transform(destination)
+      |> Map.put_new(:id, event.id)
+
     %{
       timestamp: Flamel.Moment.to_iso8601(now),
-      data: event,
-      type: event.name
+      data: data,
+      type: data[:name]
     }
   end
 

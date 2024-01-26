@@ -82,7 +82,8 @@ defmodule ER.Factory do
   def transformer_factory do
     %ER.Transformers.Transformer{
       script: "return { event = 2}",
-      source: build(:source)
+      source: build(:source),
+      type: :lua
     }
   end
 

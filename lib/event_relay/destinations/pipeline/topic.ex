@@ -49,12 +49,12 @@ defmodule ER.Destinations.Pipeline.Topic do
         _,
         %Message{data: event} = message,
         %{
-          destination: %{paused: false, config: %{"topic_name" => topic_name}}
+          destination: %{paused: false, config: %{"topic_name" => topic_name}} = destination
         } = context
       ) do
     Logger.debug("#{__MODULE__}.handle_message(#{inspect(message)}, #{inspect(context)}")
 
-    case ER.Destinations.Topic.forward(topic_name, event) do
+    case ER.Destinations.Topic.forward(topic_name, event, destination) do
       {:ok, new_event} ->
         Message.update_data(message, fn _event ->
           new_event
