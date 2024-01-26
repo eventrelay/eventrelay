@@ -17,6 +17,7 @@ defmodule ER.Sources.Source do
     has_many(:transformers, Transformer)
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
     field :source, :string
+    field :event_name, :string
     field :key, :string
     field :secret, :string
 
@@ -68,7 +69,6 @@ defmodule ER.Sources.Source do
 
   defimpl ER.Transformers.TransformationContext do
     def build(source) do
-      # TODO: move topic_name and source info a context map on the ingester
       %{
         "topic_name" => source.topic_name,
         "source" => source.source,

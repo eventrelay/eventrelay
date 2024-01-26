@@ -55,7 +55,7 @@ defmodule ERWeb.WebhookController do
           {params["data"], false, params["type"]}
         end
       else
-        {Map.drop(params, ["source_id"]), false, "webhook.inbound"}
+        {Map.drop(params, ["source_id"]), false, source.event_name || "webhook.inbound"}
       end
 
     topic_name = source.topic_name
