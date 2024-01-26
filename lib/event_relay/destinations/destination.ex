@@ -5,6 +5,9 @@ defmodule ER.Destinations.Destination do
   alias ER.Transformers.Transformer
   import ER.Config
   alias ER.Repo
+  alias ER.Transformers.Transformation
+  alias ER.Transformers.TransformationContext
+  require Logger
 
   @derive {Jason.Encoder,
            only: [
@@ -302,6 +305,36 @@ defmodule ER.Destinations.Destination do
     |> Enum.find(fn transformer ->
       Transformer.matches?(transformer, data)
     end)
+  end
+
+  def transform_event(data, destination) do
+    find_transformer(destination, data)
+    |> transform_event(data, destination)
+  end
+
+  def transform_event(nil, attrs, _destination) do
+    Logger.debug("#{__MODULE__}.forward no transformer found.")
+    attrs
+  end
+
+  def transform_event(transformer, attrs, destination) do
+    transformer
+    |> ER.Transformers.factory()
+    |> Transformation.perform(
+      event: attrs,
+      context: TransformationContext.build(destination)
+    )
+    |> case do
+      nil ->
+        attrs
+
+      attrs ->
+        attrs = Flamel.Map.atomize_keys(attrs)
+
+        attrs
+        |> Map.put(:data, Flamel.Map.stringify_keys(attrs[:data] || %{}))
+        |> Map.put(:context, Flamel.Map.stringify_keys(attrs[:context] || %{}))
+    end
   end
 
   defimpl ER.Transformers.TransformationContext do

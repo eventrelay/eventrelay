@@ -13,15 +13,16 @@ defmodule ER.Destinations.File.S3 do
 
     def put(
           %{
-            destination: %{
-              config: %{
-                "region" => region,
-                "bucket" => bucket,
-                "access_key_id" => access_key_id,
-                "secret_access_key" => secret_access_key,
-                "format" => format
-              }
-            }
+            destination:
+              %{
+                config: %{
+                  "region" => region,
+                  "bucket" => bucket,
+                  "access_key_id" => access_key_id,
+                  "secret_access_key" => secret_access_key,
+                  "format" => format
+                }
+              } = destination
           },
           messages,
           opts
@@ -29,7 +30,7 @@ defmodule ER.Destinations.File.S3 do
         when is_list(opts) do
       format
       |> ER.Destinations.File.Formatter.factory()
-      |> ER.Destinations.File.Format.encode(messages, opts)
+      |> ER.Destinations.File.Format.encode(messages, destination, opts)
       |> then(fn {encoder, encoded} ->
         ext = ER.Destinations.File.Format.extension(encoder)
         now = Keyword.get(opts, :now, DateTime.utc_now())
