@@ -52,24 +52,20 @@ defmodule ER.PaginatedResults do
   defp next_page(page, total_pages) do
     next_page_number = page + 1
 
-    cond do
-      next_page_number > total_pages ->
-        nil
-
-      true ->
-        next_page_number
+    if next_page_number > total_pages do
+      nil
+    else
+      next_page_number
     end
   end
 
   defp previous_page(page) do
     previous_page_number = page - 1
 
-    cond do
-      previous_page_number <= 0 ->
-        nil
-
-      true ->
-        previous_page_number
+    if previous_page_number <= 0 do
+      nil
+    else
+      previous_page_number
     end
   end
 
@@ -96,12 +92,10 @@ defmodule ER.PaginatedResults do
     total = trunc(raw_total)
     diff = raw_total - total
 
-    cond do
-      diff > 0 ->
-        total + 1
-
-      true ->
-        total
+    if diff > 0 do
+      total + 1
+    else
+      total
     end
   end
 end

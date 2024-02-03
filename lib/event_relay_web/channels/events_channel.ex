@@ -36,40 +36,48 @@ defmodule ERWeb.EventsChannel do
 
     case Bosun.permit(socket.assigns.api_key, :request, request) do
       {:ok, _} ->
-        response = %{status: "ok"}
         {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
-        durable = unless ER.boolean?(durable), do: false, else: to_boolean(durable)
-        verified = true
+        durable = to_boolean(durable)
 
-        Enum.each(events, fn event ->
-          case ER.Events.produce_event_for_topic(%{
-                 name: Map.get(event, "name"),
-                 source: Map.get(event, "source"),
-                 data_json: Map.get(event, "data"),
-                 context: Map.get(event, "context"),
-                 occurred_at: Map.get(event, "occurred_at"),
-                 user_key: Map.get(event, "user_key"),
-                 anonymous_key: Map.get(event, "anonymous_key"),
-                 durable: durable,
-                 verified: verified,
-                 topic_name: topic_name,
-                 topic_identifier: topic_identifier,
-                 prev_id: Map.get(event, "prev_id")
-               }) do
-            {:ok, %Event{} = event} ->
-              Logger.debug("Published event: #{inspect(event)}")
-
-            {:error, error} ->
-              # TODO: provide a better error message
-              Logger.error("Error creating event: #{inspect(error)}")
-              nil
-          end
+        Enum.map(events, fn event ->
+          %{
+            name: Map.get(event, "name"),
+            source: Map.get(event, "source"),
+            data_json: Map.get(event, "data"),
+            context: Map.get(event, "context"),
+            occurred_at: Map.get(event, "occurred_at"),
+            user_key: Map.get(event, "user_key"),
+            group_key: Map.get(event, "group_key"),
+            reference_key: Map.get(event, "reference_key"),
+            trace_key: Map.get(event, "trace_key"),
+            available_at: Map.get(event, "available_at"),
+            anonymous_key: Map.get(event, "anonymous_key"),
+            durable: durable,
+            verified: true,
+            topic_name: topic_name,
+            topic_identifier: topic_identifier,
+            data_schema_json: Map.get(event, "data_schema"),
+            prev_id: Map.get(event, "prev_id")
+          }
         end)
+        |> Flamel.Task.stream(&produce_event/1)
 
-        {:reply, {:ok, response}, socket}
+        {:reply, {:ok, %{status: "ok"}}, socket}
 
       {:error, _context} ->
         {:reply, %{status: "unauthorized"}, socket}
+    end
+  end
+
+  defp produce_event(event) do
+    case ER.Events.produce_event_for_topic(event) do
+      {:ok, %Event{} = event} ->
+        Logger.debug("Published event: #{inspect(event)}")
+
+      {:error, error} ->
+        # TODO: provide a better error message
+        Logger.error("Error creating event: #{inspect(error)}")
+        nil
     end
   end
 

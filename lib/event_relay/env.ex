@@ -16,7 +16,7 @@ defmodule ER.Env do
   end
 
   def grpc_port do
-    Application.get_env(:event_relay, :grpc_port, 50051)
+    Application.get_env(:event_relay, :grpc_port, 50_051)
   end
 
   def grpc_server_key do

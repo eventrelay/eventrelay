@@ -1,5 +1,6 @@
 defmodule ER.Factory do
-  # with Ecto
+  @moduledoc false
+
   use ExMachina.Ecto, repo: ER.Repo
 
   def event_factory do

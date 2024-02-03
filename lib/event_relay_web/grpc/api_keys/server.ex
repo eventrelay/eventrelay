@@ -126,22 +126,7 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
 
       try do
         Repo.transaction(fn ->
-          Enum.map(destinations, fn destination ->
-            case ER.Accounts.create_api_key_destination(api_key, destination) do
-              {:ok, api_key_destination} ->
-                api_key_destination.destination_id
-
-              {:error, %Ecto.Changeset{} = changeset} ->
-                raise GRPC.RPCError,
-                  status: GRPC.Status.invalid_argument(),
-                  message: ER.Ecto.changeset_errors_to_string(changeset)
-
-              {:error, error} ->
-                Logger.error("Failed to create api key destination: #{inspect(error)}")
-                nil
-            end
-          end)
-          |> Enum.reject(&is_nil/1)
+          do_add_destinations_to_api_key(api_key, destinations)
         end)
         |> case do
           {:ok, api_key_destination_ids} ->
@@ -182,6 +167,24 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
           status: GRPC.Status.not_found(),
           message: "Destinations not found"
     end
+  end
+
+  defp do_add_destinations_to_api_key(api_key, destinations) do
+    Enum.reduce(destinations, [], fn destination, acc ->
+      case ER.Accounts.create_api_key_destination(api_key, destination) do
+        {:ok, api_key_destination} ->
+          [api_key_destination.destination_id | acc]
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          raise GRPC.RPCError,
+            status: GRPC.Status.invalid_argument(),
+            message: ER.Ecto.changeset_errors_to_string(changeset)
+
+        {:error, error} ->
+          Logger.error("Failed to create api key destination: #{inspect(error)}")
+          acc
+      end
+    end)
   end
 
   @spec delete_destinations_from_api_key(
@@ -278,22 +281,7 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
 
       try do
         Repo.transaction(fn ->
-          Enum.map(topics, fn topic ->
-            case ER.Accounts.create_api_key_topic(api_key, topic) do
-              {:ok, api_key_topic} ->
-                api_key_topic.topic_name
-
-              {:error, %Ecto.Changeset{} = changeset} ->
-                raise GRPC.RPCError,
-                  status: GRPC.Status.invalid_argument(),
-                  message: ER.Ecto.changeset_errors_to_string(changeset)
-
-              {:error, error} ->
-                Logger.error("Failed to create api key topic: #{inspect(error)}")
-                nil
-            end
-          end)
-          |> Enum.reject(&is_nil/1)
+          do_add_topics_to_api_key(api_key, topics)
         end)
         |> case do
           {:ok, api_key_topic_names} ->
@@ -334,6 +322,24 @@ defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
           status: GRPC.Status.not_found(),
           message: "Topics not found"
     end
+  end
+
+  defp do_add_topics_to_api_key(api_key, topics) do
+    Enum.reduce(topics, [], fn topic, acc ->
+      case ER.Accounts.create_api_key_topic(api_key, topic) do
+        {:ok, api_key_topic} ->
+          [api_key_topic.topic_name | acc]
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          raise GRPC.RPCError,
+            status: GRPC.Status.invalid_argument(),
+            message: ER.Ecto.changeset_errors_to_string(changeset)
+
+        {:error, error} ->
+          Logger.error("Failed to create api key topic: #{inspect(error)}")
+          acc
+      end
+    end)
   end
 
   @spec delete_topics_from_api_key(

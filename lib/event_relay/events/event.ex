@@ -159,20 +159,25 @@ defmodule ER.Events.Event do
   end
 
   defp data_schema_valid?(changeset) do
-    data_schema = get_field(changeset, :data_schema)
+    get_field(changeset, :data_schema)
+    |> then(fn
+      nil ->
+        changeset
 
-    if data_schema do
-      validate_change(changeset, :data, fn _, data ->
-        case ExJsonSchema.Validator.validate(data_schema, data) do
-          :ok ->
-            []
+      data_schema ->
+        validate_change(changeset, :data, fn _, data ->
+          validate_schema(data_schema, data)
+        end)
+    end)
+  end
 
-          {:error, _errors} ->
-            [{:data, "does not validate against the schema"}]
-        end
-      end)
-    else
-      changeset
+  defp validate_schema(data_schema, data) do
+    case ExJsonSchema.Validator.validate(data_schema, data) do
+      :ok ->
+        []
+
+      {:error, _errors} ->
+        [{:data, "does not validate against the schema"}]
     end
   end
 
