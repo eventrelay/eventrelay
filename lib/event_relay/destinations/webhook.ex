@@ -9,6 +9,7 @@ defmodule ER.Destinations.Webhook do
         now \\ DateTime.utc_now()
       ) do
     url = destination.config["endpoint_url"]
+    user_agent = user_agent(destination.config)
 
     payload = to_payload(event, destination, now)
 
@@ -26,6 +27,7 @@ defmodule ER.Destinations.Webhook do
       url: url,
       body: Jason.encode!(payload),
       headers: [
+        user_agent: user_agent,
         content_type: "application/json",
         webhook_id: event.id,
         webhook_timestamp: unix_timestamp,
@@ -37,6 +39,9 @@ defmodule ER.Destinations.Webhook do
       ]
     )
   end
+
+  def user_agent(%{"user_agent" => user_agent}), do: user_agent
+  def user_agent(_), do: "EventRelay (https://eventrelay.io)"
 
   def to_payload(event, destination, now) do
     data =
