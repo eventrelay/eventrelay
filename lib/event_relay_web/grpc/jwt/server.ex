@@ -10,12 +10,12 @@ defmodule ERWeb.Grpc.EventRelay.JWT.Server do
   @spec create_jwt(CreateJWTRequest.t(), GRPC.Server.Stream.t()) :: CreateJWTResponse.t()
   def create_jwt(request, _stream) do
     claims =
-      unless ER.empty?(request.expiration) do
+      if ER.empty?(request.expiration) do
+        %{}
+      else
         %{
           exp: request.expiration
         }
-      else
-        %{}
       end
 
     case ER.JWT.Token.build(request.api_key, claims) do

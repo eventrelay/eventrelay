@@ -1,4 +1,8 @@
 defmodule ERWeb.UserAuth do
+  @moduledoc """
+  Helpers for user authentication
+  """
+
   use ERWeb, :verified_routes
 
   import Plug.Conn

@@ -44,10 +44,37 @@ defmodule ERWeb.EventsChannelTest do
       ]
     }
 
+    events = ER.Events.list_events_for_topic(topic.name, return_batch: false)
+    assert events == []
+
     ref = push(socket, "publish_events", request)
     assert_reply ref, :ok, %{status: "ok"}
 
     events = ER.Events.list_events_for_topic(topic.name, return_batch: false)
     assert length(events) == 1
+  end
+
+  test "publishes non durable events", %{socket: socket, topic: topic} do
+    request = %{
+      "topic" => topic.name,
+      "durable" => "false",
+      "events" => [
+        %{
+          "name" => "user.created",
+          "data" => "{\"first_name\": \"Thomas\"}",
+          "source" => "websocket",
+          "context" => %{"ip_address" => "127.0.0.1"}
+        }
+      ]
+    }
+
+    events = ER.Events.list_events_for_topic(topic.name, return_batch: false)
+    assert events == []
+
+    ref = push(socket, "publish_events", request)
+    assert_reply ref, :ok, %{status: "ok"}
+
+    events = ER.Events.list_events_for_topic(topic.name, return_batch: false)
+    assert events == []
   end
 end

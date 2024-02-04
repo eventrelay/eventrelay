@@ -65,10 +65,10 @@ defmodule ER.Events.Topic do
 
   @spec build_topic(String.t(), String.t()) :: String.t()
   def build_topic(topic_name, topic_identifier \\ "") do
-    unless ER.empty?(topic_identifier) do
-      "#{topic_name}:#{topic_identifier}"
-    else
+    if ER.empty?(topic_identifier) do
       topic_name
+    else
+      "#{topic_name}:#{topic_identifier}"
     end
   end
 

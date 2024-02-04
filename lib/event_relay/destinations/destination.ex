@@ -160,9 +160,14 @@ defmodule ER.Destinations.Destination do
       "description" => "This document records the configuration for a webhook destination",
       "type" => "object",
       "properties" => %{
-        "topic_name" => %{
-          "description" => "The name of the topic that you want to forward events to",
+        "endpoint_url" => %{
+          "description" => "The URL that you want to send the webhook request to",
           "type" => "string"
+        },
+        "user_agent" => %{
+          "description" => "The User-Agent HTTP header value",
+          "type" => "string",
+          "default" => "EventRelay (https://eventrelay.io)"
         },
         "retries" => %{
           "description" => "Configuration for Webhook Retries",

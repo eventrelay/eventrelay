@@ -32,10 +32,10 @@ defmodule ER.Events do
       |> where(as(:events).topic_name == ^topic_name)
 
     query =
-      unless ER.empty?(topic_identifier) do
-        query |> where(as(:events).topic_identifier == ^topic_identifier)
-      else
+      if ER.empty?(topic_identifier) do
         query
+      else
+        query |> where(as(:events).topic_identifier == ^topic_identifier)
       end
 
     query =
@@ -185,10 +185,10 @@ defmodule ER.Events do
       end
 
     query =
-      unless ER.empty?(topic_identifier) do
-        query |> where(as(:events).topic_identifier == ^topic_identifier)
-      else
+      if ER.empty?(topic_identifier) do
         query
+      else
+        query |> where(as(:events).topic_identifier == ^topic_identifier)
       end
 
     query =
@@ -255,10 +255,10 @@ defmodule ER.Events do
       end
 
     query =
-      unless ER.empty?(topic_identifier) do
-        where(query, as(:events).topic_identifier == ^topic_identifier)
-      else
+      if ER.empty?(topic_identifier) do
         query
+      else
+        where(query, as(:events).topic_identifier == ^topic_identifier)
       end
 
     # IO.inspect(sql: Repo.to_sql(:all, query))
@@ -430,18 +430,7 @@ defmodule ER.Events do
     end
 
     Flamel.Task.background(
-      fn ->
-        Destinations.list_destinations(types: [:websocket])
-        |> Enum.map(fn destination ->
-          if ER.Events.ChannelCache.any_sockets?(destination.id) do
-            ERWeb.Endpoint.broadcast("events:#{destination.id}", "event:published", event)
-          else
-            Logger.debug(
-              "#{__MODULE__}.publish_event(#{inspect(event)}) for destination=#{inspect(destination)} do not push to websocket because there are no sockets connected on node=#{inspect(Node.self())}"
-            )
-          end
-        end)
-      end,
+      fn -> broadcast_to_websockets(event) end,
       env: ER.env()
     )
 
@@ -450,6 +439,19 @@ defmodule ER.Events do
 
   def publish_event({:error, event}) do
     {:error, event}
+  end
+
+  defp broadcast_to_websockets(event) do
+    Destinations.list_destinations(types: [:websocket])
+    |> Enum.map(fn destination ->
+      if ER.Events.ChannelCache.any_sockets?(destination.id) do
+        ERWeb.Endpoint.broadcast("events:#{destination.id}", "event:published", event)
+      else
+        Logger.debug(
+          "#{__MODULE__}.publish_event(#{inspect(event)}) for destination=#{inspect(destination)} do not push to websocket because there are no sockets connected on node=#{inspect(Node.self())}"
+        )
+      end
+    end)
   end
 
   @doc """

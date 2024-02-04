@@ -149,7 +149,7 @@ defmodule ER.Destinations do
   end
 
   def list_events_for_deliveries(topic_name, deliveries) do
-    event_ids = Enum.map(deliveries, fn d -> "'#{d.event_id}'" end) |> Enum.join(", ")
+    event_ids = Enum.map_join(deliveries, ", ", fn d -> "'#{d.event_id}'" end)
 
     predicates =
       case Predicated.Query.new("id in [#{event_ids}]") do

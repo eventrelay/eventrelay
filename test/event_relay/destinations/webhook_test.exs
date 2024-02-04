@@ -6,9 +6,10 @@ defmodule ER.Destinations.WebhookTest do
   alias ER.Events.Event
   use Mimic
 
-  setup do
+  @moduletag config: %{}
+  setup context do
     {:ok, topic} = ER.Events.create_topic(%{name: "users"})
-    destination = insert(:destination, topic: topic)
+    destination = insert(:destination, topic: topic, config: context.config)
 
     {:ok, event} =
       params_for(:event,
@@ -124,9 +125,25 @@ defmodule ER.Destinations.WebhookTest do
         assert headers[:x_event_relay_topic_name] == event.topic_name
         assert headers[:x_event_relay_topic_identifier] == event.topic_identifier
         assert headers[:x_event_relay_destination_id] == destination.id
+
+        assert headers[:user_agent] == "EventRelay (https://eventrelay.io)"
       end)
 
       Webhook.request(destination, event, now)
+    end
+
+    @tag config: %{"user_agent" => "TestAgent"}
+    test "set custom user agent", %{
+      event: event,
+      destination: destination
+    } do
+      Req
+      |> expect(:post, fn opts ->
+        headers = opts[:headers]
+        assert headers[:user_agent] == "TestAgent"
+      end)
+
+      Webhook.request(destination, event)
     end
   end
 end

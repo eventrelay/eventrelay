@@ -42,24 +42,20 @@ defmodule ER.BatchedResults do
   defp next_offset(offset, batch_size, total_count) do
     next_offset_number = offset + batch_size
 
-    cond do
-      next_offset_number > total_count ->
-        nil
-
-      true ->
-        next_offset_number
+    if next_offset_number > total_count do
+      nil
+    else
+      next_offset_number
     end
   end
 
   defp previous_offset(offset, batch_size) do
     previous_offset_number = offset - batch_size
 
-    cond do
-      previous_offset_number < 0 ->
-        nil
-
-      true ->
-        previous_offset_number
+    if previous_offset_number < 0 do
+      nil
+    else
+      previous_offset_number
     end
   end
 
@@ -91,12 +87,10 @@ defmodule ER.BatchedResults do
     total = trunc(raw_total)
     diff = raw_total - total
 
-    cond do
-      diff > 0 ->
-        total + 1
-
-      true ->
-        total
+    if diff > 0 do
+      total + 1
+    else
+      total
     end
   end
 end

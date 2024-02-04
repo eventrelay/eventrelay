@@ -136,10 +136,10 @@ defmodule ER.Metrics do
       |> where(as(:metrics).topic_name == ^topic_name)
 
     query =
-      unless ER.empty?(topic_identifier) do
-        query |> where(as(:metrics).topic_identifier == ^topic_identifier)
-      else
+      if ER.empty?(topic_identifier) do
         query
+      else
+        query |> where(as(:metrics).topic_identifier == ^topic_identifier)
       end
 
     query =
