@@ -6,6 +6,11 @@ defmodule ER.Destinations.Pipeline.Client do
   def prepare_for_start(opts) do
     destination = get_destination(opts)
     ER.Destinations.QueuedEvents.Server.factory(destination.id)
+
+    case destination.type do
+      :postgres ->
+        ER.Destinations.Postgres.Server.factory(destination.id)
+    end
   end
 
   @impl true
