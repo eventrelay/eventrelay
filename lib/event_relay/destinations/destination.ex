@@ -28,7 +28,11 @@ defmodule ER.Destinations.Destination do
     field :name, :string
     field :offset, :integer
     field :ordered, :boolean, default: false
-    field(:destination_type, Ecto.Enum, values: [:api, :webhook, :websocket, :file, :topic])
+
+    field(:destination_type, Ecto.Enum,
+      values: [:api, :webhook, :websocket, :file, :topic, :postgres]
+    )
+
     field :paused, :boolean, default: false
     field :config, :map, default: %{}
     field :config_json, :string, virtual: true
@@ -66,7 +70,14 @@ defmodule ER.Destinations.Destination do
     |> decode_config()
     |> put_signing_secret()
     |> assoc_constraint(:topic)
-    |> validate_inclusion(:destination_type, [:file, :webhook, :websocket, :api, :topic])
+    |> validate_inclusion(:destination_type, [
+      :file,
+      :webhook,
+      :websocket,
+      :api,
+      :topic,
+      :postgres
+    ])
   end
 
   def put_signing_secret(changeset) do
@@ -102,6 +113,42 @@ defmodule ER.Destinations.Destination do
       "properties" => %{
         "topic_name" => %{
           "description" => "The name of the topic that you want to forward events to",
+          "type" => "string"
+        },
+        "pipeline" => config_schema_pipeline()
+      }
+    }
+  end
+
+  def base_config_schema(:postgres) do
+    %{
+      "$schema" => "http://json-schema.org/draft-04/schema#",
+      "title" => "Configuration for a topic destination",
+      "description" => "This document records the configuration for a topic destination",
+      "type" => "object",
+      "properties" => %{
+        "hostname" => %{
+          "description" => "The hostname of the database server",
+          "type" => "string"
+        },
+        "database" => %{
+          "description" => "The name of the database in the server",
+          "type" => "string"
+        },
+        "username" => %{
+          "description" => "The username of the user that can connect to the database",
+          "type" => "string"
+        },
+        "password" => %{
+          "description" => "The password of the user that can connect to the database",
+          "type" => "string"
+        },
+        "port" => %{
+          "description" => "The port the database server uses",
+          "type" => "string"
+        },
+        "table_name" => %{
+          "description" => "The table to insert the events into. ex. events",
           "type" => "string"
         },
         "pipeline" => config_schema_pipeline()
@@ -245,6 +292,26 @@ defmodule ER.Destinations.Destination do
         "max_attempts" => 10,
         "max_interval" => 256_000
       },
+      "pipeline" => %{
+        "processor_concurrency" => 10,
+        "processor_min_demand" => 1,
+        "processor_max_demand" => 50,
+        "batcher_concurrency" => 1,
+        "batch_size" => 50,
+        "batch_timeout" => 1000,
+        "pull_interval" => 2000
+      }
+    }
+  end
+
+  def base_config(:postgres) do
+    %{
+      "hostname" => "localhost",
+      "database" => "database",
+      "username" => "username",
+      "password" => "password",
+      "port" => "5432",
+      "table_name" => "events",
       "pipeline" => %{
         "processor_concurrency" => 10,
         "processor_min_demand" => 1,

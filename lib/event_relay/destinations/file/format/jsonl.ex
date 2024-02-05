@@ -11,25 +11,31 @@ defmodule ER.Destinations.File.Format.Jsonl do
 
     def encode(encoder, messages, destination, _opts) do
       encoded =
-        Enum.map(messages, fn %{data: event} ->
-          data =
-            event
-            |> Event.to_map()
-            |> Transformer.transform(destination)
-            |> Map.put_new("id", event.id)
-
-          case Jason.encode(data) do
-            {:ok, json} ->
-              json
-
-            _ ->
-              nil
-          end
+        Enum.reduce(messages, "", fn %{data: event}, acc ->
+          event
+          |> Event.to_map()
+          |> Transformer.transform(destination)
+          |> Map.put_new("id", event.id)
+          |> encode_data(acc)
         end)
-        |> Enum.reject(&is_nil/1)
-        |> Enum.join("\n")
 
       {encoder, encoded}
+    end
+
+    defp encode_data(data, acc) do
+      case Jason.encode(data) do
+        {:ok, json} ->
+          case acc do
+            "" ->
+              acc <> json
+
+            _ ->
+              acc <> "\n" <> json
+          end
+
+        _ ->
+          acc
+      end
     end
   end
 end

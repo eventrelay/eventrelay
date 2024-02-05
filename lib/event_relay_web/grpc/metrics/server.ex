@@ -1,4 +1,7 @@
 defmodule ERWeb.Grpc.EventRelay.Metrics.Server do
+  @moduledoc """
+  GRPC Server implementation for Metrics Service
+  """
   use GRPC.Server, service: ERWeb.Grpc.Eventrelay.Metrics.Service
   require Logger
 

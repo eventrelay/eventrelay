@@ -1,4 +1,7 @@
 defmodule ERWeb.Grpc.EventRelay.ApiKeys.Server do
+  @moduledoc """
+  GRPC Server implementation for ApiKeys Service
+  """
   use GRPC.Server, service: ERWeb.Grpc.Eventrelay.ApiKeys.Service
   require Logger
 

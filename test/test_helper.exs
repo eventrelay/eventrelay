@@ -5,6 +5,7 @@ Mimic.copy(Req)
 Mimic.copy(ERWeb.RateLimiter)
 Mimic.copy(ExAws)
 
+ExUnit.configure(exclude: [integration: true])
 ExUnit.start()
 Faker.start()
 {:ok, _} = Application.ensure_all_started(:ex_machina)

@@ -1,4 +1,7 @@
 defmodule ERWeb.Grpc.EventRelay.JWT.Server do
+  @moduledoc """
+  GRPC Server implementation for JWT Service
+  """
   use GRPC.Server, service: ERWeb.Grpc.Eventrelay.JWT.Service
   require Logger
 
