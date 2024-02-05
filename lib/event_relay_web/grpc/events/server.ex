@@ -1,4 +1,7 @@
 defmodule ERWeb.Grpc.EventRelay.Events.Server do
+  @moduledoc """
+  GRPC Server implementation for Events Service
+  """
   use GRPC.Server, service: ERWeb.Grpc.Eventrelay.Events.Service
   require Logger
 

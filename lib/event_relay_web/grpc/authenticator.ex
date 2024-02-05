@@ -1,5 +1,8 @@
 defmodule ERWeb.Grpc.EventRelay.Interceptors.Authenticator do
   @moduledoc """
+  This Interceptor checks the bearer token in the GRPC request and makes sure
+  that the ApiKey that is associated with the bearer token is allowed to perform
+  the call requested
   """
 
   require Logger

@@ -1,4 +1,7 @@
 defmodule ERWeb.Grpc.EventRelay.Destinations.Server do
+  @moduledoc """
+  GRPC Server implementation for Destinations Service
+  """
   use GRPC.Server, service: ERWeb.Grpc.Eventrelay.Destinations.Service
   require Logger
 

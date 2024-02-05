@@ -1,4 +1,8 @@
 defmodule ERWeb.Grpc.Endpoint do
+  @moduledoc """
+  This module is where all the GRPC servers that implement the services are
+  configured.
+  """
   use GRPC.Endpoint
 
   run(ERWeb.Grpc.EventRelay.Events.Server,

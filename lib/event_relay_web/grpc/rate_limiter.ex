@@ -1,5 +1,6 @@
 defmodule ERWeb.Grpc.EventRelay.Interceptors.RateLimiter do
   @moduledoc """
+  This is an GRCP Interceptor that handles rate limiting requests
   """
 
   require Logger
