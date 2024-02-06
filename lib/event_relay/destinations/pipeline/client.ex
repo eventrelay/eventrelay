@@ -7,9 +7,10 @@ defmodule ER.Destinations.Pipeline.Client do
     destination = get_destination(opts)
     ER.Destinations.QueuedEvents.Server.factory(destination.id)
 
-    case destination.type do
-      :postgres ->
-        ER.Destinations.Postgres.Server.factory(destination.id)
+    if destination.destination_type == :database do
+      destination
+      |> ER.Destinations.Database.Factory.build()
+      |> ER.Destinations.Database.prepare_for_start()
     end
   end
 

@@ -1,4 +1,4 @@
-defmodule ER.Destinations.Pipeline.Postgres do
+defmodule ER.Destinations.Pipeline.Database do
   use Broadway
   use ER.Destinations.Pipeline.Base
 
@@ -29,6 +29,13 @@ defmodule ER.Destinations.Pipeline.Postgres do
             min_demand: broadway_config.processor_min_demand,
             max_demand: broadway_config.processor_max_demand
           ]
+        ],
+        batchers: [
+          database: [
+            concurrency: broadway_config.batcher_concurrency,
+            batch_size: broadway_config.batch_size,
+            batch_timeout: broadway_config.batch_timeout
+          ]
         ]
       )
 
@@ -54,7 +61,7 @@ defmodule ER.Destinations.Pipeline.Postgres do
       ) do
     Logger.debug("#{__MODULE__}.handle_message(#{inspect(message)}, #{inspect(context)}")
 
-    Message.put_batcher(message, :postgres)
+    Message.put_batcher(message, :database)
   end
 
   def handle_message(_, message, context) do
@@ -64,13 +71,26 @@ defmodule ER.Destinations.Pipeline.Postgres do
   end
 
   @impl Broadway
-  def handle_batch(:postgres, messages, _batch_info, %{
-        destination: %{paused: false} = destination
-      }) do
-    ER.Destinations.Postgres.Server.insert(destination.id, messages)
+  def handle_batch(
+        :database,
+        messages,
+        _batch_info,
+        %{
+          destination: %{paused: false} = destination
+        }
+      ) do
+    destination
+    |> ER.Destinations.Database.Factory.build()
+    |> ER.Destinations.Database.insert(messages)
+  end
+
+  def handle_batch(batch, _messages, batch_info, context) do
+    Logger.debug(
+      "#{__MODULE__}.handle_batch(#{inspect(batch)}, _messages, #{inspect(batch_info)}, #{inspect(context)}) does not handle batch"
+    )
   end
 
   def name(id) do
-    "destination:pipeline:postgres:#{id}"
+    "destination:pipeline:database:#{id}"
   end
 end

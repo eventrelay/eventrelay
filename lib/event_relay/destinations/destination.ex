@@ -30,7 +30,7 @@ defmodule ER.Destinations.Destination do
     field :ordered, :boolean, default: false
 
     field(:destination_type, Ecto.Enum,
-      values: [:api, :webhook, :websocket, :file, :topic, :postgres]
+      values: [:api, :webhook, :websocket, :file, :topic, :database]
     )
 
     field :paused, :boolean, default: false
@@ -76,7 +76,7 @@ defmodule ER.Destinations.Destination do
       :websocket,
       :api,
       :topic,
-      :postgres
+      :database
     ])
   end
 
@@ -120,36 +120,47 @@ defmodule ER.Destinations.Destination do
     }
   end
 
-  def base_config_schema(:postgres) do
+  def base_config_schema(:database) do
     %{
       "$schema" => "http://json-schema.org/draft-04/schema#",
-      "title" => "Configuration for a topic destination",
-      "description" => "This document records the configuration for a topic destination",
+      "title" => "Configuration for a database destination",
+      "description" => "This document records the configuration for a database destination",
       "type" => "object",
       "properties" => %{
-        "hostname" => %{
-          "description" => "The hostname of the database server",
-          "type" => "string"
-        },
-        "database" => %{
-          "description" => "The name of the database in the server",
-          "type" => "string"
-        },
-        "username" => %{
-          "description" => "The username of the user that can connect to the database",
-          "type" => "string"
-        },
-        "password" => %{
-          "description" => "The password of the user that can connect to the database",
-          "type" => "string"
-        },
-        "port" => %{
-          "description" => "The port the database server uses",
-          "type" => "string"
-        },
-        "table_name" => %{
-          "description" => "The table to insert the events into. ex. events",
-          "type" => "string"
+        "postgres" => %{
+          "description" => "The configuration for Postgres",
+          "database" => %{
+            "description" => "The hostname of the database server",
+            "type" => "string",
+            "default" => "postgres"
+          },
+          "type" => "object",
+          "properties" => %{
+            "hostname" => %{
+              "description" => "The hostname of the database server",
+              "type" => "string"
+            },
+            "database" => %{
+              "description" => "The name of the database in the server",
+              "type" => "string"
+            },
+            "username" => %{
+              "description" => "The username of the user that can connect to the database",
+              "type" => "string"
+            },
+            "password" => %{
+              "description" => "The password of the user that can connect to the database",
+              "type" => "string"
+            },
+            "port" => %{
+              "description" => "The port the database server uses",
+              "type" => "string"
+            },
+            "table_name" => %{
+              "description" => "The table to insert the events into. ex. events",
+              "type" => "string"
+            }
+          }
         },
         "pipeline" => config_schema_pipeline()
       }
@@ -357,6 +368,10 @@ defmodule ER.Destinations.Destination do
         "pull_interval" => 2000
       }
     }
+  end
+
+  def base_config(_) do
+    %{}
   end
 
   def matches?(%{query: nil}, _event) do
