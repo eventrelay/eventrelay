@@ -10,5 +10,8 @@ defmodule ER.Destinations.Pipeline do
   def factory(%Destination{destination_type: :topic} = _destination),
     do: ER.Destinations.Pipeline.Topic
 
+  def factory(%Destination{destination_type: :database} = _destination),
+    do: ER.Destinations.Pipeline.Database
+
   def factory(_), do: nil
 end

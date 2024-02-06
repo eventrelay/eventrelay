@@ -1,4 +1,4 @@
-defmodule ER.Destinations.Postgres.Server do
+defmodule ER.Destinations.Database.Postgres.Server do
   @moduledoc """
   Manages sending events to a Postgres database
   """
@@ -85,11 +85,13 @@ defmodule ER.Destinations.Postgres.Server do
     Logger.debug("Postgres server started for destination=#{inspect(id)}")
 
     %{
-      "hostname" => hostname,
-      "database" => database,
-      "username" => username,
-      "password" => password,
-      "port" => port
+      "postgres" => %{
+        "hostname" => hostname,
+        "database" => database,
+        "username" => username,
+        "password" => password,
+        "port" => port
+      }
     } = destination.config
 
     state =

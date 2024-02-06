@@ -20,20 +20,12 @@ defmodule ERWeb.DestinationLive.ConfigFormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <p :if={Flamel.to_atom(f[:destination_type].value) in [:webhook, :file, :topic]}>
+        <div :if={Flamel.to_atom(f[:destination_type].value) in [:webhook, :file, :topic, :postgres]}>
           Example Config
-        </p>
-        <.alert :if={Flamel.to_atom(f[:destination_type].value) == :webhook} color="info">
-          <pre><%= ER.Destinations.Destination.base_config(:webhook) |> Jason.encode!(pretty: true) %></pre>
-        </.alert>
-
-        <.alert :if={Flamel.to_atom(f[:destination_type].value) == :file} color="info">
-          <pre><%= ER.Destinations.Destination.base_config(:file) |> Jason.encode!(pretty: true) %></pre>
-        </.alert>
-
-        <.alert :if={Flamel.to_atom(f[:destination_type].value) == :topic} color="info">
-          <pre><%= ER.Destinations.Destination.base_config(:topic) |> Jason.encode!(pretty: true) %></pre>
-        </.alert>
+          <.alert color="info">
+            <pre><%= ER.Destinations.Destination.base_config(f[:destination_type].value) |> Jason.encode!(pretty: true) %></pre>
+          </.alert>
+        </div>
 
         <% # :if={Flamel.to_atom(f[:destination_type].value) in [:webhook, :file, :topic]} %>
         <.input field={f[:config_json]} type="textarea" label="Config" />

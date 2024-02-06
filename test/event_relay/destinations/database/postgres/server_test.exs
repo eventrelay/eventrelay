@@ -1,4 +1,4 @@
-defmodule ER.Destinations.Postgres.ServerTest do
+defmodule ER.Destinations.Database.Postgres.ServerTest do
   use ER.DataCase
   import ER.Test.Setups
   import ER.Factory
@@ -27,12 +27,12 @@ defmodule ER.Destinations.Postgres.ServerTest do
     test "inserts records", %{destination: destination, messages: messages} do
       # This test requires a separate database setup called event_relay_other. See
       # the destination config above.
-      ER.Destinations.Postgres.Server.factory(destination.id)
-      {:ok, result} = ER.Destinations.Postgres.Server.insert(destination.id, messages)
+      ER.Destinations.Database.Postgres.Server.factory(destination.id)
+      {:ok, result} = ER.Destinations.Database.Postgres.Server.insert(destination.id, messages)
       assert result.num_rows == 2
       assert result.command == :insert
-      ER.Destinations.Postgres.Server.reset(destination.id)
-      ER.Destinations.Postgres.Server.stop(destination.id)
+      ER.Destinations.Database.Postgres.Server.reset(destination.id)
+      ER.Destinations.Database.Postgres.Server.stop(destination.id)
     end
   end
 end
