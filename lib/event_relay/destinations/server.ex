@@ -42,7 +42,7 @@ defmodule ER.Destinations.Server do
   end
 
   # We have a pid so the supervisor is running
-  def handle_cast({:restart, destination}, %{pid: pid} = state) do
+  def handle_cast({:restart, destination}, %{pid: pid} = state) when not is_nil(pid) do
     case Supervisor.stop(pid) do
       :ok ->
         start_supervisor(destination, state)
