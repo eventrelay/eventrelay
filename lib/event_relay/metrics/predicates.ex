@@ -39,7 +39,7 @@ defmodule ER.Metrics.Predicates do
         conditions,
         previous_predicate
       ) do
-    field = String.to_atom(field)
+    field = String.to_existing_atom(field)
 
     case previous_predicate do
       nil ->
@@ -63,7 +63,7 @@ defmodule ER.Metrics.Predicates do
         conditions,
         previous_predicate
       ) do
-    field = String.to_atom(field)
+    field = String.to_existing_atom(field)
 
     case previous_predicate do
       nil ->
@@ -87,7 +87,7 @@ defmodule ER.Metrics.Predicates do
         conditions,
         previous_predicate
       ) do
-    field = String.to_atom(field)
+    field = String.to_existing_atom(field)
 
     case previous_predicate do
       nil ->
@@ -111,7 +111,7 @@ defmodule ER.Metrics.Predicates do
         conditions,
         previous_predicate
       ) do
-    field = String.to_atom(field)
+    field = String.to_existing_atom(field)
 
     case previous_predicate do
       nil ->
@@ -135,7 +135,7 @@ defmodule ER.Metrics.Predicates do
         conditions,
         previous_predicate
       ) do
-    field = String.to_atom(field)
+    field = String.to_existing_atom(field)
 
     case previous_predicate do
       nil ->
@@ -159,7 +159,7 @@ defmodule ER.Metrics.Predicates do
         conditions,
         previous_predicate
       ) do
-    field = String.to_atom(field)
+    field = String.to_existing_atom(field)
 
     case previous_predicate do
       nil ->
@@ -183,7 +183,7 @@ defmodule ER.Metrics.Predicates do
         conditions,
         previous_predicate
       ) do
-    field = String.to_atom(field)
+    field = String.to_existing_atom(field)
 
     case previous_predicate do
       nil ->
