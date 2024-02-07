@@ -33,8 +33,7 @@ defmodule ER.Destinations.Manager.Server do
       "#{__MODULE__}.handle_info({:destination_updated, #{inspect(destination)}}, #{inspect(state)}) on node=#{inspect(Node.self())}"
     )
 
-    ER.Destinations.Server.stop(destination.id)
-    ER.Destinations.Server.factory(destination.id, %{destination: destination})
+    ER.Destinations.Server.restart(destination)
     {:noreply, state}
   end
 
