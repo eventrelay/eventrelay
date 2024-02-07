@@ -18,6 +18,10 @@ defmodule ER.Metrics.Metric do
     timestamps()
   end
 
+  def valid_grpc_enums do
+    [:AVG, :SUM, :MIN, :MAX, :COUNT]
+  end
+
   @doc false
   def changeset(metric, attrs) do
     metric

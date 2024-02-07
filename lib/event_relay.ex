@@ -321,7 +321,7 @@ defmodule ER do
   """
 
   def to_atom(value) when is_binary(value) do
-    String.to_atom(value)
+    String.to_existing_atom(value)
   end
 
   def to_atom(value) when is_atom(value) do

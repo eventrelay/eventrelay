@@ -79,8 +79,6 @@ defmodule ER.MixProject do
       {:libcluster, "~> 3.2"},
       # HTTP Client
       {:req, "~> 0.4"},
-      # Redis
-      {:redix, "~> 1.2"},
       # Cache
       {:nebulex, "~> 2.4"},
       {:nebulex_adapters_horde, "~> 1.0.0"},

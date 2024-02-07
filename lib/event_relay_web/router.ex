@@ -10,7 +10,7 @@ defmodule ERWeb.Router do
     plug :put_root_layout, {ERWeb.Layouts, :root}
     plug :protect_from_forgery
     plug ERWeb.CurrentHost
-    plug :put_secure_browser_headers
+    plug :put_secure_browser_headers, %{"content-security-policy" => "default-src 'self'"}
     plug :fetch_current_user
   end
 

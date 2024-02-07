@@ -66,7 +66,6 @@ defmodule ER.Application do
         # Start the server that monitor Phoenix channels connections
         {ER.ChannelMonitor, :events}
       ]
-      |> maybe_add_child(ER.Env.use_redis?(), ER.Redix)
       |> add_child(ER.BootServer)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -74,9 +73,6 @@ defmodule ER.Application do
     opts = [strategy: :one_for_one, name: ER.Supervisor]
     Supervisor.start_link(children, opts)
   end
-
-  defp maybe_add_child(children, true, child), do: add_child(children, child)
-  defp maybe_add_child(children, false, _child), do: children
 
   defp add_child(children, child), do: children ++ [child]
 
