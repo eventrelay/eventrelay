@@ -7,26 +7,57 @@ defmodule ER.Destinations.Server do
   use ER.Server.Base
   use ER.Horde.Server
   alias ER.Destinations.Destination
+  import Flamel.Wrap
 
   def handle_continue(:load_state, %{destination: destination} = state) do
+    destination
+    |> start_supervisor(state)
+    |> noreply()
+  end
+
+  def start_supervisor(destination, state) do
     destination
     |> build_destination_spec()
     |> then(fn
       nil ->
-        nil
+        state
 
       spec ->
-        case Supervisor.start_link([spec],
-               name: supervisor_name("destination:supervisor:#{destination.id}"),
-               strategy: :one_for_one
-             ) do
-          {:ok, pid} -> pid
-          {:error, {:already_started, pid}} -> pid
-          _ -> nil
-        end
-    end)
+        pid =
+          case Supervisor.start_link([spec],
+                 name: supervisor_name("destination:supervisor:#{destination.id}"),
+                 strategy: :one_for_one
+               ) do
+            {:ok, pid} -> pid
+            {:error, {:already_started, pid}} -> pid
+            _ -> nil
+          end
 
-    {:noreply, state}
+        Map.put(state, :pid, pid)
+    end)
+  end
+
+  def restart(destination) do
+    GenServer.cast(via(destination.id), {:restart, destination})
+  end
+
+  # We have a pid so the supervisor is running
+  def handle_cast({:restart, destination}, %{pid: pid} = state) do
+    case Supervisor.stop(pid) do
+      :ok ->
+        start_supervisor(destination, state)
+
+      _ ->
+        state
+    end
+    |> noreply()
+  end
+
+  # There is no pid for the supervisor so it is not started
+  def handle_cast({:restart, destination}, state) do
+    destination
+    |> start_supervisor(state)
+    |> noreply()
   end
 
   def supervisor_name(id) do
