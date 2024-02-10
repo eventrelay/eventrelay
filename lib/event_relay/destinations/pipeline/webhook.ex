@@ -93,7 +93,7 @@ defmodule ER.Destinations.Pipeline.Webhook do
       if success?(response) do
         handle_success(message, delivery, attempts)
       else
-        handle_retry(message, delivery, attempts)
+        handle_retry(message, delivery, attempts, response)
       end
 
     message
@@ -103,9 +103,11 @@ defmodule ER.Destinations.Pipeline.Webhook do
     {message, update_delivery(delivery, %{status: :success, attempts: attempts})}
   end
 
-  def handle_retry(message, delivery, attempts) do
-    case ER.Destinations.Pipeline.Webhook.Retries.next(delivery.destination, delivery, attempts) do
-      {%{halt?: true}, nil} ->
+  def handle_retry(message, delivery, attempts, response) do
+    case ER.Destinations.Pipeline.Webhook.Retries.next(delivery.destination, response, attempts) do
+      {%{halt?: true} = strategy, nil} ->
+        maybe_pause_destination(delivery.destination, strategy.reason)
+
         # failure but we don't want to fail the message
         {message, update_delivery(delivery, %{status: :failure, attempts: attempts})}
 
@@ -134,6 +136,15 @@ defmodule ER.Destinations.Pipeline.Webhook do
         event
     end
   end
+
+  def maybe_pause_destination(destination, "HTTP 410 GONE") do
+    case ER.Destinations.update_destination(destination, %{paused: true}) do
+      {:ok, destination} -> destination
+      _ -> destination
+    end
+  end
+
+  def maybe_pause_destination(destination, _), do: destination
 
   def update_delivery(delivery, attrs \\ %{}) do
     case Destinations.update_delivery(delivery, attrs) do
