@@ -126,7 +126,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     ER.Destinations.QueuedEvents.Server.factory(destination.id)
 
     batch_size = if request.batch_size == 0, do: 100, else: request.batch_size
-    batch_size = if batch_size > 1000, do: 100, else: batch_size
+    batch_size = if batch_size > 100_000, do: 100_000, else: batch_size
 
     try do
       events =

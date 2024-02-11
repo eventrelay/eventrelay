@@ -64,7 +64,7 @@ defmodule ER.Destinations.QueuedEvents.Server do
       Events.list_events_for_topic(
         destination.topic_name,
         offset: 0,
-        batch_size: 100,
+        batch_size: 100_000,
         topic_identifier: destination.topic_identifier,
         predicates: "id in [#{event_ids}]",
         include_all: true
