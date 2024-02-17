@@ -67,6 +67,10 @@ Whether you're implementing a notification system, a chat application, or simply
 ## Web UI
 ![Events](https://github.com/eventrelay/eventrelay/assets/41780/5aa1f274-f417-41c9-b091-832c194f2267)
 
-## Want to contribute or look at the roadmap?
+## Want to contribute?
+
+If you have changes in mind that are significant or potentially time consuming, please open a RFC-style PR first, where we can discuss your plans first. We don't want you to spend all your time crafting a PR that we ultimately reject because we don't think it's a good fit or is too large for us to review. Not that we plan to reject PRs in general, but we have to be careful to balance features with maintenance burden, or we will quickly be unable to manage the project.
+
+## Checkout the roadmap
 
 Checkout the [GitHub Project Board](https://github.com/orgs/eventrelay/projects/1).
