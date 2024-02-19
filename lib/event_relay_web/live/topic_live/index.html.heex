@@ -16,17 +16,26 @@
     <.link navigate={~p"/topics/#{topic}/events"}>Events</.link>
   </:action>
   <:action :let={topic}>
+    <.link patch={~p"/topics/#{topic}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={topic}>
     <.link phx-click={JS.push("delete", value: %{id: topic.id})} data-confirm="Are you sure?">
       Delete
     </.link>
   </:action>
 </.table>
 
-<.modal :if={@live_action in [:new]} id="topic-modal" show on_cancel={JS.navigate(~p"/topics")}>
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="topic-modal"
+  show
+  on_cancel={JS.navigate(~p"/topics")}
+>
   <.live_component
     module={ERWeb.TopicLive.FormComponent}
     id={@topic.id || :new}
     title={@page_title}
+    topic={@topic}
     action={@live_action}
     topic={@topic}
     navigate={~p"/topics"}

@@ -8,10 +8,16 @@ defmodule ER.Events.Event do
   alias __MODULE__
 
   @typedoc """
+  Event name
+  """
+  @type name() :: String.t()
+
+  @typedoc """
   The Event schema
   """
   @type t :: %__MODULE__{
           id: binary(),
+          name: name(),
           topic_name: String.t(),
           topic_identifier: String.t(),
           data_json: String.t(),
@@ -130,6 +136,7 @@ defmodule ER.Events.Event do
     |> decode_context()
     |> decode_data()
     |> decode_data_schema()
+    |> validate_event_data_schema()
     |> validate_data_schema()
     |> assoc_constraint(:topic)
     |> foreign_key_constraint(:topic_name, name: :events_topic_name_fkey)
@@ -139,6 +146,22 @@ defmodule ER.Events.Event do
       :data,
       :topic_name
     ])
+  end
+
+  def validate_event_data_schema(changeset) do
+    topic_name = get_field(changeset, :topic_name)
+    event_name = get_field(changeset, :name)
+
+    event_schema =
+      ER.Events.TopicCache.fetch_event_schema_for_topic_and_event(topic_name, event_name)
+
+    if event_schema do
+      validate_change(changeset, :data, fn _, data ->
+        validate_schema(event_schema, data)
+      end)
+    else
+      changeset
+    end
   end
 
   def validate_data_schema(
@@ -176,8 +199,9 @@ defmodule ER.Events.Event do
       :ok ->
         []
 
-      {:error, _errors} ->
-        [{:data, "does not validate against the schema"}]
+      {:error, errors} ->
+        error_messages = Enum.map_join(errors, ", ", fn {error, _} -> error end)
+        [{:data, "does not validate against the schema because of errors: #{error_messages}"}]
     end
   end
 

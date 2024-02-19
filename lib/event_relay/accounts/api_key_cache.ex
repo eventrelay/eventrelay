@@ -5,6 +5,5 @@ defmodule ER.Accounts.ApiKeyCache do
     horde: [
       members: :auto,
       process_redistribution: :passive
-      # any other Horde options ...
     ]
 end

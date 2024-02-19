@@ -599,6 +599,90 @@ defmodule ER.EventsTest do
       ER.Events.Event.drop_table!(topic)
     end
 
+    test "produce_event_for_topic/1 with valid data per the event schema publishes an event" do
+      schema = ~S"""
+      {"$schema":"http://json-schema.org/draft-04/schema#","description":"Stores data about a page that is visited","properties":{"height":{"description":"","type":"string"},"path":{"description":"","type":"string"},"search":{"description":"","type":"string"},"title":{"description":"","type":"string"},"url":{"description":"","type":"string"},"width":{"description":"","type":"string"}},"title":"Page Event","type":"object", "required": ["title", "url"]}
+      """
+
+      ER.Events.TopicCache
+      |> expect(:fetch_event_schema_for_topic_and_event, fn _, _ ->
+        nil
+      end)
+
+      event_configs = [%ER.Events.EventConfig{name: "analytics.page", schema: schema}]
+      topic = insert(:topic, name: "test", event_configs: event_configs)
+
+      ER.Events.Event.create_table!(topic)
+      occurred_at = DateTime.to_iso8601(~U[2022-12-21 18:27:00Z])
+      available_at = DateTime.to_iso8601(~U[2021-12-21 18:27:00Z])
+
+      destination = insert(:destination, destination_type: :websocket, topic: topic)
+
+      event = %{
+        context: %{},
+        data: %{title: "test", url: "https://example.com"},
+        name: "analytics.page",
+        occurred_at: occurred_at,
+        available_at: available_at,
+        source: "some source",
+        topic_name: topic.name,
+        durable: true
+      }
+
+      ER.Events.ChannelCache
+      |> expect(:any_sockets?, fn destination_id ->
+        assert destination_id == destination.id
+
+        true
+      end)
+
+      assert {:ok, %Event{} = event} = Events.produce_event_for_topic(event)
+
+      assert Flamel.Moment.to_iso8601(event.occurred_at) == occurred_at
+      assert Flamel.Moment.to_iso8601(event.available_at) == available_at
+
+      assert Ecto.get_meta(event, :source) ==
+               "test_events"
+
+      ER.Events.Event.drop_table!(topic)
+    end
+
+    test "produce_event_for_topic/1 with invalid data per the event schema does not publishes an event" do
+      schema =
+        ~S"""
+        {"$schema":"http://json-schema.org/draft-04/schema#","description":"Stores data about a page that is visited","properties":{"height":{"description":"","type":"string"},"path":{"description":"","type":"string"},"search":{"description":"","type":"string"},"title":{"description":"","type":"string"},"url":{"description":"","type":"string"},"width":{"description":"","type":"string"}},"title":"Page Event","type":"object", "required": ["path"]}
+        """
+        |> String.trim()
+
+      event_configs = [%ER.Events.EventConfig{name: "analytics.page", schema: schema}]
+      topic = insert(:topic, name: "test", event_configs: event_configs)
+
+      ER.Events.Event.create_table!(topic)
+      occurred_at = DateTime.to_iso8601(~U[2022-12-21 18:27:00Z])
+      available_at = DateTime.to_iso8601(~U[2021-12-21 18:27:00Z])
+
+      event = %{
+        context: %{},
+        data: %{ugh: "test", url: "https://example.com"},
+        name: "analytics.page",
+        occurred_at: occurred_at,
+        available_at: available_at,
+        source: "some source",
+        topic_name: topic.name,
+        durable: true
+      }
+
+      assert capture_log(fn ->
+               assert {:error, event} = Events.produce_event_for_topic(event)
+
+               assert event.errors == [
+                        "Data does not validate against the schema because of errors: Required property path was not present."
+                      ]
+             end) =~ "Invalid changeset for event"
+
+      ER.Events.Event.drop_table!(topic)
+    end
+
     test "update_event/2 with valid data updates the event" do
       event = insert(:event)
       topic = insert(:topic)

@@ -13,8 +13,6 @@ defmodule ER.Destinations.Pipeline.File do
       "#{__MODULE__}.start_link opts=#{inspect(opts)} and broadway_config=#{inspect(broadway_config)}"
     )
 
-    # dbg()
-
     result =
       Broadway.start_link(__MODULE__,
         name: broadway_config.name,

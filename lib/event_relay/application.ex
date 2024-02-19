@@ -59,6 +59,7 @@ defmodule ER.Application do
         # {Cluster.Supervisor, [topologies, [name: ER.ClusterSupervisor]]},
         # Setup the Cache
         {ER.Cache, []},
+        {ER.Events.TopicCache, []},
         # Setup the ChannelCache
         {ER.Events.ChannelCache, []},
         # Setup the ApiKeyCache

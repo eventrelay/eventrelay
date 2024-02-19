@@ -3,6 +3,7 @@ defmodule ER.Events.Topic do
   import Ecto.Changeset
   alias ER.Events.Event
   alias __MODULE__
+  alias ER.Events.EventConfig
 
   @typedoc """
   The name for the topic.
@@ -19,7 +20,8 @@ defmodule ER.Events.Topic do
   """
   @type t :: %__MODULE__{
           name: topic_name(),
-          events: [Event.t()]
+          events: [Event.t()],
+          event_configs: [EventConfig.t()]
         }
 
   @derive {Jason.Encoder,
@@ -35,13 +37,14 @@ defmodule ER.Events.Topic do
     field :name, :string
     field :group_key, :string
     has_many :events, Event, foreign_key: :topic_name, references: :name
-
+    # embeds_many :event_configs, EventConfig, load_in_query: false
+    embeds_many :event_configs, EventConfig, on_replace: :delete
     timestamps(type: :utc_datetime)
   end
 
   @doc """
     Takes a topic string and returns the topic name and identifier.
-    
+
     ## Examples:
 
         iex> ER.Events.Topic.parse_topic("users")
@@ -81,5 +84,12 @@ defmodule ER.Events.Topic do
     |> validate_length(:name, max: 45)
     |> unique_constraint(:name)
     |> ER.Schema.normalize_name()
+    |> cast_embed(:event_configs, with: &event_config_changeset/2)
+  end
+
+  def event_config_changeset(event_config, attrs) do
+    event_config
+    |> cast(attrs, [:name, :schema])
+    |> validate_required([:name, :schema])
   end
 end
