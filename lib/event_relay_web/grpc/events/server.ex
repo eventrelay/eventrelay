@@ -27,29 +27,32 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
 
     if topic_name do
-      Enum.map(request.events, fn event ->
-        %{
-          name: Map.get(event, :name),
-          source: Map.get(event, :source),
-          group_key: Map.get(event, :group_key),
-          reference_key: Map.get(event, :reference_key),
-          trace_key: Map.get(event, :trace_key),
-          data_json: Map.get(event, :data),
-          context: Map.get(event, :context),
-          occurred_at: Map.get(event, :occurred_at),
-          available_at: Map.get(event, :available_at),
-          user_key: Map.get(event, :user_key),
-          anonymous_key: Map.get(event, :anonymous_key),
-          durable: request.durable,
-          verified: true,
-          topic_name: topic_name,
-          topic_identifier: topic_identifier,
-          data_schema_json: Map.get(event, :data_schema),
-          prev_id: Map.get(event, :prev_id)
-        }
-      end)
-      |> Flamel.Task.stream(&produce_event/1)
-      |> build_publish_events_response()
+      events =
+        Enum.map(request.events, fn event ->
+          %{
+            name: Map.get(event, :name),
+            source: Map.get(event, :source),
+            group_key: Map.get(event, :group_key),
+            reference_key: Map.get(event, :reference_key),
+            trace_key: Map.get(event, :trace_key),
+            data_json: Map.get(event, :data),
+            context: Map.get(event, :context),
+            occurred_at: Map.get(event, :occurred_at),
+            available_at: Map.get(event, :available_at),
+            user_key: Map.get(event, :user_key),
+            anonymous_key: Map.get(event, :anonymous_key),
+            durable: request.durable,
+            verified: true,
+            topic_name: topic_name,
+            topic_identifier: topic_identifier,
+            data_schema_json: Map.get(event, :data_schema),
+            prev_id: Map.get(event, :prev_id)
+          }
+        end)
+
+      ER.Events.Batcher.Server.add(topic_name, events)
+      # TODO: fix this. Probably should not return the events 
+      build_publish_events_response([])
     else
       raise GRPC.RPCError,
         status: GRPC.Status.invalid_argument(),

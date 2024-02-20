@@ -624,6 +624,7 @@ defmodule ER.Events do
                |> Topic.changeset(attrs)
                |> Repo.insert!()
 
+             PubSub.broadcast(ER.PubSub, "topic:created", {:topic_created, topic})
              ER.Events.Event.create_table!(topic)
              ER.Destinations.Delivery.create_table!(topic)
              topic
@@ -663,6 +664,16 @@ defmodule ER.Events do
     topic
     |> Topic.changeset(attrs)
     |> Repo.update()
+    |> maybe_publish_topic_updated()
+  end
+
+  def maybe_publish_topic_updated({:ok, topic}) do
+    PubSub.broadcast(ER.PubSub, "topic:updated", {:topic_updated, topic})
+    {:ok, topic}
+  end
+
+  def maybe_publish_topic_updated(value) do
+    value
   end
 
   @doc """
@@ -673,6 +684,7 @@ defmodule ER.Events do
       case Repo.transaction(fn ->
              delete_events_for_topic!(topic)
              {:ok, topic} = Repo.delete(topic)
+             PubSub.broadcast(ER.PubSub, "topic:deleted", {:topic_deleted, topic})
 
              ER.Events.Event.drop_table!(topic)
              ER.Destinations.Delivery.drop_table!(topic)
