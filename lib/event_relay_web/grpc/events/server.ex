@@ -71,17 +71,17 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
     end)
   end
 
-  defp produce_event(event) do
-    case ER.Events.produce_event_for_topic(event) do
-      {:ok, %Event{} = event} ->
-        build_event(event, Topic.build_topic(event.topic_name, event.topic_identifier))
-
-      {:error, error} ->
-        # TODO: provide a better error message
-        Logger.error("Error creating event: #{inspect(error)}")
-        nil
-    end
-  end
+  # defp produce_event(event) do
+  #   case ER.Events.produce_event_for_topic(event) do
+  #     {:ok, %Event{} = event} ->
+  #       build_event(event, Topic.build_topic(event.topic_name, event.topic_identifier))
+  #
+  #     {:error, error} ->
+  #       # TODO: provide a better error message
+  #       Logger.error("Error creating event: #{inspect(error)}")
+  #       nil
+  #   end
+  # end
 
   @spec pull_events(PullEventsRequest.t(), GRPC.Server.Stream.t()) :: PullEventsResponse.t()
   def pull_events(request, _stream) do

@@ -7,12 +7,12 @@ defmodule ER.Events.Batcher.Server do
   use ER.Horde.Server
   require Logger
   import Flamel.Wrap
-  alias ER.Events.Event
+  alias ER.Events.{Event, BatchedEvent}
   alias ER.Repo
 
-  @drain_interval_ms 5_000
+  @drain_interval_ms 1_000
 
-  @max_batch_size 4_000
+  @max_batch_size 2_500
 
   def handle_continue(:load_state, state) do
     Process.flag(:trap_exit, true)
@@ -39,12 +39,6 @@ defmodule ER.Events.Batcher.Server do
       Enum.reduce(events, batch, fn item, acc ->
         [item | acc]
       end)
-
-    IO.puts(
-      "=============================================================================================="
-    )
-
-    dbg(length(new_batch))
 
     if length(new_batch) >= @max_batch_size do
       Process.cancel_timer(state[:timer])
@@ -90,7 +84,7 @@ defmodule ER.Events.Batcher.Server do
 
     {valid, invalid} =
       Enum.reduce(events, {[], []}, fn event, {valid, invalid} ->
-        event = Event.new_with_defaults(event)
+        event = BatchedEvent.new_with_defaults(event)
 
         changeset = Event.changeset(%Event{}, event)
 
