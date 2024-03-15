@@ -54,8 +54,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       db_event = List.first(events)
 
-      dbg(events)
-
       assert Flamel.Moment.to_iso8601(db_event.available_at) == available_at
 
       assert Enum.count(events) == 1
