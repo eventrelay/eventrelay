@@ -47,8 +47,12 @@ defmodule ERWeb.EventsChannelTest do
     events = ER.Events.list_events_for_topic(topic.name, return_batch: false)
     assert events == []
 
+    ER.Events.Batcher.Server.factory(topic.name)
+
     ref = push(socket, "publish_events", request)
     assert_reply ref, :ok, %{status: "ok"}
+
+    ER.Events.Batcher.Server.drain(topic.name)
 
     events = ER.Events.list_events_for_topic(topic.name, return_batch: false)
     assert length(events) == 1

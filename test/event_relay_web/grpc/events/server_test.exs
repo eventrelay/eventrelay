@@ -34,22 +34,27 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
             data: Jason.encode!(%{}),
             source: "test",
             group_key: group_key,
+            trace_key: "abc123",
             available_at: available_at
           }
         ]
       }
 
-      result = Server.publish_events(request, nil)
+      ER.Events.Batcher.Server.factory(topic.name)
 
-      [event | _] = result.events
+      Server.publish_events(request, nil)
 
-      assert event.name == event_name
-      assert event.group_key == group_key
-      assert event.available_at == available_at
+      ER.Events.Batcher.Server.drain(topic.name)
 
-      events = Events.list_events_for_topic(topic.name, return_batch: false)
+      events =
+        Events.list_events_for_topic(topic.name,
+          return_batch: false,
+          predicates: "trace_key == 'abc123'"
+        )
 
       db_event = List.first(events)
+
+      dbg(events)
 
       assert Flamel.Moment.to_iso8601(db_event.available_at) == available_at
 
@@ -99,14 +104,13 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
         ]
       }
 
+      ER.Events.Batcher.Server.factory(topic.name)
+
       result = Server.publish_events(request, nil)
 
-      [event | _] = result.events
+      assert result.events == []
 
-      assert event.name == event_name
-      assert event.group_key == group_key
-      assert Jason.decode!(event.data) == data
-      assert Jason.decode!(event.data_schema) == data_schema
+      ER.Events.Batcher.Server.drain(topic.name)
 
       events = Events.list_events_for_topic(topic.name, return_batch: false)
       assert Enum.count(events) == 1

@@ -1,7 +1,6 @@
 defmodule ERWeb.EventsChannel do
   use ERWeb, :channel
   require Logger
-  alias ER.Events.Event
   import ER, only: [atomize_map: 1, to_boolean: 1]
 
   @impl true
@@ -60,24 +59,14 @@ defmodule ERWeb.EventsChannel do
             prev_id: Map.get(event, "prev_id")
           }
         end)
-        |> Flamel.Task.stream(&produce_event/1)
+        |> then(fn events ->
+          ER.Events.Batcher.Server.add(topic_name, events)
+        end)
 
         {:reply, {:ok, %{status: "ok"}}, socket}
 
       {:error, _context} ->
         {:reply, %{status: "unauthorized"}, socket}
-    end
-  end
-
-  defp produce_event(event) do
-    case ER.Events.produce_event_for_topic(event) do
-      {:ok, %Event{} = event} ->
-        Logger.debug("Published event: #{inspect(event)}")
-
-      {:error, error} ->
-        # TODO: provide a better error message
-        Logger.error("Error creating event: #{inspect(error)}")
-        nil
     end
   end
 

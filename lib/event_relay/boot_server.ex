@@ -34,11 +34,6 @@ defmodule ER.BootServer do
         ER.Sources.Source.start_source(source)
       end)
 
-      ER.Sources.list_sources()
-      |> Enum.each(fn source ->
-        ER.Sources.Source.start_source(source)
-      end)
-
       ER.Transformers.list_transformers()
       |> Enum.each(fn transformer ->
         ER.Transformers.factory(transformer)

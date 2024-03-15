@@ -18,7 +18,7 @@ defmodule ER.Events.BatchedEvent do
     if Flamel.blank?(prev_id), do: Map.put(attrs, :prev_id, nil), else: attrs
   end
 
-  defp decode_data(%{data_json: data_json} = attrs) do
+  defp decode_data(%{data_json: data_json} = attrs) when is_binary(data_json) do
     case Jason.decode(data_json) do
       {:ok, data} -> Map.put(attrs, :data, data)
       _ -> attrs
@@ -29,7 +29,8 @@ defmodule ER.Events.BatchedEvent do
     attrs
   end
 
-  defp decode_data_schema(%{data_schema_json: data_schema_json} = attrs) do
+  defp decode_data_schema(%{data_schema_json: data_schema_json} = attrs)
+       when is_binary(data_schema_json) do
     case Jason.decode(data_schema_json) do
       {:ok, data_schema} -> Map.put(attrs, :data_schema, data_schema)
       _ -> attrs

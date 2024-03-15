@@ -18,7 +18,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
 
   alias ERWeb.Grpc.Eventrelay.Event, as: GrpcEvent
   alias ER.Events.Event
-  alias ER.Events.Topic
 
   @spec publish_events(PublishEventsRequest.t(), GRPC.Server.Stream.t()) ::
           PublishEventsResponse.t()
@@ -51,37 +50,14 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
         end)
 
       ER.Events.Batcher.Server.add(topic_name, events)
-      # TODO: fix this. Probably should not return the events 
-      build_publish_events_response([])
+      # TODO: fix this. Probably should not return the events
+      PublishEventsResponse.new(events: [])
     else
       raise GRPC.RPCError,
         status: GRPC.Status.invalid_argument(),
         message: "A topic must be provided to publish_events"
     end
   end
-
-  defp build_publish_events_response(events) do
-    events
-    |> Enum.reduce([], fn
-      {:ok, event}, acc -> [event | acc]
-      _, acc -> acc
-    end)
-    |> then(fn events ->
-      PublishEventsResponse.new(events: events)
-    end)
-  end
-
-  # defp produce_event(event) do
-  #   case ER.Events.produce_event_for_topic(event) do
-  #     {:ok, %Event{} = event} ->
-  #       build_event(event, Topic.build_topic(event.topic_name, event.topic_identifier))
-  #
-  #     {:error, error} ->
-  #       # TODO: provide a better error message
-  #       Logger.error("Error creating event: #{inspect(error)}")
-  #       nil
-  #   end
-  # end
 
   @spec pull_events(PullEventsRequest.t(), GRPC.Server.Stream.t()) :: PullEventsResponse.t()
   def pull_events(request, _stream) do

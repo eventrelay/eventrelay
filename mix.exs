@@ -121,7 +121,6 @@ defmodule ER.MixProject do
       {:sobelow, ">= 0.0.0", only: [:dev], runtime: false},
       {:mix_audit, ">= 0.0.0", only: [:dev], runtime: false},
       {:webhoox, "~> 0.3.0"},
-      {:ra, "~> 2.9"},
       {:uniq, "~> 0.1"}
     ]
   end

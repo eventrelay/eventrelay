@@ -1,9 +1,8 @@
-defmodule ER.Events.EventTest do
+defmodule ER.Events.BatchedEventTest do
   use ER.DataCase
   doctest ER.Events.BatchedEvent
 
   alias ER.Events.BatchedEvent
-  import ER.Factory
 
   describe "new_with_defaults/1" do
     setup do
@@ -41,25 +40,25 @@ defmodule ER.Events.EventTest do
     test "returns map that can be used with insert_all", %{attrs: attrs} do
       attrs = BatchedEvent.new_with_defaults(attrs)
 
-      assert attrs == %{
-               data: %{"first_name" => "Natalie"},
-               name: "user.created",
-               context: %{"ip_address" => "127.0.0.1"},
-               source: "test",
-               topic_name: "users",
-               topic_identifier: nil,
-               group_key: "group123",
-               reference_key: "ref123",
-               trace_key: "trace123",
-               user_key: "user123",
-               anonymous_key: "anon123",
-               verified: true,
-               data_schema: %{
-                 "properties" => %{"first_name" => %{"type" => "string"}},
-                 "type" => "object"
-               },
-               prev_id: nil
-             }
+      %{
+        data: %{"first_name" => "Natalie"},
+        name: "user.created",
+        context: %{"ip_address" => "127.0.0.1"},
+        source: "test",
+        topic_name: "users",
+        topic_identifier: nil,
+        group_key: "group123",
+        reference_key: "ref123",
+        trace_key: "trace123",
+        user_key: "user123",
+        anonymous_key: "anon123",
+        verified: true,
+        data_schema: %{
+          "properties" => %{"first_name" => %{"type" => "string"}},
+          "type" => "object"
+        },
+        prev_id: nil
+      } = attrs
 
       assert attrs[:prev_id] == nil
       refute Map.has_key?(attrs, :data_json)

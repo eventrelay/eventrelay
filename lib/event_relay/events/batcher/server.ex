@@ -21,7 +21,6 @@ defmodule ER.Events.Batcher.Server do
     |> Map.put(:id, state["id"])
     |> Map.put(:batch, [])
     |> Map.put(:timer, schedule_next_tick())
-    |> IO.inspect(label: :batcher_state)
     |> noreply()
   end
 
