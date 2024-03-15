@@ -20,6 +20,12 @@ defmodule ERWeb.TopicLive.Index do
     |> assign(:topic, %Topic{})
   end
 
+  defp apply_action(socket, :edit, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "Edit Topic")
+    |> assign(:topic, Events.get_topic(id))
+  end
+
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Topics")

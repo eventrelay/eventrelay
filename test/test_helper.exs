@@ -4,6 +4,7 @@ Mimic.copy(ER.Events.ChannelCache)
 Mimic.copy(Req)
 Mimic.copy(ERWeb.RateLimiter)
 Mimic.copy(ExAws)
+Mimic.copy(ER.Events.TopicCache)
 
 ExUnit.configure(exclude: [integration: true])
 ExUnit.start()

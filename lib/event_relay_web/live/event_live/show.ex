@@ -2,16 +2,15 @@ defmodule ERWeb.EventLive.Show do
   use ERWeb, :live_view
 
   alias ER.Events
+  import Flamel.Wrap
 
   @impl true
   def mount(params, _session, socket) do
     topic = ER.Events.get_topic!(params["topic_id"])
 
-    socket =
-      socket
-      |> assign(:topic, topic)
-
-    {:ok, socket}
+    socket
+    |> assign(:topic, topic)
+    |> ok()
   end
 
   @impl true

@@ -91,6 +91,7 @@ defmodule ERWeb.Router do
       live "/topics/new", TopicLive.Index, :new
 
       live "/topics/:id", TopicLive.Show, :show
+      live "/topics/:id/edit", TopicLive.Index, :edit
       live "/topics/:topic_id/events", EventLive.Index, :index
       live "/topics/:topic_id/events/new", EventLive.Index, :new
 

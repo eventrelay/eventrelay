@@ -611,6 +611,8 @@ defmodule ER.Events do
 
   def get_topic(id), do: Repo.get(Topic, id)
 
+  def get_topic_by_name(name), do: Repo.get_by(Topic, name: name)
+
   @doc """
   Creates a topic.
   """
