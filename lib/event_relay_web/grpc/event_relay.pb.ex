@@ -485,21 +485,29 @@ end
 defmodule ERWeb.Grpc.Eventrelay.Events.Service do
   use GRPC.Service, name: "eventrelay.Events", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :PublishEvents,
-      ERWeb.Grpc.Eventrelay.PublishEventsRequest,
-      ERWeb.Grpc.Eventrelay.PublishEventsResponse
+  rpc(
+    :PublishEvents,
+    ERWeb.Grpc.Eventrelay.PublishEventsRequest,
+    ERWeb.Grpc.Eventrelay.PublishEventsResponse
+  )
 
-  rpc :PullEvents,
-      ERWeb.Grpc.Eventrelay.PullEventsRequest,
-      ERWeb.Grpc.Eventrelay.PullEventsResponse
+  rpc(
+    :PullEvents,
+    ERWeb.Grpc.Eventrelay.PullEventsRequest,
+    ERWeb.Grpc.Eventrelay.PullEventsResponse
+  )
 
-  rpc :PullQueuedEvents,
-      ERWeb.Grpc.Eventrelay.PullQueuedEventsRequest,
-      ERWeb.Grpc.Eventrelay.PullQueuedEventsResponse
+  rpc(
+    :PullQueuedEvents,
+    ERWeb.Grpc.Eventrelay.PullQueuedEventsRequest,
+    ERWeb.Grpc.Eventrelay.PullQueuedEventsResponse
+  )
 
-  rpc :UnLockQueuedEvents,
-      ERWeb.Grpc.Eventrelay.UnLockQueuedEventsRequest,
-      ERWeb.Grpc.Eventrelay.UnLockQueuedEventsResponse
+  rpc(
+    :UnLockQueuedEvents,
+    ERWeb.Grpc.Eventrelay.UnLockQueuedEventsRequest,
+    ERWeb.Grpc.Eventrelay.UnLockQueuedEventsResponse
+  )
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Events.Stub do
@@ -509,23 +517,31 @@ end
 defmodule ERWeb.Grpc.Eventrelay.Metrics.Service do
   use GRPC.Service, name: "eventrelay.Metrics", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :ListMetrics,
-      ERWeb.Grpc.Eventrelay.ListMetricsRequest,
-      ERWeb.Grpc.Eventrelay.ListMetricsResponse
+  rpc(
+    :ListMetrics,
+    ERWeb.Grpc.Eventrelay.ListMetricsRequest,
+    ERWeb.Grpc.Eventrelay.ListMetricsResponse
+  )
 
-  rpc :GetMetric, ERWeb.Grpc.Eventrelay.GetMetricRequest, ERWeb.Grpc.Eventrelay.GetMetricResponse
+  rpc(:GetMetric, ERWeb.Grpc.Eventrelay.GetMetricRequest, ERWeb.Grpc.Eventrelay.GetMetricResponse)
 
-  rpc :CreateMetric,
-      ERWeb.Grpc.Eventrelay.CreateMetricRequest,
-      ERWeb.Grpc.Eventrelay.CreateMetricResponse
+  rpc(
+    :CreateMetric,
+    ERWeb.Grpc.Eventrelay.CreateMetricRequest,
+    ERWeb.Grpc.Eventrelay.CreateMetricResponse
+  )
 
-  rpc :DeleteMetric,
-      ERWeb.Grpc.Eventrelay.DeleteMetricRequest,
-      ERWeb.Grpc.Eventrelay.DeleteMetricResponse
+  rpc(
+    :DeleteMetric,
+    ERWeb.Grpc.Eventrelay.DeleteMetricRequest,
+    ERWeb.Grpc.Eventrelay.DeleteMetricResponse
+  )
 
-  rpc :GetMetricValue,
-      ERWeb.Grpc.Eventrelay.GetMetricValueRequest,
-      ERWeb.Grpc.Eventrelay.GetMetricValueResponse
+  rpc(
+    :GetMetricValue,
+    ERWeb.Grpc.Eventrelay.GetMetricValueRequest,
+    ERWeb.Grpc.Eventrelay.GetMetricValueResponse
+  )
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Metrics.Stub do
@@ -535,17 +551,23 @@ end
 defmodule ERWeb.Grpc.Eventrelay.Topics.Service do
   use GRPC.Service, name: "eventrelay.Topics", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :ListTopics,
-      ERWeb.Grpc.Eventrelay.ListTopicsRequest,
-      ERWeb.Grpc.Eventrelay.ListTopicsResponse
+  rpc(
+    :ListTopics,
+    ERWeb.Grpc.Eventrelay.ListTopicsRequest,
+    ERWeb.Grpc.Eventrelay.ListTopicsResponse
+  )
 
-  rpc :CreateTopic,
-      ERWeb.Grpc.Eventrelay.CreateTopicRequest,
-      ERWeb.Grpc.Eventrelay.CreateTopicResponse
+  rpc(
+    :CreateTopic,
+    ERWeb.Grpc.Eventrelay.CreateTopicRequest,
+    ERWeb.Grpc.Eventrelay.CreateTopicResponse
+  )
 
-  rpc :DeleteTopic,
-      ERWeb.Grpc.Eventrelay.DeleteTopicRequest,
-      ERWeb.Grpc.Eventrelay.DeleteTopicResponse
+  rpc(
+    :DeleteTopic,
+    ERWeb.Grpc.Eventrelay.DeleteTopicRequest,
+    ERWeb.Grpc.Eventrelay.DeleteTopicResponse
+  )
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Topics.Stub do
@@ -555,21 +577,29 @@ end
 defmodule ERWeb.Grpc.Eventrelay.Destinations.Service do
   use GRPC.Service, name: "eventrelay.Destinations", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :ListDestinations,
-      ERWeb.Grpc.Eventrelay.ListDestinationsRequest,
-      ERWeb.Grpc.Eventrelay.ListDestinationsResponse
+  rpc(
+    :ListDestinations,
+    ERWeb.Grpc.Eventrelay.ListDestinationsRequest,
+    ERWeb.Grpc.Eventrelay.ListDestinationsResponse
+  )
 
-  rpc :GetDestination,
-      ERWeb.Grpc.Eventrelay.GetDestinationRequest,
-      ERWeb.Grpc.Eventrelay.GetDestinationResponse
+  rpc(
+    :GetDestination,
+    ERWeb.Grpc.Eventrelay.GetDestinationRequest,
+    ERWeb.Grpc.Eventrelay.GetDestinationResponse
+  )
 
-  rpc :CreateDestination,
-      ERWeb.Grpc.Eventrelay.CreateDestinationRequest,
-      ERWeb.Grpc.Eventrelay.CreateDestinationResponse
+  rpc(
+    :CreateDestination,
+    ERWeb.Grpc.Eventrelay.CreateDestinationRequest,
+    ERWeb.Grpc.Eventrelay.CreateDestinationResponse
+  )
 
-  rpc :DeleteDestination,
-      ERWeb.Grpc.Eventrelay.DeleteDestinationRequest,
-      ERWeb.Grpc.Eventrelay.DeleteDestinationResponse
+  rpc(
+    :DeleteDestination,
+    ERWeb.Grpc.Eventrelay.DeleteDestinationRequest,
+    ERWeb.Grpc.Eventrelay.DeleteDestinationResponse
+  )
 end
 
 defmodule ERWeb.Grpc.Eventrelay.Destinations.Stub do
@@ -579,29 +609,41 @@ end
 defmodule ERWeb.Grpc.Eventrelay.ApiKeys.Service do
   use GRPC.Service, name: "eventrelay.ApiKeys", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :CreateApiKey,
-      ERWeb.Grpc.Eventrelay.CreateApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.CreateApiKeyResponse
+  rpc(
+    :CreateApiKey,
+    ERWeb.Grpc.Eventrelay.CreateApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.CreateApiKeyResponse
+  )
 
-  rpc :RevokeApiKey,
-      ERWeb.Grpc.Eventrelay.RevokeApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.RevokeApiKeyResponse
+  rpc(
+    :RevokeApiKey,
+    ERWeb.Grpc.Eventrelay.RevokeApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.RevokeApiKeyResponse
+  )
 
-  rpc :AddDestinationsToApiKey,
-      ERWeb.Grpc.Eventrelay.AddDestinationsToApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.AddDestinationsToApiKeyResponse
+  rpc(
+    :AddDestinationsToApiKey,
+    ERWeb.Grpc.Eventrelay.AddDestinationsToApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.AddDestinationsToApiKeyResponse
+  )
 
-  rpc :DeleteDestinationsFromApiKey,
-      ERWeb.Grpc.Eventrelay.DeleteDestinationsFromApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.DeleteDestinationsFromApiKeyResponse
+  rpc(
+    :DeleteDestinationsFromApiKey,
+    ERWeb.Grpc.Eventrelay.DeleteDestinationsFromApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.DeleteDestinationsFromApiKeyResponse
+  )
 
-  rpc :AddTopicsToApiKey,
-      ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyResponse
+  rpc(
+    :AddTopicsToApiKey,
+    ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.AddTopicsToApiKeyResponse
+  )
 
-  rpc :DeleteTopicsFromApiKey,
-      ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyRequest,
-      ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyResponse
+  rpc(
+    :DeleteTopicsFromApiKey,
+    ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyRequest,
+    ERWeb.Grpc.Eventrelay.DeleteTopicsFromApiKeyResponse
+  )
 end
 
 defmodule ERWeb.Grpc.Eventrelay.ApiKeys.Stub do
@@ -611,7 +653,7 @@ end
 defmodule ERWeb.Grpc.Eventrelay.JWT.Service do
   use GRPC.Service, name: "eventrelay.JWT", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :CreateJWT, ERWeb.Grpc.Eventrelay.CreateJWTRequest, ERWeb.Grpc.Eventrelay.CreateJWTResponse
+  rpc(:CreateJWT, ERWeb.Grpc.Eventrelay.CreateJWTRequest, ERWeb.Grpc.Eventrelay.CreateJWTResponse)
 end
 
 defmodule ERWeb.Grpc.Eventrelay.JWT.Stub do

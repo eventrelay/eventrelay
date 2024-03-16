@@ -641,7 +641,7 @@ defmodule ER.EventsTest do
         occurred_at: occurred_at,
         available_at: available_at,
         source: "some source",
-        topic_name: topic.name,
+        topic_name: topic.name
       }
 
       assert capture_log(fn ->
