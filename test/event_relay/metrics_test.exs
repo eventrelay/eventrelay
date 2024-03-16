@@ -82,7 +82,7 @@ defmodule ER.MetricsTest do
   end
 
   describe "build_events_for_metric_udpate/3" do
-    test "returns list of non-durable events for metric updates", %{topic: topic} do
+    test "returns list of events for metric updates", %{topic: topic} do
       first_metric =
         insert(:metric, topic_name: topic.name, type: :sum, field_path: "data.cart.total")
 
@@ -108,14 +108,12 @@ defmodule ER.MetricsTest do
       assert first_event.data["metric"]["type"] == to_string(first_metric.type)
       assert first_event.source == "event_relay"
       assert first_event.topic_name == topic.name
-      assert first_event.durable == false
 
       last_event = List.last(events)
       assert last_event.data["metric"]["name"] == last_metric.name
       assert last_event.data["metric"]["type"] == to_string(last_metric.type)
       assert last_event.source == "event_relay"
       assert last_event.topic_name == topic.name
-      assert last_event.durable == false
     end
   end
 end

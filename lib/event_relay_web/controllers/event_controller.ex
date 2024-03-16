@@ -45,10 +45,9 @@ defmodule ERWeb.EventController do
     end
   end
 
-  def publish(conn, %{"durable" => durable, "events" => events}) do
+  def publish(conn, %{"events" => events}) do
     topic_name = conn.assigns.topic_name
     topic_identifier = conn.assigns.topic_identifier
-    durable = to_boolean(durable)
 
     Enum.map(events, fn event ->
       %{
@@ -63,7 +62,6 @@ defmodule ERWeb.EventController do
         context: indifferent_get(event, :context),
         occurred_at: indifferent_get(event, :occurred_at),
         available_at: indifferent_get(event, :available_at),
-        durable: durable,
         verified: true,
         topic_name: topic_name,
         topic_identifier: topic_identifier,

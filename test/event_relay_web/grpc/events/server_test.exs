@@ -27,7 +27,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PublishEventsRequest{
         topic: topic.name,
-        durable: true,
         events: [
           %NewEvent{
             name: event_name,
@@ -90,7 +89,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PublishEventsRequest{
         topic: topic.name,
-        durable: true,
         events: [
           %NewEvent{
             name: event_name,
@@ -126,7 +124,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       group_key = "groupkey"
 
       request = %PublishEventsRequest{
-        durable: true,
         events: [
           %NewEvent{
             name: event_name,
@@ -140,28 +137,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert_raise GRPC.RPCError, "A topic must be provided to publish_events", fn ->
         Server.publish_events(request, nil)
       end
-    end
-
-    test "does not persit events if durable is false", %{topic: topic} do
-      event_name = "entry.created"
-      group_key = "groupkey"
-
-      request = %PublishEventsRequest{
-        topic: topic.name,
-        durable: false,
-        events: [
-          %NewEvent{
-            name: event_name,
-            data: Jason.encode!(%{}),
-            source: "test",
-            group_key: group_key
-          }
-        ]
-      }
-
-      Server.publish_events(request, nil)
-      events = Events.list_events_for_topic(topic.name, return_batch: false)
-      assert Enum.empty?(events)
     end
   end
 

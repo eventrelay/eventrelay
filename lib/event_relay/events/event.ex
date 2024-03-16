@@ -32,7 +32,6 @@ defmodule ER.Events.Event do
           verified: String.t(),
           context: map(),
           errors: list(),
-          durable: boolean(),
           trace_key: binary(),
           reference_key: binary(),
           group_key: binary(),
@@ -90,8 +89,6 @@ defmodule ER.Events.Event do
 
     # This can be used for debugging scenarios. For instance, it can store a request id, etc
     field :trace_key, :string
-
-    field :durable, :boolean, default: true, virtual: true
 
     # An array of all the destinations that have locked this event. This is used with queued events to ensure deliver once functionality through the API
     field :destination_locks, {:array, :binary_id}, default: []

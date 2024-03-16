@@ -18,7 +18,6 @@ defmodule ER.Events.BatchedEventTest do
           available_at: DateTime.utc_now() |> DateTime.to_iso8601(),
           user_key: "user123",
           anonymous_key: "anon123",
-          durable: true,
           verified: true,
           topic_name: "users",
           topic_identifier: nil,
@@ -63,7 +62,6 @@ defmodule ER.Events.BatchedEventTest do
       assert attrs[:prev_id] == nil
       refute Map.has_key?(attrs, :data_json)
       refute Map.has_key?(attrs, :data_schema_json)
-      refute Map.has_key?(attrs, :durable)
 
       assert Flamel.datetime?(attrs[:available_at])
       assert Flamel.datetime?(attrs[:occurred_at])

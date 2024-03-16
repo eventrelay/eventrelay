@@ -31,7 +31,7 @@ defmodule ER.Destinations.Database.Postgres.Server do
     "'#{value}'"
   end
 
-  @extra_fields_to_drop [:context_json, :data_json, :data_schema_json, :durable]
+  @extra_fields_to_drop [:context_json, :data_json, :data_schema_json]
 
   def messages_to_sql(table_name, messages) do
     fields =

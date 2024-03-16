@@ -11,11 +11,15 @@ defmodule ER.Events.BatchedEvent do
   end
 
   defp drop_fields(attrs) do
-    Map.drop(attrs, [:data_json, :data_schema_json, :durable])
+    Map.drop(attrs, [:data_json, :data_schema_json])
   end
 
   defp ensure_prev_id(%{prev_id: prev_id} = attrs) do
     if Flamel.blank?(prev_id), do: Map.put(attrs, :prev_id, nil), else: attrs
+  end
+
+  defp ensure_prev_id(attrs) do
+    Map.put(attrs, :prev_id, nil)
   end
 
   defp decode_data(%{data_json: data_json} = attrs) when is_binary(data_json) do

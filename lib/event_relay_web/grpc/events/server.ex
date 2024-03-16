@@ -40,7 +40,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.Server do
             available_at: Map.get(event, :available_at),
             user_key: Map.get(event, :user_key),
             anonymous_key: Map.get(event, :anonymous_key),
-            durable: request.durable,
             verified: true,
             topic_name: topic_name,
             topic_identifier: topic_identifier,

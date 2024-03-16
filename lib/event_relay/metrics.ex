@@ -30,7 +30,6 @@ defmodule ER.Metrics do
          name: "metric.updated",
          topic_name: topic_name,
          topic_identifier: topic_identifier,
-         durable: false,
          data: %{
            "value" => value,
            "metric" => %{

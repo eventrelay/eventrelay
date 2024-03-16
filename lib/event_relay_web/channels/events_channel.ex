@@ -1,7 +1,7 @@
 defmodule ERWeb.EventsChannel do
   use ERWeb, :channel
   require Logger
-  import ER, only: [atomize_map: 1, to_boolean: 1]
+  import ER, only: [atomize_map: 1]
 
   @impl true
   def join("events:" <> destination_id, payload, socket) do
@@ -28,7 +28,7 @@ defmodule ERWeb.EventsChannel do
   @impl true
   def handle_in(
         "publish_events",
-        %{"topic" => topic, "durable" => durable, "events" => events} = payload,
+        %{"topic" => topic, "events" => events} = payload,
         socket
       ) do
     request = ERWeb.Grpc.Eventrelay.PublishEventsRequest.new(atomize_map(payload))
@@ -36,7 +36,6 @@ defmodule ERWeb.EventsChannel do
     case Bosun.permit(socket.assigns.api_key, :request, request) do
       {:ok, _} ->
         {topic_name, topic_identifier} = ER.Events.Topic.parse_topic(topic)
-        durable = to_boolean(durable)
 
         Enum.map(events, fn event ->
           %{
@@ -51,7 +50,6 @@ defmodule ERWeb.EventsChannel do
             trace_key: Map.get(event, "trace_key"),
             available_at: Map.get(event, "available_at"),
             anonymous_key: Map.get(event, "anonymous_key"),
-            durable: durable,
             verified: true,
             topic_name: topic_name,
             topic_identifier: topic_identifier,

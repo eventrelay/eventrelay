@@ -327,32 +327,9 @@ defmodule ER.Events do
     |> Repo.one!()
   end
 
-  @doc """
-  Creates a event.
-
-  ## Examples
-
-      iex> create_event(%{field: value})
-      {:ok, %Event{}}
-
-      iex> create_event(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_event(attrs \\ %{}) do
-    %Event{}
-    |> Event.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  def produce_event_for_topic(%{durable: true} = attrs) do
+  def produce_event_for_topic(attrs) do
     create_event_for_topic(attrs)
     |> publish_event()
-  end
-
-  def produce_event_for_topic(attrs) do
-    event = struct!(Event, attrs)
-    publish_event({:ok, event})
   end
 
   defp put_datetime_if_empty(attrs, field) do

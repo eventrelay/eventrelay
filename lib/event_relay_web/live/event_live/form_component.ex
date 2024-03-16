@@ -58,29 +58,31 @@ defmodule ERWeb.EventLive.FormComponent do
     save_event(socket, socket.assigns.action, event_params)
   end
 
-  defp save_event(socket, :edit, event_params) do
-    case Events.update_event(socket.assigns.event, event_params) do
-      {:ok, _event} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Event updated successfully")
-         |> push_navigate(to: socket.assigns.navigate)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
-    end
+  defp save_event(socket, :edit, _event_params) do
+    # case Events.update_event(socket.assigns.event, event_params) do
+    #   {:ok, _event} ->
+    #     {:noreply,
+    #      socket
+    #      |> put_flash(:info, "Event updated successfully")
+    #      |> push_navigate(to: socket.assigns.navigate)}
+    #
+    #   {:error, %Ecto.Changeset{} = changeset} ->
+    #     {:noreply, assign(socket, :changeset, changeset)}
+    # end
+    socket
   end
 
-  defp save_event(socket, :new, event_params) do
-    case Events.create_event(event_params) do
-      {:ok, _event} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Event created successfully")
-         |> push_navigate(to: socket.assigns.navigate)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, changeset: changeset)}
-    end
+  defp save_event(socket, :new, _event_params) do
+    # case Events.create_event(event_params) do
+    #   {:ok, _event} ->
+    #     {:noreply,
+    #      socket
+    #      |> put_flash(:info, "Event created successfully")
+    #      |> push_navigate(to: socket.assigns.navigate)}
+    #
+    #   {:error, %Ecto.Changeset{} = changeset} ->
+    #     {:noreply, assign(socket, changeset: changeset)}
+    # end
+    socket
   end
 end
