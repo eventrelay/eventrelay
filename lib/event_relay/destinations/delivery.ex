@@ -1,5 +1,5 @@
 defmodule ER.Destinations.Delivery do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Changeset
   alias ER.Events.Topic
   alias ER.Repo
@@ -10,8 +10,6 @@ defmodule ER.Destinations.Delivery do
              :id,
              :attempts
            ]}
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
   schema "deliveries" do
     field :attempts, {:array, :map}, default: []
 
@@ -33,7 +31,7 @@ defmodule ER.Destinations.Delivery do
       references: :id,
       type: :binary_id
 
-    timestamps(type: :utc_datetime)
+    timestamps()
   end
 
   @doc false

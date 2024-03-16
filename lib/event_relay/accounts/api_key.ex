@@ -2,7 +2,7 @@ defmodule ER.Accounts.ApiKey do
   @moduledoc """
   ApiKey schema
   """
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Changeset
   alias ER.Accounts.ApiKeyDestination
   alias ER.Destinations.Destination
@@ -11,8 +11,6 @@ defmodule ER.Accounts.ApiKey do
   alias __MODULE__
   import ER
 
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
   schema "api_keys" do
     field(:name, :string)
     field(:key, :string)
@@ -36,7 +34,7 @@ defmodule ER.Accounts.ApiKey do
       join_keys: [api_key_id: :id, topic_name: :name]
     )
 
-    timestamps(type: :utc_datetime)
+    timestamps()
   end
 
   @doc false

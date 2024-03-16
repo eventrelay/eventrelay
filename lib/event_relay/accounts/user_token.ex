@@ -1,5 +1,5 @@
 defmodule ER.Accounts.UserToken do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Query
   alias ER.Accounts.UserToken
 
@@ -13,8 +13,6 @@ defmodule ER.Accounts.UserToken do
   @change_email_validity_in_days 7
   @session_validity_in_days 60
 
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
   schema "users_tokens" do
     field :token, :binary
     field :context, :string

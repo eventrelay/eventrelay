@@ -1,5 +1,5 @@
 defmodule ER.Accounts.ApiKeyDestination do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Changeset
   alias ER.Accounts.ApiKey
   alias ER.Destinations.Destination
@@ -9,7 +9,7 @@ defmodule ER.Accounts.ApiKeyDestination do
     belongs_to(:api_key, ApiKey, type: :binary_id, primary_key: true)
     belongs_to(:destination, Destination, type: :binary_id, primary_key: true)
 
-    timestamps(type: :utc_datetime)
+    timestamps()
   end
 
   @doc false

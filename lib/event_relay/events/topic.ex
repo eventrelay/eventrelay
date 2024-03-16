@@ -1,5 +1,5 @@
 defmodule ER.Events.Topic do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Changeset
   alias ER.Events.Event
   alias __MODULE__
@@ -31,15 +31,13 @@ defmodule ER.Events.Topic do
              :group_key
            ]}
 
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
   schema "topics" do
     field :name, :string
     field :group_key, :string
     has_many :events, Event, foreign_key: :topic_name, references: :name
     # embeds_many :event_configs, EventConfig, load_in_query: false
     embeds_many :event_configs, EventConfig, on_replace: :delete
-    timestamps(type: :utc_datetime)
+    timestamps()
   end
 
   @doc """

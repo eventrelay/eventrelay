@@ -1,5 +1,5 @@
 defmodule ER.Transformers.Transformer do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   require Logger
   import Ecto.Changeset
   alias ER.Destinations.Destination
@@ -9,8 +9,6 @@ defmodule ER.Transformers.Transformer do
   alias __MODULE__
   alias ER.Repo
 
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
   schema "transformers" do
     field :script, :string
     belongs_to(:source, Source)

@@ -1,13 +1,11 @@
 defmodule ER.Sources.Source do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Changeset
   alias ER.Transformers.Transformer
   alias ER.Events.Topic
   import ER.Config
   alias __MODULE__
 
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
   schema "sources" do
     field :config, :map, default: %{}
     field :config_json, :string, virtual: true

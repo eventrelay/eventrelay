@@ -1,5 +1,5 @@
 defmodule ER.Events.Event do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Changeset
   @behaviour ER.TopicTable
 
@@ -63,8 +63,6 @@ defmodule ER.Events.Event do
              :trace_key,
              :prev_id
            ]}
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
   schema "events" do
     field :errors, {:array, :string}
     field :context, :map
@@ -101,7 +99,7 @@ defmodule ER.Events.Event do
 
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
-    timestamps(type: :utc_datetime)
+    timestamps()
   end
 
   @doc false
