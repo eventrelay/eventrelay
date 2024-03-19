@@ -63,13 +63,18 @@ defmodule ER.Events.Event do
              :trace_key,
              :prev_id
            ]}
+
+  @virtual_fields [:data_json, :data_schema_json, :context_json]
+
   schema "events" do
+    field :name, :string
     field :errors, {:array, :string}
     field :context, :map
     field :context_json, :string, virtual: true
     field :data, :map
     field :data_json, :string, virtual: true
-    field :name, :string
+    field :data_schema, :map
+    field :data_schema_json, :string, virtual: true
     field :topic_identifier, :string
     field :user_key, :string
     field :anonymous_key, :string
@@ -91,15 +96,55 @@ defmodule ER.Events.Event do
     # An array of all the destinations that have locked this event. This is used with queued events to ensure deliver once functionality through the API
     field :destination_locks, {:array, :binary_id}, default: []
 
-    field :data_schema, :map
-    field :data_schema_json, :string, virtual: true
-
     # The id of the event that triggered this event
     field :prev_id, :binary_id
 
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
     timestamps()
+  end
+
+  def apply_defaults(attrs) do
+    attrs
+    |> put_datetime_if_empty(:occurred_at)
+    |> put_datetime_if_empty(:available_at)
+  end
+
+  def prepare_for_batched_insert(attrs) do
+    attrs
+    |> drop_virtual_fields()
+    |> ensure_id()
+  end
+
+  def ensure_id(attrs) do
+    value = attrs[:id]
+
+    value =
+      if ER.empty?(value) do
+        Uniq.UUID.uuid7()
+      else
+        value
+      end
+
+    Map.put(attrs, :id, value)
+  end
+
+  def drop_virtual_fields(attrs) do
+    Map.drop(attrs, @virtual_fields)
+  end
+
+  defp put_datetime_if_empty(attrs, field) do
+    field = Flamel.to_atom(field)
+    value = attrs[field]
+
+    value =
+      if ER.empty?(value) do
+        DateTime.truncate(DateTime.now!("Etc/UTC"), :second)
+      else
+        Flamel.Moment.to_datetime(value)
+      end
+
+    Map.put(attrs, field, value)
   end
 
   @doc false

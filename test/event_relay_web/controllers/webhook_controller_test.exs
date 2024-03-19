@@ -54,6 +54,7 @@ defmodule ERWeb.WebhookControllerTest do
       assert text_response(conn, 200) == "OK"
 
       ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events =
         ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
@@ -82,6 +83,7 @@ defmodule ERWeb.WebhookControllerTest do
       assert text_response(conn, 200) == "OK"
 
       ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events =
         ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
@@ -125,6 +127,7 @@ defmodule ERWeb.WebhookControllerTest do
       assert text_response(conn, 200) == "OK"
 
       ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events =
         ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
@@ -196,6 +199,7 @@ defmodule ERWeb.WebhookControllerTest do
       assert text_response(conn, 200) == "OK"
 
       ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events =
         ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)

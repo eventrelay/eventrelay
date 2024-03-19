@@ -7,7 +7,7 @@ defmodule ER.Events.Batcher.Server do
   use ER.Horde.Server
   require Logger
   import Flamel.Wrap
-  alias ER.Events.{Event, BatchedEvent}
+  alias ER.Events.Event
   alias ER.Repo
 
   @drain_interval_ms 1_000
@@ -66,7 +66,6 @@ defmodule ER.Events.Batcher.Server do
   defp do_drain(topic_name, batch) do
     case batch do
       [] ->
-        Logger.debug("#{__MODULE__}.do_drain nothing to drain for #{inspect(topic_name)}")
         nil
 
       events ->
@@ -82,16 +81,22 @@ defmodule ER.Events.Batcher.Server do
       %{inserted_at: now, updated_at: now}
 
     {valid, invalid} =
-      Enum.reduce(events, {[], []}, fn event, {valid, invalid} ->
-        event = BatchedEvent.new_with_defaults(event)
+      Enum.reduce(events, {[], []}, fn attrs, {valid, invalid} ->
+        attrs
+        |> Event.apply_defaults()
+        |> then(fn attrs ->
+          Event.changeset(%Event{}, attrs)
+        end)
+        |> then(fn cs ->
+          case Ecto.Changeset.apply_action(cs, :insert) do
+            # this is also going to reverse the list for us which we need to do
+            {:ok, _} ->
+              {[Event.prepare_for_batched_insert(cs.changes) | valid], invalid}
 
-        changeset = Event.changeset(%Event{}, event)
-
-        case Ecto.Changeset.apply_action(changeset, :insert) do
-          # this is also going to reverse the list for us which we need to do
-          {:ok, _} -> {[event | valid], invalid}
-          {:error, _} -> {valid, [event | invalid]}
-        end
+            {:error, _} ->
+              {valid, [Event.prepare_for_batched_insert(cs.changes) | invalid]}
+          end
+        end)
       end)
 
     insert_all({Event.table_name(topic_name), Event}, valid, placeholders)

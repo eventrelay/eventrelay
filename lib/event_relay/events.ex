@@ -332,26 +332,9 @@ defmodule ER.Events do
     |> publish_event()
   end
 
-  defp put_datetime_if_empty(attrs, field) do
-    field = Flamel.to_atom(field)
-    value = attrs[field]
-
-    value =
-      if ER.empty?(value) do
-        DateTime.truncate(DateTime.now!("Etc/UTC"), :second)
-      else
-        Flamel.Moment.to_datetime(value)
-      end
-
-    Map.put(attrs, field, value)
-  end
-
   @spec create_event_for_topic(map()) :: {:ok, Event.t()} | {:error, Ecto.Changeset.t()}
   def create_event_for_topic(attrs \\ %{}) do
-    attrs =
-      attrs
-      |> put_datetime_if_empty(:occurred_at)
-      |> put_datetime_if_empty(:available_at)
+    attrs = Event.apply_defaults(attrs)
 
     try do
       # First attempt to insert it in the proper topic events table

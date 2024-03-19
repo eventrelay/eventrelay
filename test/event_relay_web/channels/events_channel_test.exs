@@ -52,6 +52,7 @@ defmodule ERWeb.EventsChannelTest do
     assert_reply ref, :ok, %{status: "ok"}
 
     ER.Events.Batcher.Server.drain(topic.name)
+    ER.Events.Batcher.Server.stop(topic.name)
 
     events = ER.Events.list_events_for_topic(topic.name, return_batch: false)
     assert length(events) == 1

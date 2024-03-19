@@ -44,6 +44,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       Server.publish_events(request, nil)
 
       ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events =
         Events.list_events_for_topic(topic.name,
@@ -107,6 +108,7 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert result.events == []
 
       ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events = Events.list_events_for_topic(topic.name, return_batch: false)
       assert Enum.count(events) == 1
