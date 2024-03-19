@@ -1,5 +1,5 @@
 defmodule ER.Pruners.Pruner do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Changeset
   import ER.Config
   alias ER.Events.Topic
@@ -13,8 +13,6 @@ defmodule ER.Pruners.Pruner do
              :config,
              :type
            ]}
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
   schema "pruners" do
     field :name, :string
     field :config, :map, default: %{}

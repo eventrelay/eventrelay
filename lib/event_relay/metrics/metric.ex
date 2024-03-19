@@ -1,11 +1,9 @@
 defmodule ER.Metrics.Metric do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Changeset
 
   alias ER.Events.Topic
 
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
   schema "metrics" do
     field :field_path, :string
     field :name, :string

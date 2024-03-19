@@ -390,31 +390,6 @@ defmodule ER.EventsTest do
       assert Events.get_event!(event.id) == event
     end
 
-    test "create_event/1 with valid data creates a event" do
-      topic = insert(:topic)
-
-      valid_attrs = %{
-        context: %{},
-        data: %{},
-        name: "some name",
-        occurred_at: ~U[2022-12-21 18:27:00Z],
-        source: "some source",
-        topic_name: topic.name
-      }
-
-      assert {:ok, %Event{} = event} = Events.create_event(valid_attrs)
-      assert event.context == %{}
-      assert event.data == %{}
-      assert event.name == "some name"
-      assert event.occurred_at == ~U[2022-12-21 18:27:00Z]
-      refute event.offset == nil
-      assert event.source == "some source"
-    end
-
-    test "create_event/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Events.create_event(@invalid_attrs)
-    end
-
     test "create_event_for_topic/1 with invalid data creates a event in the dead letter events table" do
       event = %{
         context: %{},
@@ -570,8 +545,7 @@ defmodule ER.EventsTest do
         occurred_at: occurred_at,
         available_at: available_at,
         source: "some source",
-        topic_name: topic.name,
-        durable: true
+        topic_name: topic.name
       }
 
       ER.Events.ChannelCache
@@ -625,8 +599,7 @@ defmodule ER.EventsTest do
         occurred_at: occurred_at,
         available_at: available_at,
         source: "some source",
-        topic_name: topic.name,
-        durable: true
+        topic_name: topic.name
       }
 
       ER.Events.ChannelCache
@@ -668,8 +641,7 @@ defmodule ER.EventsTest do
         occurred_at: occurred_at,
         available_at: available_at,
         source: "some source",
-        topic_name: topic.name,
-        durable: true
+        topic_name: topic.name
       }
 
       assert capture_log(fn ->

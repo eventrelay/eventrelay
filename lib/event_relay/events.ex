@@ -327,54 +327,14 @@ defmodule ER.Events do
     |> Repo.one!()
   end
 
-  @doc """
-  Creates a event.
-
-  ## Examples
-
-      iex> create_event(%{field: value})
-      {:ok, %Event{}}
-
-      iex> create_event(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_event(attrs \\ %{}) do
-    %Event{}
-    |> Event.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  def produce_event_for_topic(%{durable: true} = attrs) do
+  def produce_event_for_topic(attrs) do
     create_event_for_topic(attrs)
     |> publish_event()
   end
 
-  def produce_event_for_topic(attrs) do
-    event = struct!(Event, attrs)
-    publish_event({:ok, event})
-  end
-
-  defp put_datetime_if_empty(attrs, field) do
-    field = Flamel.to_atom(field)
-    value = attrs[field]
-
-    value =
-      if ER.empty?(value) do
-        DateTime.truncate(DateTime.now!("Etc/UTC"), :second)
-      else
-        Flamel.Moment.to_datetime(value)
-      end
-
-    Map.put(attrs, field, value)
-  end
-
   @spec create_event_for_topic(map()) :: {:ok, Event.t()} | {:error, Ecto.Changeset.t()}
   def create_event_for_topic(attrs \\ %{}) do
-    attrs =
-      attrs
-      |> put_datetime_if_empty(:occurred_at)
-      |> put_datetime_if_empty(:available_at)
+    attrs = Event.apply_defaults(attrs)
 
     try do
       # First attempt to insert it in the proper topic events table
@@ -419,9 +379,7 @@ defmodule ER.Events do
     end
   end
 
-  def publish_event(
-        {:ok, %Event{topic_name: topic_name, topic_identifier: topic_identifier} = event}
-      ) do
+  def publish_event(%Event{topic_name: topic_name, topic_identifier: topic_identifier} = event) do
     PubSub.broadcast(ER.PubSub, topic_name, {:event_created, event})
     full_topic = ER.Events.Topic.build_topic(topic_name, topic_identifier)
 
@@ -433,7 +391,10 @@ defmodule ER.Events do
       fn -> broadcast_to_websockets(event) end,
       env: ER.env()
     )
+  end
 
+  def publish_event({:ok, %Event{} = event}) do
+    publish_event(event)
     {:ok, event}
   end
 
@@ -624,6 +585,7 @@ defmodule ER.Events do
                |> Topic.changeset(attrs)
                |> Repo.insert!()
 
+             PubSub.broadcast(ER.PubSub, "topic:created", {:topic_created, topic})
              ER.Events.Event.create_table!(topic)
              ER.Destinations.Delivery.create_table!(topic)
              topic
@@ -663,6 +625,16 @@ defmodule ER.Events do
     topic
     |> Topic.changeset(attrs)
     |> Repo.update()
+    |> maybe_publish_topic_updated()
+  end
+
+  def maybe_publish_topic_updated({:ok, topic}) do
+    PubSub.broadcast(ER.PubSub, "topic:updated", {:topic_updated, topic})
+    {:ok, topic}
+  end
+
+  def maybe_publish_topic_updated(value) do
+    value
   end
 
   @doc """
@@ -673,6 +645,7 @@ defmodule ER.Events do
       case Repo.transaction(fn ->
              delete_events_for_topic!(topic)
              {:ok, topic} = Repo.delete(topic)
+             PubSub.broadcast(ER.PubSub, "topic:deleted", {:topic_deleted, topic})
 
              ER.Events.Event.drop_table!(topic)
              ER.Destinations.Delivery.drop_table!(topic)

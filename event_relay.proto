@@ -134,7 +134,7 @@ message CreateDestinationRequest {
 message CreateDestinationResponse {
   Destination destination = 1;
 }
- 
+
 message DeleteDestinationRequest {
   string id = 1;
 }
@@ -184,7 +184,6 @@ message Event {
 message PublishEventsRequest {
    string topic = 1;
    repeated NewEvent events = 2;
-   bool durable = 3;
 }
 
 message PublishEventsResponse {
@@ -269,7 +268,7 @@ message GetMetricValueRequest {
 }
 
 message GetMetricValueResponse {
-  double value = 1; 
+  double value = 1;
 }
 
 message ListMetricsRequest {
@@ -281,7 +280,7 @@ message ListMetricsRequest {
 }
 
 message ListMetricsResponse {
-  repeated Metric metrics = 1; 
+  repeated Metric metrics = 1;
   int32 total_count = 2;
   int32 next_page = 3;
   int32 previous_page = 4;
@@ -293,7 +292,7 @@ message GetMetricRequest {
 }
 
 message GetMetricResponse {
-  Metric metric = 1; 
+  Metric metric = 1;
 }
 
 message CreateMetricRequest {
@@ -369,7 +368,7 @@ message AddDestinationsToApiKeyResponse {
   // list of destination ids that were added
   repeated string destination_ids = 2;
 }
- 
+
 message DeleteDestinationsFromApiKeyRequest {
   string id = 1;
   repeated string destination_ids = 2;
@@ -391,7 +390,7 @@ message AddTopicsToApiKeyResponse {
   // list of topics that were added
   repeated string topic_names = 2;
 }
- 
+
 message DeleteTopicsFromApiKeyRequest {
   string id = 1;
   repeated string topic_names = 2;

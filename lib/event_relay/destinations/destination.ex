@@ -1,5 +1,5 @@
 defmodule ER.Destinations.Destination do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Changeset
   alias ER.Events.Topic
   alias ER.Transformers.Transformer
@@ -22,8 +22,6 @@ defmodule ER.Destinations.Destination do
              :config,
              :group_key
            ]}
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
   schema "destinations" do
     field :name, :string
     field :offset, :integer
@@ -44,7 +42,7 @@ defmodule ER.Destinations.Destination do
     belongs_to :topic, Topic, foreign_key: :topic_name, references: :name, type: :string
 
     has_many(:transformers, Transformer)
-    timestamps(type: :utc_datetime)
+    timestamps()
   end
 
   @doc false

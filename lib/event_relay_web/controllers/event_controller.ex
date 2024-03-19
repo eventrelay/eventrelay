@@ -45,57 +45,33 @@ defmodule ERWeb.EventController do
     end
   end
 
-  def publish(conn, %{"durable" => durable, "events" => events}) do
+  def publish(conn, %{"events" => events}) do
     topic_name = conn.assigns.topic_name
     topic_identifier = conn.assigns.topic_identifier
-    durable = to_boolean(durable)
 
-    events =
-      Enum.map(events, fn event ->
-        %{
-          name: indifferent_get(event, :name),
-          source: indifferent_get(event, :source),
-          group_key: indifferent_get(event, :group_key),
-          reference_key: indifferent_get(event, :reference_key),
-          trace_key: indifferent_get(event, :trace_key),
-          user_key: indifferent_get(event, :user_key),
-          anonymous_key: indifferent_get(event, :anonymous_key),
-          data: indifferent_get(event, :data),
-          context: indifferent_get(event, :context),
-          occurred_at: indifferent_get(event, :occurred_at),
-          available_at: indifferent_get(event, :available_at),
-          durable: durable,
-          verified: true,
-          topic_name: topic_name,
-          topic_identifier: topic_identifier,
-          prev_id: indifferent_get(event, :prev_id)
-        }
-      end)
-      |> Flamel.Task.stream(&produce_event/1)
-      |> collect_events()
-
-    conn
-    |> put_status(:created)
-    |> render(:index, events: events)
-  end
-
-  defp produce_event(event) do
-    case ER.Events.produce_event_for_topic(event) do
-      {:ok, %Event{} = event} ->
-        event
-
-      {:error, error} ->
-        # TODO: provide a better error message
-        Logger.error("Error creating event: #{inspect(error)}")
-        nil
-    end
-  end
-
-  defp collect_events(events) do
-    events
-    |> Enum.reduce([], fn
-      {:ok, event}, acc -> [event | acc]
-      _, acc -> acc
+    Enum.map(events, fn event ->
+      %{
+        name: indifferent_get(event, :name),
+        source: indifferent_get(event, :source),
+        group_key: indifferent_get(event, :group_key),
+        reference_key: indifferent_get(event, :reference_key),
+        trace_key: indifferent_get(event, :trace_key),
+        user_key: indifferent_get(event, :user_key),
+        anonymous_key: indifferent_get(event, :anonymous_key),
+        data: indifferent_get(event, :data),
+        context: indifferent_get(event, :context),
+        occurred_at: indifferent_get(event, :occurred_at),
+        available_at: indifferent_get(event, :available_at),
+        verified: true,
+        topic_name: topic_name,
+        topic_identifier: topic_identifier,
+        prev_id: indifferent_get(event, :prev_id)
+      }
     end)
+    |> then(fn events ->
+      ER.Events.Batcher.Server.add(topic_name, events)
+    end)
+
+    resp(conn, 201, "Created")
   end
 end

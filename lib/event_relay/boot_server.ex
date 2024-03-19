@@ -19,6 +19,8 @@ defmodule ER.BootServer do
 
   def handle_info(:boot, state) do
     Logger.debug("BootServer.boot on node=#{inspect(Node.self())}")
+    # we want this to start as soon as possible
+    ER.Events.Batcher.Manager.Server.factory("manager")
 
     unless Code.ensure_loaded?(IEx) and IEx.started?() do
       unless ER.Env.disable_push_destinations?() do

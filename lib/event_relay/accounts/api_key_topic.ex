@@ -1,5 +1,5 @@
 defmodule ER.Accounts.ApiKeyTopic do
-  use Ecto.Schema
+  use ER.Ecto.Schema
   import Ecto.Changeset
   alias ER.Accounts.ApiKey
   alias ER.Events.Topic

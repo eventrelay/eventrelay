@@ -59,26 +59,23 @@ defmodule ERWeb.WebhookController do
       end
 
     topic_name = source.topic_name
-    durable = true
 
     attrs =
       %{
         name: event_name,
         source: source.source,
         data: data,
-        durable: durable,
         verified: verified,
         topic_name: topic_name
       }
       |> Transformer.transform(source)
-      |> Map.put_new(:durable, durable)
       |> Map.put_new(:verified, verified)
 
     Context.assign(context, :event, attrs)
   end
 
   defp check_rate_limit(ctx) do
-    case ERWeb.RateLimiter.check_rate("publish_events", durable: true) do
+    case ERWeb.RateLimiter.check_rate("publish_events", []) do
       {:allow, _count} ->
         ctx
 
@@ -95,10 +92,9 @@ defmodule ERWeb.WebhookController do
   end
 
   defp produce_event(ctx) do
-    case ER.Events.produce_event_for_topic(ctx.assigns[:event]) do
-      {:ok, event} -> Context.assign(ctx, :event, event)
-      {:error, errors} -> Context.halt!(ctx, "#{inspect(errors)}")
-    end
+    event = ctx.assigns[:event]
+    ER.Events.Batcher.Server.add(event[:topic_name], [event])
+    ctx
   end
 
   defp log(%Context{halt?: true} = ctx) do

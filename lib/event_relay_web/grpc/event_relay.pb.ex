@@ -227,7 +227,6 @@ defmodule ERWeb.Grpc.Eventrelay.PublishEventsRequest do
 
   field :topic, 1, type: :string
   field :events, 2, repeated: true, type: ERWeb.Grpc.Eventrelay.NewEvent
-  field :durable, 3, type: :bool
 end
 
 defmodule ERWeb.Grpc.Eventrelay.PublishEventsResponse do

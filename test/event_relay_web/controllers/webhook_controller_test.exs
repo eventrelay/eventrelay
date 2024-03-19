@@ -46,10 +46,15 @@ defmodule ERWeb.WebhookControllerTest do
     } do
       data = %{"type" => "user.updated", "data" => %{"id" => 123, "name" => "Riley"}}
 
+      ER.Events.Batcher.Server.factory(topic.name)
+
       conn =
         post(conn, ~p"/webhooks/ingest/#{source}", data)
 
       assert text_response(conn, 200) == "OK"
+
+      ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events =
         ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
@@ -70,10 +75,15 @@ defmodule ERWeb.WebhookControllerTest do
     } do
       data = %{"type" => "user.updated", "data" => %{"id" => 123, "name" => "Riley"}}
 
+      ER.Events.Batcher.Server.factory(topic.name)
+
       conn =
         post(conn, ~p"/webhooks/ingest/#{source}", data)
 
       assert text_response(conn, 200) == "OK"
+
+      ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events =
         ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
@@ -109,10 +119,15 @@ defmodule ERWeb.WebhookControllerTest do
 
       data = %{"type" => "user.updated", "data" => %{"id" => 123, "name" => "Riley"}}
 
+      ER.Events.Batcher.Server.factory(topic.name)
+
       conn =
         post(conn, ~p"/webhooks/ingest/#{source}", data)
 
       assert text_response(conn, 200) == "OK"
+
+      ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events =
         ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
@@ -127,7 +142,7 @@ defmodule ERWeb.WebhookControllerTest do
 
     test "returns 429 when hitting a rate limit", %{conn: conn, source: source} do
       ERWeb.RateLimiter
-      |> expect(:check_rate, fn "publish_events", durable: true ->
+      |> expect(:check_rate, fn "publish_events", _ ->
         {:deny, "publish_events", 1_000, 1000}
       end)
 
@@ -176,17 +191,22 @@ defmodule ERWeb.WebhookControllerTest do
           now |> DateTime.to_unix() |> Flamel.to_string()
         )
 
+      ER.Events.Batcher.Server.factory(topic.name)
+
       conn =
         post(conn, ~p"/webhooks/ingest/#{source}", payload)
 
       assert text_response(conn, 200) == "OK"
+
+      ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events =
         ER.Events.list_events_for_topic(topic.name, topic_identifier: nil, return_batch: false)
 
       event = List.last(events)
 
-      # TODO: move event name to source 
+      # TODO: move event name to source
       assert event.name == "user.updated"
       assert event.topic_name == source.topic_name
       assert event.data == payload["data"]

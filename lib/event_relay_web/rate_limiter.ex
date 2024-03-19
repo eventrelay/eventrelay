@@ -10,11 +10,8 @@ defmodule ERWeb.RateLimiter do
   defp rate(type, context) do
     # TODO make this configurable via ENV
     case {type, context} do
-      {"publish_events", [durable: false]} ->
-        {"request:publish_events:ephemeral", 1_000, 20_000}
-
-      {"publish_events", [durable: true]} ->
-        {"request:publish_events:durable", 1_000, 10_000}
+      {"publish_events", _context} ->
+        {"request:publish_events", 1_000, 50_000}
 
       {"create_topic", _context} ->
         {"request:create_topic", 1_000, 5}

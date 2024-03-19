@@ -27,27 +27,30 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PublishEventsRequest{
         topic: topic.name,
-        durable: true,
         events: [
           %NewEvent{
             name: event_name,
             data: Jason.encode!(%{}),
             source: "test",
             group_key: group_key,
+            trace_key: "abc123",
             available_at: available_at
           }
         ]
       }
 
-      result = Server.publish_events(request, nil)
+      ER.Events.Batcher.Server.factory(topic.name)
 
-      [event | _] = result.events
+      Server.publish_events(request, nil)
 
-      assert event.name == event_name
-      assert event.group_key == group_key
-      assert event.available_at == available_at
+      ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
-      events = Events.list_events_for_topic(topic.name, return_batch: false)
+      events =
+        Events.list_events_for_topic(topic.name,
+          return_batch: false,
+          predicates: "trace_key == 'abc123'"
+        )
 
       db_event = List.first(events)
 
@@ -87,7 +90,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
 
       request = %PublishEventsRequest{
         topic: topic.name,
-        durable: true,
         events: [
           %NewEvent{
             name: event_name,
@@ -99,14 +101,14 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
         ]
       }
 
+      ER.Events.Batcher.Server.factory(topic.name)
+
       result = Server.publish_events(request, nil)
 
-      [event | _] = result.events
+      assert result.events == []
 
-      assert event.name == event_name
-      assert event.group_key == group_key
-      assert Jason.decode!(event.data) == data
-      assert Jason.decode!(event.data_schema) == data_schema
+      ER.Events.Batcher.Server.drain(topic.name)
+      ER.Events.Batcher.Server.stop(topic.name)
 
       events = Events.list_events_for_topic(topic.name, return_batch: false)
       assert Enum.count(events) == 1
@@ -124,7 +126,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       group_key = "groupkey"
 
       request = %PublishEventsRequest{
-        durable: true,
         events: [
           %NewEvent{
             name: event_name,
@@ -138,28 +139,6 @@ defmodule ERWeb.Grpc.EventRelay.Events.ServerTest do
       assert_raise GRPC.RPCError, "A topic must be provided to publish_events", fn ->
         Server.publish_events(request, nil)
       end
-    end
-
-    test "does not persit events if durable is false", %{topic: topic} do
-      event_name = "entry.created"
-      group_key = "groupkey"
-
-      request = %PublishEventsRequest{
-        topic: topic.name,
-        durable: false,
-        events: [
-          %NewEvent{
-            name: event_name,
-            data: Jason.encode!(%{}),
-            source: "test",
-            group_key: group_key
-          }
-        ]
-      }
-
-      Server.publish_events(request, nil)
-      events = Events.list_events_for_topic(topic.name, return_batch: false)
-      assert Enum.empty?(events)
     end
   end
 

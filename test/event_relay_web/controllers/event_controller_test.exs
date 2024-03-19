@@ -27,21 +27,14 @@ defmodule ERWeb.EventControllerTest do
       conn =
         post(conn, ~p"/api/events",
           topic: topic.name,
-          durable: true,
           events: [%{name: "user.updated", source: "myapp", data: %{username: "tester"}}]
         )
 
-      events = json_response(conn, 201)["data"]
-      event = List.first(events)
-
-      assert event["name"] == "user.updated"
-      assert event["topic"] == "log"
-      assert event["data"] == %{"username" => "tester"}
-      assert event["source"] == "myapp"
+      response(conn, 201)
     end
 
     test "renders error when no topic is passed", %{conn: conn} do
-      conn = post(conn, ~p"/api/events", topic: "", durable: false, events: [])
+      conn = post(conn, ~p"/api/events", topic: "", events: [])
       errors = json_response(conn, 409)["errors"]
       assert ["A topic must be provided"] == errors
     end
@@ -54,7 +47,6 @@ defmodule ERWeb.EventControllerTest do
       conn =
         post(conn, ~p"/api/events",
           topic: topic.name,
-          durable: true,
           events: [%{name: "user.updated", source: "myapp", data: %{username: "tester"}}]
         )
 

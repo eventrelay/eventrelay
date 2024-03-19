@@ -2,7 +2,7 @@ defmodule ER.Events.EventConfig do
   @moduledoc """
   Schema to store configuration related to events in a topic
   """
-  use Ecto.Schema
+  use ER.Ecto.Schema
   alias ER.Events.Event
 
   @typedoc """

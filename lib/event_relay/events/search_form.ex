@@ -1,5 +1,5 @@
 defmodule ER.Events.SearchForm do
-  use Ecto.Schema
+  use ER.Ecto.Schema
 
   schema "" do
     field :query, :string
