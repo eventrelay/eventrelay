@@ -379,9 +379,7 @@ defmodule ER.Events do
     end
   end
 
-  def publish_event(
-        {:ok, %Event{topic_name: topic_name, topic_identifier: topic_identifier} = event}
-      ) do
+  def publish_event(%Event{topic_name: topic_name, topic_identifier: topic_identifier} = event) do
     PubSub.broadcast(ER.PubSub, topic_name, {:event_created, event})
     full_topic = ER.Events.Topic.build_topic(topic_name, topic_identifier)
 
@@ -393,7 +391,10 @@ defmodule ER.Events do
       fn -> broadcast_to_websockets(event) end,
       env: ER.env()
     )
+  end
 
+  def publish_event({:ok, %Event{} = event}) do
+    publish_event(event)
     {:ok, event}
   end
 

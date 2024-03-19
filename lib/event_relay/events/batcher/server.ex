@@ -1,6 +1,6 @@
 defmodule ER.Events.Batcher.Server do
   @moduledoc """
-  This server is responsible for gathering events and writing them to Postgres in batches
+  This server is responsible for collecting events and writing them to Postgres in batches
   """
   use GenServer
   use ER.Server.Base
@@ -8,6 +8,7 @@ defmodule ER.Events.Batcher.Server do
   require Logger
   import Flamel.Wrap
   alias ER.Events.Event
+  alias ER.Events
   alias ER.Repo
 
   @drain_interval_ms 1_000
@@ -99,7 +100,13 @@ defmodule ER.Events.Batcher.Server do
         end)
       end)
 
-    insert_all({Event.table_name(topic_name), Event}, valid, placeholders)
+    {_count, events} = insert_all({Event.table_name(topic_name), Event}, valid, placeholders)
+
+    Flamel.Task.background(
+      fn -> Enum.each(events, &Events.publish_event/1) end,
+      env: ER.env()
+    )
+
     insert_all({"dead_letter_events", Event}, invalid, placeholders)
   end
 
@@ -110,8 +117,7 @@ defmodule ER.Events.Batcher.Server do
 
   defp insert_all(source, events, placeholders)
        when is_tuple(source) and is_list(events) and is_map(placeholders) do
-    Repo.insert_all(source, events, placeholders: placeholders)
-    :ok
+    Repo.insert_all(source, events, placeholders: placeholders, returning: true)
   end
 
   defp schedule_next_tick() do

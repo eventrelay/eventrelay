@@ -1,6 +1,6 @@
 defmodule ER.Destinations.Topic do
   @moduledoc """
-  Handles taking an existing event and forwarding it to a new topic  
+  Handles taking an existing event and forwarding it to a new topic
   """
 
   alias ER.Events.Event
